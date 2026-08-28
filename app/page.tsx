@@ -431,11 +431,11 @@ export default function Home() {
         <div className="mx-auto grid w-full max-w-[1160px] gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
             <SectionLabel>LEVEL CERTIFICATE</SectionLabel>
-            <h2 className="text-[clamp(2.3rem,5vw,4.5rem)] font-black leading-[1.04] tracking-[-0.055em] text-ink">「わかった」を、<br />次の仕事へ持っていく。</h2>
-            <p className="mt-6 max-w-[520px] text-base leading-8 text-ink/58">Lv10・25・50・75・100で到達度を確認。4択テストで判断力と安全性を、実際の成果物で実装力を確かめます。</p>
-            <div className="mt-7 flex flex-wrap gap-2 text-xs font-bold text-ink/60"><span className="rounded-full border border-ink/10 bg-white px-3 py-2">4択テスト</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">成果物レビュー</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">発行ID</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">更新目安</span></div>
+            <h2 className="text-[clamp(2.3rem,5vw,4.5rem)] font-black leading-[1.04] tracking-[-0.055em] text-ink">テストはHPで。<br />合格の記録はマイページへ。</h2>
+            <p className="mt-6 max-w-[520px] text-base leading-8 text-ink/58">Lv10・25・50・75・100の4択テストは、このHPからオンライン受験。自動採点後、合否と受験履歴をマイページで確認し、成果物レビューと合わせて到達証を発行します。</p>
+            <div className="mt-7 flex flex-wrap gap-2 text-xs font-bold text-ink/60"><span className="rounded-full border border-ink/10 bg-white px-3 py-2">HPで受験</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">自動採点</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">受験履歴</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">デジタル到達証</span></div>
             <a className="group mt-8 inline-flex min-h-13 items-center gap-3 rounded-full bg-ink px-6 text-sm font-bold text-ivory transition hover:-translate-y-0.5 hover:bg-[#162431]" href="/level-test">
-              4択テストを体験する
+              HPでレベルテストを受ける
               <Play className="size-4 fill-current" aria-hidden="true" />
             </a>
             <p className="mt-5 max-w-lg text-[11px] leading-6 text-ink/40">豊田Ai塾カリキュラム内の到達度を示す独自基準です。国家資格・公的資格、OpenAI社・Anthropic社の公式認定ではありません。</p>

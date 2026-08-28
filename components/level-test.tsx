@@ -56,6 +56,72 @@ const questions = [
     correct: 0,
     explanation: 'まず架空データと閉じた環境で試し、本番前に認証・権限・監査・運用を確認します。',
   },
+  {
+    question: '欲しい回答と違う出力が返ってきました。最も効果的な改善方法はどれですか？',
+    choices: [
+      '同じ指示を何度もそのまま送る',
+      'AIは向いていないと判断してすぐ諦める',
+      '目的・対象・条件・出力形式のうち、足りない情報を具体的に追加する',
+      '理由を確認せず、最初に出た回答を使う',
+    ],
+    correct: 2,
+    explanation: '出力を見て不足条件を特定し、一つずつ追加することがプロンプト改善の基本です。',
+  },
+  {
+    question: '表形式の回答が必要な時、AIへの依頼に含めるとよい内容はどれですか？',
+    choices: [
+      '「いい感じの表にして」だけを伝える',
+      '必要な列名、並び順、単位、空欄時の表示を指定する',
+      '列名をAIに完全に任せる',
+      '文章で回答してから人がすべて作り直す',
+    ],
+    correct: 1,
+    explanation: '列名・順序・単位・欠損時の扱いまで決めると、そのまま使いやすい表になります。',
+  },
+  {
+    question: 'AIで生成した画像を事業のチラシに使う前に、確認すべきことはどれですか？',
+    choices: [
+      '見た目がきれいかだけ確認する',
+      '無料で作った画像なら無条件で使う',
+      '似ている人物やロゴがあっても気にしない',
+      '利用サービスの規約、第三者の権利、ロゴ・人物・素材の問題を確認する',
+    ],
+    correct: 3,
+    explanation: '生成物でも、利用規約や第三者の著作権・商標・肖像などを確認する必要があります。',
+  },
+  {
+    question: '豊田Ai塾の「AIだけを使って課題を解く」で、人が担う役割として最も適切なのは？',
+    choices: [
+      '目的を決め、AIの出力を評価し、採用する内容を判断する',
+      'AIの回答を確認せず、そのまま提出する',
+      '目的も評価もすべてAIに決めさせる',
+      '間違いがあってもAIの責任にする',
+    ],
+    correct: 0,
+    explanation: '主作業にAIを使っても、目的設定・評価・意思決定の責任は人が担います。',
+  },
+  {
+    question: 'AIで作ったホームページを公開する前の確認として、最も適切なのはどれですか？',
+    choices: [
+      '自分のパソコンで表示できれば公開する',
+      'スマホ表示、リンク、入力状態、読みやすさ、未提供情報の創作がないかを確認する',
+      'AIが完成と言ったら確認しない',
+      '住所や実績が足りなければAIに創作させる',
+    ],
+    correct: 1,
+    explanation: '端末別表示、操作、アクセシビリティ、内容の正確性まで確認してから公開します。',
+  },
+  {
+    question: 'AIの無料プランだけで課題に取り組む時の考え方として、正しいものはどれですか？',
+    choices: [
+      '無料プランの機能や利用上限は今後も絶対に変わらない',
+      '無料なら入力データの扱いを確認しなくてよい',
+      '現在の機能・利用上限を確認し、必要なら待つか別の方法を選ぶ',
+      '有料プランでなければAIは一切使えない',
+    ],
+    correct: 2,
+    explanation: '機能や上限は変わる可能性があります。課題開始時に現在の条件を確認して進めます。',
+  },
 ] as const;
 
 export function LevelTest() {
@@ -64,7 +130,7 @@ export function LevelTest() {
   const [finished, setFinished] = useState(false);
   const question = questions[current];
   const score = answers.reduce((total, answer, index) => total + (answer === questions[index].correct ? 1 : 0), 0);
-  const passed = score >= 3;
+  const passed = score >= 8;
 
   function selectAnswer(index: number) {
     setAnswers((previous) => previous.map((answer, questionIndex) => questionIndex === current ? index : answer));
@@ -83,10 +149,10 @@ export function LevelTest() {
           <div className={`grid size-16 place-items-center rounded-full ${passed ? 'bg-lime/35 text-[#4d7207]' : 'bg-amber/25 text-[#92600e]'}`}>
             {passed ? <Award className="size-8" aria-hidden="true" /> : <RotateCcw className="size-7" aria-hidden="true" />}
           </div>
-          <p className="mt-7 font-mono text-[10px] font-bold tracking-[0.18em] text-coral">TEST RESULT / DEMO</p>
+          <p className="mt-7 font-mono text-[10px] font-bold tracking-[0.18em] text-coral">LV.10 ONLINE TEST / SAMPLE</p>
           <h2 className="mt-3 text-4xl font-black text-ink">{passed ? 'サンプル合格です。' : 'あと一歩です。'}</h2>
           <div className="mt-7 flex items-end gap-2"><span className="font-mono text-7xl font-black tracking-[-0.09em] text-ink">{score}</span><span className="pb-2 text-sm font-bold text-ink/45">/ {questions.length} 問</span></div>
-          <p className="mt-5 max-w-xl text-sm leading-7 text-ink/58">{passed ? '情報の確認と安全性について、基本的な判断ができています。正式試験では問題数・範囲・制限時間・再受験条件を明示します。' : '間違えた問題の解説を読み、もう一度試してみましょう。AIを使う力には、出力を疑い、止める判断も含まれます。'}</p>
+          <p className="mt-5 max-w-xl text-sm leading-7 text-ink/58">{passed ? '情報の確認と安全性について、基本的な判断ができています。正式運用ではこの結果を受験履歴へ保存し、成果物レビュー後に到達証を発行します。' : '合格基準は8問正解です。間違えた問題の解説を読み、もう一度試してみましょう。AIを使う力には、出力を疑い、止める判断も含まれます。'}</p>
 
           <div className="mt-8 grid gap-3">
             {questions.map((item, index) => {
