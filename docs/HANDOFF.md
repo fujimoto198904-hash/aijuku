@@ -8,6 +8,7 @@
 |---|---|
 | 公開サイト | https://toyota-ai-school.mondism.chatgpt.site |
 | GitHub | https://github.com/fujimoto198904-hash/aijuku |
+| GitHub公開範囲 | Public（閲覧・cloneは認証不要） |
 | 正式ブランチ | `main` |
 | 公開先 | OpenAI Sites |
 | 技術構成 | Vinext、React、TypeScript、Tailwind CSS、Cloudflare Workers互換ビルド |
@@ -21,11 +22,12 @@ GitHubの`main`をソースコードの正本とします。ただし、GitHub�
 
 ### 必要なアカウント
 
-- このGitHubリポジトリへアクセスできるGitHubアカウント（匿名cloneはできません）
+- 閲覧・cloneだけならGitHubアカウントは不要
+- commitをGitHubへpushする担当者は、書き込み権限のあるGitHubアカウントが必要
 - 現在のSitesプロジェクトを操作できるChatGPT／Codexアカウント
-- GitHubとChatGPT／Codexの2段階認証・復旧手段
+- 更新担当者はGitHubとChatGPT／Codexの2段階認証・復旧手段
 
-GitHubの権限とSitesの権限は別です。GitHubだけ使えても公開はできず、Sitesだけ使えてもGitHubへpushできません。別のChatGPTワークスペースでは、現在と同じSites URLを操作できない場合があります。
+公開リポジトリの取得にはGitHub認証が要りません。一方、GitHubへのpush権限とSitesの公開権限は別です。GitHubへpushできてもSitesへの公開権限がなければ本番サイトは更新できません。別のChatGPTワークスペースでは、現在と同じSites URLを操作できない場合があります。
 
 ### 初回セットアップ
 
@@ -210,7 +212,7 @@ npm run dev -- --port 3001
 
 ### GitHubへpushできない
 
-新しいMacでGitHubへログインし、リポジトリへの書き込み権限を確認します。認証トークンをリポジトリ内へ保存しないでください。
+閲覧とcloneにはログイン不要です。pushする場合だけ、新しいMacでGitHubへログインし、リポジトリへの書き込み権限を確認します。認証トークンをリポジトリ内へ保存しないでください。
 
 ### GitHubへpushしたのに公開サイトが変わらない
 
@@ -226,7 +228,8 @@ GitHubへの保存後にSitesへの公開が必要です。公開後も古い場
 
 ## 10. 引き継ぎ完了チェック
 
-- [ ] 新しいMacでGitHubへログインした
+- [ ] GitHub認証なしでcloneできた
+- [ ] 更新担当者は新しいMacでGitHubへログインし、pushできた
 - [ ] 現在のSitesを操作できるChatGPT／Codexアカウントでログインした
 - [ ] リポジトリをcloneした
 - [ ] `npm ci`が完了した

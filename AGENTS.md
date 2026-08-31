@@ -5,6 +5,7 @@
 - This repository contains the public website for 豊田Ai塾.
 - Use Japanese for customer-facing copy and handoff notes.
 - The source of truth is the GitHub `main` branch.
+- The GitHub repository is public: anonymous read/clone is allowed, while pushes still require write access.
 - The current production URL is https://toyota-ai-school.mondism.chatgpt.site.
 
 ## Setup and validation

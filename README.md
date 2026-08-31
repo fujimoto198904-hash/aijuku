@@ -8,7 +8,7 @@
 
 ## 新しいMacで最初に行うこと
 
-必要なものは、Git、Node.js 22.13以上、npm、GitHubへのアクセス権です。Codexで公開まで行う場合は、現在のSitesプロジェクトを操作できる同じChatGPT／Codexアカウントも必要です。
+必要なものは、Git、Node.js 22.13以上、npmです。このリポジトリは公開されているため、閲覧とcloneにはGitHub認証が要りません。変更をpushする場合だけ、書き込み権限のあるGitHubアカウントが必要です。Codexで公開まで行う場合は、現在のSitesプロジェクトを操作できる同じChatGPT／Codexアカウントも必要です。
 
 ```bash
 git clone https://github.com/fujimoto198904-hash/aijuku.git
