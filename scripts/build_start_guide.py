@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+from typing import Optional
 
 from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import A4
@@ -9,9 +11,13 @@ from reportlab.pdfgen import canvas
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "output" / "pdf" / "toyota-ai-school-start-guide.pdf"
+OUTPUT = ROOT / "public" / "downloads" / "toyota-ai-school-start-guide.pdf"
 HERO = ROOT / "public" / "og.png"
-FONT = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
+FONT_CANDIDATES = [
+    Path("/System/Library/Fonts/Supplemental/Arial Unicode.ttf"),
+    Path("/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"),
+    Path("/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc"),
+]
 
 INK = HexColor("#081019")
 IVORY = HexColor("#F7F2E8")
@@ -21,6 +27,19 @@ AMBER = HexColor("#F2BC5B")
 LIME = HexColor("#C8F65A")
 WHITE = HexColor("#FFFFFF")
 MUTED = HexColor("#647078")
+
+
+def find_japanese_font() -> Path:
+    custom_font = os.environ.get("TOYOTA_AI_JP_FONT")
+    candidates = ([Path(custom_font).expanduser()] if custom_font else []) + FONT_CANDIDATES
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    checked = "\n".join(f"  - {path}" for path in candidates)
+    raise FileNotFoundError(
+        "日本語フォントが見つかりません。TOYOTA_AI_JP_FONT に "
+        f"TTF/TTCファイルのパスを指定してください。\n確認した場所:\n{checked}"
+    )
 
 
 def wrap_text(text: str, font_name: str, font_size: float, width: float) -> list[str]:
@@ -46,8 +65,8 @@ def draw_wrapped(
     width: float,
     font_size: float,
     color,
-    leading: float | None = None,
-    max_lines: int | None = None,
+    leading: Optional[float] = None,
+    max_lines: Optional[int] = None,
 ) -> float:
     leading = leading or font_size * 1.55
     lines = wrap_text(text, "JP", font_size, width)
@@ -93,7 +112,7 @@ def footer(pdf, page_number):
 
 def build():
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    pdfmetrics.registerFont(TTFont("JP", FONT))
+    pdfmetrics.registerFont(TTFont("JP", str(find_japanese_font())))
     pdf = canvas.Canvas(str(OUTPUT), pagesize=A4)
     pdf.setTitle("豊田Ai塾 スタートガイド")
     pdf.setAuthor("豊田Ai塾")

@@ -1,5 +1,5 @@
 {
-  "name": "sites-project",
+  "name": "toyota-ai-school",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -9,6 +9,9 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
+    "doctor": "node scripts/doctor.mjs",
+    "verify": "npm run doctor && npm run build",
+    "build:guide": "python3 scripts/build_start_guide.py",
     "lint": "oxlint",
     "format": "oxfmt"
   },
