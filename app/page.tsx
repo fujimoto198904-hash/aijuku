@@ -204,7 +204,7 @@ export default function Home() {
                     href="/textbook"
                     className="button-glow group inline-flex min-h-14 items-center justify-between gap-8 px-6 text-sm font-semibold text-white"
                   >
-                    0円でWeb教科書を始める
+                    WEB教科書で学ぶ（無料）
                     <ArrowRight
                       className="size-4 transition-transform group-hover:translate-x-1"
                       aria-hidden="true"
