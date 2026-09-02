@@ -8,16 +8,25 @@ import {
 import Link from '@/components/site-link';
 import { PromptCopyButton } from '@/components/home/prompt-copy-button';
 
-const prompt = `これ、商談のあと片づけたい。下のメモだけ見て、
-1. お礼メールの草案
-2. 担当者と期限を分けたToDo
-3. 確認が必要な不明点
-にして。メモにない話は足さないで。メールはまだ送らない。
+const prompt = `下の「届いたメール」を読んで、返信文の草案を作って。
+- 相手の質問へ順番に答える
+- メールにない事実は足さない
+- わからないことは勝手に決めず「確認して返します」と書く
+- 丁寧だけど堅すぎない日本語にする
+- 件名も付ける
+まだ送らない。
 
-商談メモ（全部架空）
-ひだまり美容室の佐藤さん。予約キャンセルを減らしたい。
-まず今月の予約表を田中が見て、来週火曜に案を持っていく。
-料金と誰が店で使うかはまだ聞けてない。金曜までに一度連絡。`;
+届いたメール（練習用・すべて架空）
+件名：来週の予約表について
+
+田中様
+
+先日はありがとうございました。
+予約キャンセルを減らす案について、来週火曜日に一度見せていただけますか。
+料金と、店舗スタッフ2名でも使えるかも教えてください。
+可能であれば、今週金曜日までにご返信いただけると助かります。
+
+ひだまり美容室　佐藤`;
 
 export function QuickStartSection() {
   return (
@@ -41,7 +50,7 @@ export function QuickStartSection() {
               ここで試せます。
             </h2>
             <p className="mt-6 text-sm leading-8 text-quiet sm:text-base">
-              登録も購入も不要です。下を丸ごとChatGPTへ貼るだけで、最初の返答を試せます。
+              登録も購入も不要です。練習用の受信メールを含む下の例を、丸ごとChatGPTへ貼れば返信案を試せます。
             </p>
           </div>
           <p className="mt-10 flex items-start gap-3 border-t border-rule pt-5 text-xs leading-6 text-quiet">
@@ -49,7 +58,7 @@ export function QuickStartSection() {
               aria-hidden="true"
               className="mt-0.5 size-4 shrink-0 text-sapphire"
             />
-            顧客名や社外秘は架空の内容へ置き換え、送信前に事実・宛先・期限を人が確認します。
+            自分のメールで試す時は、届いた本文をコピーし、個人情報・顧客名・社外秘を伏せてから貼ります。送信前に事実と宛先を人が確認します。
           </p>
         </div>
 
@@ -61,10 +70,10 @@ export function QuickStartSection() {
               </span>
               <div>
                 <p className="text-xs font-semibold tracking-[0.1em] text-sapphire">
-                  商談メモを、次の仕事へ
+                  届いたメールを、返信案へ
                 </p>
                 <p className="mt-1 text-xs text-quiet">
-                  架空メモ入り・丸ごとコピーできます
+                  練習用の受信メール入り・丸ごとコピーできます
                 </p>
               </div>
             </div>
@@ -77,9 +86,9 @@ export function QuickStartSection() {
 
           <ol className="mt-6 grid gap-3 text-sm sm:grid-cols-3">
             {[
-              '下を全部コピーして貼る',
-              '不明点へ答えて直す',
-              '送信前に人が確認する',
+              '届いたメール本文をコピーする',
+              'ChatGPTへ貼り「返信案を作って」と頼む',
+              '事実と宛先を確認して送る',
             ].map((step, index) => (
               <li
                 className="soft-control flex items-start gap-3 border border-rule bg-paper p-4 leading-6"
@@ -99,11 +108,11 @@ export function QuickStartSection() {
 
           <div className="mt-7 flex flex-col gap-4 border-t border-rule pt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-6 text-quiet">
-              教材では、練習用メモ・修正例・完成条件まで確認できます。
+              教材では、練習用メール・修正例・完成条件まで確認できます。
             </p>
             <Link
               className="button-glow group inline-flex min-h-11 shrink-0 items-center justify-center gap-3 px-5 text-xs font-semibold text-white"
-              href="/textbook?task=SLS-05"
+              href="/textbook?task=Lv.05"
             >
               この教材を開く
               <ArrowRight
