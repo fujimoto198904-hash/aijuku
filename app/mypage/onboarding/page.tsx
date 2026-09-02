@@ -16,14 +16,57 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function MembershipOnboardingPage() {
-  if (isVercelRuntime()) {
-    redirect(canonicalMemberUrl('/mypage/onboarding'));
+type MembershipOnboardingPageProps = {
+  searchParams: Promise<{ return_to?: string | string[] }>;
+};
+
+function safeMemberReturnTo(value: string | string[] | undefined) {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  if (!candidate || !candidate.startsWith('/') || candidate.startsWith('//')) {
+    return '/mypage';
   }
-  const user = await requireChatGPTUser('/mypage/onboarding');
+  try {
+    const url = new URL(candidate, 'https://member.local');
+    if (url.origin !== 'https://member.local' || url.pathname !== '/mypage') {
+      return '/mypage';
+    }
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return '/mypage';
+  }
+}
+
+export default async function MembershipOnboardingPage({
+  searchParams,
+}: MembershipOnboardingPageProps) {
+  const params = await searchParams;
+  const returnTo = safeMemberReturnTo(params.return_to);
+  const onboardingPath =
+    returnTo === '/mypage'
+      ? '/mypage/onboarding'
+      : `/mypage/onboarding?return_to=${encodeURIComponent(returnTo)}`;
+  if (isVercelRuntime()) {
+    redirect(canonicalMemberUrl(onboardingPath));
+  }
+  return (
+    <MembershipOnboardingContent
+      onboardingPath={onboardingPath}
+      returnTo={returnTo}
+    />
+  );
+}
+
+async function MembershipOnboardingContent({
+  onboardingPath,
+  returnTo,
+}: {
+  onboardingPath: string;
+  returnTo: string;
+}) {
+  const user = await requireChatGPTUser(onboardingPath);
   const member = await getMember(user.userId);
   if (member?.status === 'active' && hasCurrentMembershipConsent(member)) {
-    redirect('/mypage');
+    redirect(returnTo);
   }
   if (member?.status === 'suspended') {
     return (
@@ -98,7 +141,7 @@ export default async function MembershipOnboardingPage() {
               02　利用目的と規約を確認
             </li>
             <li className="border-t border-white/15 pt-4">
-              03　マイページから受講申込
+              03　マイページで学びを続ける
             </li>
           </ol>
         </section>
@@ -112,13 +155,14 @@ export default async function MembershipOnboardingPage() {
           </h2>
           <p className="mt-4 text-sm leading-7 text-quiet">
             {isConsentUpdate
-              ? 'AI実学パスポートとURL共有プロフィールに対応した現行版を確認し、同意日時を更新します。'
-              : 'ここで無料会員が成立します。受講申込と有料契約は、登録後に別途選びます。'}
+              ? 'ブックマーク、完了記録、AI実学パスポートに対応した現行版を確認し、同意日時を更新します。'
+              : 'ここで無料会員が成立します。気になる課題と完了した課題を保存できます。有料受講は希望する場合だけ、登録後に選びます。'}
           </p>
           <MembershipOnboardingForm
             defaultName={defaultName}
             email={user.email}
             isConsentUpdate={isConsentUpdate}
+            returnTo={returnTo}
           />
         </section>
       </div>

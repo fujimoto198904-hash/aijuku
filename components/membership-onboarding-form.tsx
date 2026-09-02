@@ -10,10 +10,12 @@ export function MembershipOnboardingForm({
   defaultName,
   email,
   isConsentUpdate = false,
+  returnTo = '/mypage',
 }: {
   defaultName: string;
   email: string;
   isConsentUpdate?: boolean;
+  returnTo?: string;
 }) {
   const [displayName, setDisplayName] = useState(defaultName);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -39,7 +41,7 @@ export function MembershipOnboardingForm({
       const body = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(body.error ?? '登録できませんでした。');
 
-      window.location.assign(withSiteBasePath('/mypage'));
+      window.location.assign(withSiteBasePath(returnTo));
     } catch (error) {
       setStatus('error');
       setMessage(
@@ -141,8 +143,8 @@ export function MembershipOnboardingForm({
 
       <p className="text-center text-xs leading-6 text-quiet">
         {isConsentUpdate
-          ? '更新だけで料金は発生しません。公開設定や学習記録の内容は引き継がれます。'
-          : `登録は無料です。${sharedFees.entranceCampaign}は入会金${sharedFees.entrance}（${sharedFees.entranceRegular}）。受講料は申込前に案内します。`}
+          ? '更新だけで料金は発生しません。ブックマーク、完了記録、公開設定、実践記録は引き継がれます。'
+          : `登録は無料です。登録だけで料金は発生しません。${sharedFees.entranceCampaign}は入会金${sharedFees.entrance}（${sharedFees.entranceRegular}）。有料受講は希望する場合に別途申し込みます。`}
       </p>
     </form>
   );

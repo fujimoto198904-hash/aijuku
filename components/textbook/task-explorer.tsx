@@ -2,6 +2,7 @@
 
 import {
   BookOpenText,
+  BookmarkCheck,
   ChevronDown,
   ExternalLink,
   Filter,
@@ -635,6 +636,19 @@ export function TaskExplorer({
                           </span>
                         </span>
                       </Link>
+                      <div className="border-t border-rule px-5 py-3">
+                        <Link
+                          className="soft-control inline-flex min-h-11 w-full items-center justify-center gap-2 border border-sapphire/35 bg-white px-4 text-xs font-semibold text-sapphire hover:bg-sapphire-soft"
+                          href={`/mypage?task=${encodeURIComponent(task.id)}`}
+                          aria-label={`${task.id} ${task.title}を、無料会員のあとでやるへ保存する画面を開く`}
+                        >
+                          <BookmarkCheck
+                            className="size-4"
+                            aria-hidden="true"
+                          />
+                          マイページで保存を選ぶ
+                        </Link>
+                      </div>
                     </li>
                   );
                 })}

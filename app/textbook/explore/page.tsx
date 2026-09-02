@@ -7,6 +7,7 @@ import { SiteHeader } from '@/components/site-header';
 import Link from '@/components/site-link';
 import { TextbookAccessLegend } from '@/components/textbook/access-badges';
 import { TextbookSubnav } from '@/components/textbook/textbook-subnav';
+import { MemberLearningPromo } from '@/components/textbook/member-learning-promo';
 import {
   TaskExplorer,
   type ChapterSummaryLite,
@@ -206,6 +207,7 @@ export default function TextbookExplorePage() {
           aria-labelledby="all-lessons-title"
         >
           <div className="mx-auto w-full max-w-[1280px]">
+            <MemberLearningPromo className="mb-12" />
             <p className="text-xs font-semibold tracking-[0.16em] text-rust">
               SEARCH THE TEXTBOOK
             </p>

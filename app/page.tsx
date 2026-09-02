@@ -2,9 +2,12 @@ import {
   AppWindow,
   ArrowRight,
   BookOpenText,
+  BookmarkCheck,
   CalendarCheck2,
   CalendarDays,
   Check,
+  CheckCircle2,
+  FileCheck2,
   FileSpreadsheet,
   Images,
   Presentation,
@@ -225,7 +228,7 @@ export default function Home() {
                       className="size-4 text-sapphire"
                       aria-hidden="true"
                     />
-                    Web教科書は登録なしで無料。会員登録は記録や相談を使いたい方向け
+                    Web教科書は登録なしで無料。無料会員なら、気になる課題と完了した課題を残せます
                   </p>
                   <p className="flex items-center gap-3">
                     <CalendarDays
@@ -619,6 +622,73 @@ export default function Home() {
                   aria-hidden="true"
                 />
               </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="section-aura border-b border-rule bg-paper px-5 py-20 sm:px-8 sm:py-24">
+          <div className="mx-auto grid max-w-[1240px] gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
+                FREE MEMBER
+              </p>
+              <h2 className="soft-section-heading mt-5 font-mincho text-[clamp(2.5rem,5vw,4.8rem)] font-medium leading-[1.15] tracking-[-0.04em]">
+                気になるも、
+                <br />
+                できたも、残る。
+              </h2>
+              <p className="mt-6 max-w-xl text-sm leading-8 text-quiet sm:text-base">
+                教科書を読むだけなら登録はいりません。無料会員になると、今度やりたい課題と、自分で完了にした課題をマイページで確認できます。
+              </p>
+              <Link
+                className="button-glow group mt-8 inline-flex min-h-14 items-center gap-8 px-6 text-sm font-semibold text-white"
+                href="/join"
+              >
+                無料会員で学びを残す
+                <ArrowRight
+                  className="size-4 transition-transform group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </Link>
+              <p className="mt-3 text-xs text-quiet">
+                登録だけで料金は発生しません。有料受講は希望する場合だけ選びます。
+              </p>
+            </div>
+
+            <div className="soft-panel soft-panel-clip grid border border-rule bg-paper-white md:grid-cols-3">
+              {[
+                {
+                  Icon: BookmarkCheck,
+                  title: 'あとでやる',
+                  body: '気になる課題を保存し、マイページからすぐ開けます。',
+                },
+                {
+                  Icon: CheckCircle2,
+                  title: 'できた課題',
+                  body: '自分で完了にした課題が一覧になり、積み重ねが見えます。',
+                },
+                {
+                  Icon: FileCheck2,
+                  title: '実践記録',
+                  body: '成果物名・説明・外部URLと、できるようになったことを記録できます。',
+                },
+              ].map(({ Icon, title, body }, index) => (
+                <article
+                  className="border-b border-rule p-6 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 sm:p-8"
+                  key={title}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="soft-icon grid size-11 place-items-center bg-sapphire-soft text-sapphire">
+                      <Icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <span className="numeric-text text-xs text-quiet">
+                      0{index + 1}
+                    </span>
+                  </div>
+                  <h3 className="mt-6 font-mincho text-2xl">{title}</h3>
+                  <p className="mt-4 text-xs leading-6 text-quiet">{body}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>

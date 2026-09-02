@@ -16,6 +16,7 @@ const contentSecurityPolicy = [
   `connect-src 'self'${isDevelopment ? " ws: wss:" : ""}`,
   "worker-src 'self' blob:",
   "frame-src 'none'",
+  "frame-ancestors 'none'",
   "manifest-src 'self'",
 ].join("; ");
 

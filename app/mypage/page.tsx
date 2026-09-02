@@ -15,6 +15,7 @@ import {
 import { chatGPTSignOutPath, requireChatGPTUser } from '@/app/chatgpt-auth';
 import { BrandMark } from '@/components/brand-mark';
 import { MemberApplicationActions } from '@/components/member-application-actions';
+import { MemberLearningProgress } from '@/components/member-learning-progress';
 import { MemberProfileSettings } from '@/components/member-profile-settings';
 import { MobileMemberNav } from '@/components/mobile-member-nav';
 import Link from '@/components/site-link';
@@ -22,6 +23,7 @@ import {
   SkillPassport,
   type SkillTaskOption,
 } from '@/components/skill-passport';
+import { listMemberLessonProgress } from '@/db/lesson-progress';
 import {
   getMember,
   hasCurrentMembershipConsent,
@@ -40,7 +42,7 @@ import {
   sharedFees,
 } from '@/lib/member-service-plans';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
-import { textbookCatalog } from '@/lib/textbook-catalog';
+import { findTextbookTask, textbookCatalog } from '@/lib/textbook-catalog';
 import { textbookExplorePath, textbookGuidePath } from '@/lib/textbook-routes';
 
 export const dynamic = 'force-dynamic';
@@ -48,7 +50,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'マイページ｜藤本実学塾',
   description:
-    '藤本実学塾の無料会員マイページです。受講申込、学習記録、講師確認、URL共有プロフィールを管理できます。',
+    '藤本実学塾の無料会員マイページです。課題のブックマークと完了記録、受講申込、実践記録、講師確認を管理できます。',
   robots: {
     index: false,
     follow: false,
@@ -74,24 +76,52 @@ function formatDate(value: number) {
   }).format(new Date(value));
 }
 
-export default async function MyPage() {
-  if (isVercelRuntime()) redirect(canonicalMemberUrl('/mypage'));
-  const user = await requireChatGPTUser('/mypage');
+type MyPageProps = {
+  searchParams: Promise<{ task?: string | string[] }>;
+};
+
+export default async function MyPage({ searchParams }: MyPageProps) {
+  const params = await searchParams;
+  const requestedTaskId = Array.isArray(params.task)
+    ? params.task[0]
+    : params.task;
+  const initialTaskId = requestedTaskId
+    ? findTextbookTask(requestedTaskId)?.id
+    : undefined;
+  const returnTo = initialTaskId
+    ? `/mypage?task=${encodeURIComponent(initialTaskId)}`
+    : '/mypage';
+  if (isVercelRuntime()) redirect(canonicalMemberUrl(returnTo));
+  return (
+    <MemberPageContent initialTaskId={initialTaskId} returnTo={returnTo} />
+  );
+}
+
+async function MemberPageContent({
+  initialTaskId,
+  returnTo,
+}: {
+  initialTaskId?: string;
+  returnTo: string;
+}) {
+  const user = await requireChatGPTUser(returnTo);
   const member = await getMember(user.userId);
   if (
     !member ||
     member.status !== 'active' ||
     !hasCurrentMembershipConsent(member)
   ) {
-    redirect('/mypage/onboarding');
+    redirect(`/mypage/onboarding?return_to=${encodeURIComponent(returnTo)}`);
   }
 
   await refreshMemberEmail(user);
-  const [applications, skillProfile, skillEvidence] = await Promise.all([
-    listMemberApplications(user.userId),
-    ensureSkillProfile(user.userId),
-    listMemberSkillEvidence(user.userId),
-  ]);
+  const [applications, lessonProgress, skillProfile, skillEvidence] =
+    await Promise.all([
+      listMemberApplications(user.userId),
+      listMemberLessonProgress(user.userId),
+      ensureSkillProfile(user.userId),
+      listMemberSkillEvidence(user.userId),
+    ]);
   const activeApplications = applications.filter(
     (application) =>
       application.status === 'received' || application.status === 'reviewing',
@@ -103,19 +133,34 @@ export default async function MyPage() {
         href: '#applications',
         label: '申込状況を見る',
       }
-    : skillEvidence.length === 0
+    : lessonProgress.some((item) => item.bookmarked && !item.completed)
       ? {
-          title: '最初の課題を一つ選ぶ',
-          body: 'Web教科書から今の仕事や暮らしに近い課題を一つ選び、完成物を作ってみましょう。',
-          href: textbookExplorePath,
-          label: 'Web教科書から選ぶ',
+          title: '「あとでやる」から、一つ選ぶ',
+          body: '保存した課題があります。今の気分や使える時間に合う一つから始めましょう。',
+          href: '#learning',
+          label: 'あとでやるを見る',
         }
-      : {
-          title: '次の実践記録を積み重ねる',
-          body: 'できたことを証拠と一緒に残すほど、講師が確認した範囲と分けて説明しやすくなります。',
-          href: '#skills',
-          label: 'AI実学パスポートへ',
-        };
+      : lessonProgress.some((item) => item.completed) &&
+          skillEvidence.length === 0
+        ? {
+            title: 'できた課題を、実践記録にする',
+            body: '完了した課題があります。作った成果物と、できるようになったことを記録へ残しましょう。',
+            href: '#skills',
+            label: '実践記録を残す',
+          }
+        : skillEvidence.length === 0
+          ? {
+              title: '最初の課題を一つ選ぶ',
+              body: 'Web教科書から今の仕事や暮らしに近い課題を一つ選び、完成物を作ってみましょう。',
+              href: textbookExplorePath,
+              label: 'Web教科書から選ぶ',
+            }
+          : {
+              title: '次の実践記録を積み重ねる',
+              body: 'できたことを証拠と一緒に残すほど、講師が確認した範囲と分けて説明しやすくなります。',
+              href: '#skills',
+              label: 'AI実学パスポートへ',
+            };
 
   return (
     <main id="main-content" className="min-h-screen bg-paper text-ink">
@@ -153,6 +198,12 @@ export default async function MyPage() {
               href="#applications"
             >
               申込状況
+            </a>
+            <a
+              className="border-b border-white/10 py-4 text-white/60 hover:text-white"
+              href="#learning"
+            >
+              学習の続き
             </a>
             <a
               className="border-b border-white/10 py-4 text-white/60 hover:text-white"
@@ -234,7 +285,7 @@ export default async function MyPage() {
                     何から始めますか。
                   </h1>
                   <p className="mt-5 max-w-2xl text-sm leading-7 text-quiet">
-                    Web教科書はいつでも無料で読めます。作ったものは実践記録として残し、講師が確認した範囲と分けて、応募先へ説明できる形へ育てられます。
+                    Web教科書はいつでも無料で読めます。気になる課題と完了した課題をマイページに残し、作ったものは実践記録として育てられます。
                   </p>
                 </div>
                 <a
@@ -465,6 +516,12 @@ export default async function MyPage() {
               )}
             </section>
 
+            <MemberLearningProgress
+              initialProgress={lessonProgress}
+              initialTaskId={initialTaskId}
+              tasks={skillTaskOptions}
+            />
+
             <SkillPassport
               evidence={skillEvidence}
               profile={skillProfile}
@@ -489,7 +546,7 @@ export default async function MyPage() {
                 />
                 <h2 className="mt-4 font-mincho text-2xl">学習の続き</h2>
                 <p className="mt-3 text-xs leading-6 text-quiet">
-                  読了位置の自動保存は未実装です。完成した課題や既存の実務成果は、上のAI実学パスポートへ証拠付きで記録できます。
+                  「あとでやる」と「完了」は、自分で切り替える学習メモです。読んだ位置の自動保存や修了判定ではありません。成果物はAI実学パスポートへ別に記録できます。
                 </p>
               </div>
             </section>

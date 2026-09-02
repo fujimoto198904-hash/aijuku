@@ -9,6 +9,7 @@ const memberNavItems = [
   { href: "#home", label: "ホーム" },
   { href: "#apply", label: "受講を申し込む" },
   { href: "#applications", label: "申込状況" },
+  { href: "#learning", label: "学習の続き" },
   { href: "#skills", label: "AI実学パスポート" },
   { href: "#account", label: "会員情報" },
 ] as const;

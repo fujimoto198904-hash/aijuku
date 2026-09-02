@@ -30,6 +30,65 @@ export const members = sqliteTable(
   ],
 );
 
+export const memberLessonProgress = sqliteTable(
+  "member_lesson_progress",
+  {
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    taskId: text("task_id").notNull(),
+    bookmarked: integer("bookmarked").notNull().default(0),
+    completed: integer("completed").notNull().default(0),
+    completedAt: integer("completed_at"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "member_lesson_progress_bookmarked_check",
+      sql`${table.bookmarked} in (0, 1)`,
+    ),
+    check(
+      "member_lesson_progress_completed_check",
+      sql`${table.completed} in (0, 1)`,
+    ),
+    check(
+      "member_lesson_progress_state_check",
+      sql`not (${table.bookmarked} = 1 and ${table.completed} = 1)`,
+    ),
+    check(
+      "member_lesson_progress_completed_at_check",
+      sql`(${table.completed} = 1 and ${table.completedAt} is not null) or (${table.completed} = 0 and ${table.completedAt} is null)`,
+    ),
+    uniqueIndex("member_lesson_progress_member_task_unique").on(
+      table.memberId,
+      table.taskId,
+    ),
+    index("member_lesson_progress_member_updated_idx").on(
+      table.memberId,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const memberLessonRateLimits = sqliteTable(
+  "member_lesson_rate_limits",
+  {
+    memberId: text("member_id")
+      .primaryKey()
+      .references(() => members.id, { onDelete: "cascade" }),
+    windowStartedAt: integer("window_started_at").notNull(),
+    requestCount: integer("request_count").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "member_lesson_rate_limits_count_check",
+      sql`${table.requestCount} between 1 and 30`,
+    ),
+  ],
+);
+
 export const applications = sqliteTable(
   "applications",
   {

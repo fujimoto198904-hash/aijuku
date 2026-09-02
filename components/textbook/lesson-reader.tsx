@@ -5,6 +5,7 @@
 import {
   ArrowLeft,
   ArrowRight,
+  BookmarkCheck,
   Check,
   CheckCircle2,
   ChevronLeft,
@@ -830,6 +831,29 @@ export function LessonReader({
                   {manualSaveCard}
                 </>
               )}
+            </div>
+            <div className="soft-panel mt-5 flex flex-col gap-4 border border-sapphire/35 bg-sapphire-soft p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <BookmarkCheck
+                  className="mt-0.5 size-5 shrink-0 text-sapphire"
+                  aria-hidden="true"
+                />
+                <div>
+                  <p className="text-sm font-semibold">
+                    この課題を、学びの一覧へ残す
+                  </p>
+                  <p className="mt-1 text-xs leading-6 text-quiet">
+                    無料会員なら「あとでやる」と「完了」をマイページへ保存できます。
+                  </p>
+                </div>
+              </div>
+              <Link
+                className="soft-button inline-flex min-h-11 shrink-0 items-center justify-center gap-2 bg-sapphire px-5 text-xs font-semibold text-white"
+                href={`/mypage?task=${encodeURIComponent(task.id)}`}
+              >
+                マイページで保存
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
             </div>
             <div className="soft-panel mt-5 flex flex-col gap-4 border border-future-mint bg-future-mint-soft p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>

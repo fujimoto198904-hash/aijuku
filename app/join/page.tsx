@@ -3,9 +3,9 @@ import { redirect } from 'next/navigation';
 import {
   ArrowRight,
   BadgeCheck,
-  BookOpenText,
+  BookmarkCheck,
   CalendarCheck,
-  CircleDollarSign,
+  CheckCircle2,
   UserRoundCheck,
 } from 'lucide-react';
 
@@ -22,29 +22,29 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: '無料会員登録｜藤本実学塾',
   description:
-    '藤本実学塾の無料会員登録ページです。受講申込、学習記録、講師確認を一つのマイページで管理できます。',
+    '藤本実学塾の無料会員登録ページです。課題のブックマーク、完了記録、実践記録、受講申込を一つのマイページで管理できます。',
 };
 
 const benefits = [
   {
-    Icon: CalendarCheck,
-    title: '3つの受講方法へ申し込める',
-    body: '対面、Google Meet、対面・教科書自習式のすべてを、同じWeb教科書に沿って進めます。',
+    Icon: BookmarkCheck,
+    title: '気になる課題を、あとで開ける',
+    body: '今は時間がない課題も「あとでやる」へ保存。探し直さず、マイページから開けます。',
   },
   {
-    Icon: BookOpenText,
-    title: '申込と学びの続きがまとまる',
-    body: '受付状況、これから進める課題、できた成果物をマイページへ集約します。',
+    Icon: CheckCircle2,
+    title: 'やった課題が、ひと目でわかる',
+    body: '完成したら自分で「完了」に。できた課題が一覧になり、積み重ねを確認できます。',
   },
   {
     Icon: BadgeCheck,
-    title: 'できることを証拠で残せる',
-    body: '本人の実践記録と、講師が確認した範囲を分け、応募先へURL共有できます。',
+    title: 'できたことを、実践記録に残せる',
+    body: '成果物名・説明・外部URLを記録し、講師が確認した範囲と分けてURL共有できます。',
   },
   {
-    Icon: CircleDollarSign,
-    title: 'OPEN記念、入会金0円',
-    body: `${sharedFees.entranceCampaign}。${sharedFees.entranceRegular}の入会金が無料です。定員に達し次第終了します。`,
+    Icon: CalendarCheck,
+    title: '必要なときだけ、受講を申し込める',
+    body: '対面、Google Meet、対面・教科書自習式から、迷ったときに必要な方法を選べます。',
   },
 ] as const;
 
@@ -71,12 +71,12 @@ export default async function JoinPage() {
                 登録不要。
                 <br />
                 <span className="text-highlight text-human-coral">
-                  記録と相談
+                  残して続ける
                 </span>
-                は、無料会員で。
+                なら、無料会員。
               </h1>
               <p className="mt-7 max-w-2xl text-base leading-8 text-quiet">
-                公開中のWeb教科書は、登録も購入も不要で完全無料です。このサイトを教科書に今日からAIを学び始め、自分で進めて迷ったときだけ講師の受講を選べます。無料会員になると、受講申込や学習記録をマイページへまとめられます。
+                公開中のWeb教科書は、登録も購入も不要で完全無料です。無料会員になると、気になる課題のブックマーク、自分で完了にした課題、成果物名や外部URLの実践記録をマイページへまとめられます。登録だけで料金は発生しません。
               </p>
             </div>
 

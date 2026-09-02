@@ -20,6 +20,7 @@
     "build:guide": "python3 scripts/build_start_guide.py",
     "build:brand-og": "node scripts/build_brand_og.mjs",
     "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "node scripts/apply_local_migrations.mjs",
     "lint": "oxlint",
     "format": "oxfmt",
     "build:demo-index": "python3 scripts/build_demo_file_index.py",

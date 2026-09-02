@@ -11,6 +11,7 @@
 
 - Use Node.js 22.13 or newer and npm with the committed `package-lock.json`.
 - Install with `npm ci`.
+- Run `npm run db:migrate:local` before the first local development session and after new D1 migrations. It targets only the project-local `.wrangler/` state.
 - Run `npm run doctor` after moving to a new Mac.
 - Run `npm run verify` before committing or publishing.
 - `npm run lint` currently reports known issues in existing and generated UI components; do not represent lint as clean until those issues are addressed.
