@@ -43,8 +43,7 @@ const curriculumTracks = [
     index: '01',
     role: '技術の幹',
     english: 'COMMON',
-    count: '200',
-    title: '共通制作',
+    title: 'AIを使う技術',
     body: 'AI秘書、調査、データ、Web、認証、連携、安全運用まで。作りたいものに必要な技術の章を選びます。',
     examples: '文章・調査・データ・Web・安全',
   },
@@ -52,17 +51,15 @@ const curriculumTracks = [
     index: '02',
     role: '仕事の担当',
     english: 'DEPARTMENT',
-    count: '200',
-    title: '20部門 × 10',
-    body: '経営、営業、経理、人事、製造、AI推進など。自分の担当業務で使える旗艦作品を育てます。',
+    title: '担当業務の実践',
+    body: '経営、営業、経理、人事、製造、AI推進など。自分の担当業務で使える一つの成果物を育てます。',
     examples: '経営・営業・経理・人事・製造・AI推進',
   },
   {
     index: '03',
     role: '現場の舞台',
     english: 'INDUSTRY',
-    count: '100',
-    title: '10業種 × 10',
+    title: '業界ごとの実践',
     body: '小売、飲食、美容、宿泊、建設、不動産、製造、教育など。業界固有の仕事を一つの流れにつなぎます。',
     examples: '小売・飲食・美容・宿泊・建設・製造',
   },
@@ -70,8 +67,7 @@ const curriculumTracks = [
     index: '04',
     role: '表現の工房',
     english: 'CREATION',
-    count: '230',
-    title: '23タイプ × 10',
+    title: '作品づくり',
     body: '本、SNS、画像、動画、音声、Web、ゲーム、スマホアプリ、PowerPoint、Excelなど。一作品の表現・体験と、毎日使える仕事ファイルを磨きます。',
     examples: '本・SNS・画像・動画・Web・ゲーム・アプリ・資料・Excel',
   },
@@ -278,18 +274,18 @@ export default function Home() {
               light
               title={
                 <>
-                  730を、全部やる塾ではありません。
+                  今つくりたいものが、
                   <br />
-                  今つくりたい一つから。
+                  学びの入口になる。
                 </>
               }
               body={
                 <>
                   <p>
-                    藤本実学塾のカリキュラム全体設計は完成しています。4系統・730の制作ミッションから、いま必要な一つを主プロジェクトに。足りない力だけを組み合わせ、使える形まで育てます。
+                    藤本実学塾では、暮らしや仕事で本当に使いたいものから教材を選びます。技術・担当業務・業種・表現の4つの入口から、足りない力だけを組み合わせ、一つの成果物を使える形まで育てます。
                   </p>
                   <p className="mt-3 text-sm text-white/55">
-                    730は選べる制作ミッションの総数です。全員が同じ順番で受講する730段階ではありません。
+                    最初から最後まで順番に受ける必要はありません。今の目的に合うところから始められます。
                   </p>
                 </>
               }
@@ -309,7 +305,7 @@ export default function Home() {
                     </p>
                   </div>
                   <p className="mt-10 max-w-md text-sm leading-7 text-white/60">
-                    同じものを教材ごとに作り直しません。完成した素材を受け取り、必要な差分だけを加えて、主作品へ戻します。
+                    同じものを教材ごとに作り直しません。完成した素材を受け取り、必要な部分だけを加えて、今つくっているものへ戻します。
                   </p>
                 </div>
 
@@ -320,7 +316,7 @@ export default function Home() {
                       className="group border-b border-white/20 p-7 transition-colors hover:bg-white/[0.035] sm:p-8 sm:[&:nth-child(odd)]:border-r sm:[&:nth-last-child(-n+2)]:border-b-0"
                     >
                       <div className="flex items-start justify-between gap-5">
-                        <div>
+                        <div className="w-full">
                           <p className="text-xs font-semibold tracking-[0.14em] text-future-mint">
                             {track.role} / {track.english}
                           </p>
@@ -328,9 +324,6 @@ export default function Home() {
                             {track.title}
                           </h3>
                         </div>
-                        <p className="font-mono text-2xl tabular-nums text-white/55">
-                          {track.count}
-                        </p>
                       </div>
                       <p className="mt-6 text-sm leading-7 text-white/65">
                         {track.body}
@@ -360,7 +353,7 @@ export default function Home() {
                     たとえば、美容室の予約サイトなら
                   </p>
                   <p className="mt-5 font-mincho text-2xl leading-10 sm:text-3xl sm:leading-[1.55]">
-                    業種別「美容」を主役に、共通編からWebと受付の技術を借り、見た目を磨く時だけ生成特化を足します。
+                    「業界ごとの実践」から美容を選び、「AIを使う技術」からWebと受付を加え、見た目を磨く時だけ「作品づくり」を使います。
                   </p>
                   <p className="mt-5 text-sm leading-7 text-white/55">
                     三つのサイトを作るのではなく、一つのサイトを完成させます。
@@ -371,10 +364,10 @@ export default function Home() {
 
             <div className="soft-panel soft-panel-clip mt-6 grid border border-white/20 bg-white/[0.025] sm:grid-cols-2 lg:grid-cols-4">
               {[
-                ['技術が足りない', '共通制作へ'],
-                ['仕事の判断が足りない', '部署別へ'],
-                ['業界の条件が足りない', '業種別へ'],
-                ['表現の質を上げたい', '生成特化へ'],
+                ['技術が足りない', 'AIを使う技術へ'],
+                ['仕事の判断が足りない', '担当業務の実践へ'],
+                ['業界の条件が足りない', '業界ごとの実践へ'],
+                ['表現の質を上げたい', '作品づくりへ'],
               ].map(([question, answer]) => (
                 <div
                   key={question}
@@ -388,13 +381,13 @@ export default function Home() {
               ))}
             </div>
             <p className="mt-5 text-xs leading-6 text-white/65">
-              共通編のレベル番号は、人の優劣ではなく、作品の利用者数・データ・接続・権限・復旧など技術と運用範囲の難易度を表します。
+              教材内の番号は、人の優劣ではなく、作品の利用者数・データ・接続・権限・復旧など、技術と運用範囲の難易度を表します。
             </p>
             <Link
               className="soft-outline-button mt-8 inline-flex min-h-12 items-center gap-6 border border-white/35 px-5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-brand-dark"
               href="/textbook"
             >
-              730課題から作りたいものを探す
+              作りたいものから教材を探す
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
@@ -585,24 +578,20 @@ export default function Home() {
               <p className="max-w-3xl text-xs leading-6 text-white/55">
                 {allLessonDetailsPublished ? (
                   <>
-                    全{textbookCatalog.stats.total}
-                    課題に、使う材料、最初の一言、実際に触る手順、やりがちなミス、完成条件までの固有の本文があります。
+                    公開中のすべての教材に、使う材料、最初の一言、実際に触る手順、やりがちなミス、完成条件までの固有の本文があります。
                   </>
                 ) : (
                   <>
-                    現在{textbookCatalog.stats.lessonDrafts}
-                    課題に詳しい手順があり、残り
-                    {textbookCatalog.stats.outlines}
-                    課題は選べる骨格を公開しています。詳しい本文は制作できた課題から順次反映します。
+                    詳しい手順を公開している教材と、選べる骨格を先に公開している教材があります。詳しい本文は制作できた課題から順次反映します。
                   </>
                 )}
-                73章それぞれが、前の課題の完成品を育てて一つの旗艦作品へ届く構成です。正式な修了条件・修了証は別途案内します。
+                各章は、前の課題の完成品を育てて一つの成果物へ届く構成です。正式な修了条件・修了証は別途案内します。
               </p>
               <Link
                 href="/textbook"
                 className="soft-outline-button group inline-flex min-h-11 shrink-0 items-center justify-center gap-3 border border-white/35 px-5 text-xs font-semibold text-white transition-colors hover:border-white hover:bg-white hover:text-brand-dark"
               >
-                730の教材テーマを見る
+                教材テーマを見る
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-1"
                   aria-hidden="true"
@@ -668,8 +657,7 @@ export default function Home() {
                 <p className="text-xs text-quiet">Web教科書</p>
                 <p className="mt-2 font-mincho text-2xl">登録なしで完全無料</p>
                 <p className="mt-2 text-xs text-quiet">
-                  詳しい手順がある{textbookCatalog.stats.lessonDrafts}
-                  課題から始められます
+                  公開中の教材から今日すぐ始められます
                 </p>
               </div>
               <div className="py-5 sm:pl-6">
@@ -836,11 +824,9 @@ export default function Home() {
                 迷ったときだけ、講師に聞く。
               </h2>
               <p className="mt-6 max-w-2xl text-base leading-8 text-white/75">
-                Web教科書は登録なしで無料です。詳しい手順がある
-                {textbookCatalog.stats.lessonDrafts}
-                課題から、今日すぐに始められます。
+                Web教科書は登録なしで無料です。公開中の教材から、今日すぐに始められます。
                 {!allLessonDetailsPublished
-                  ? `残り${textbookCatalog.stats.outlines}課題の本文も順次公開します。`
+                  ? '詳しい本文は順次公開します。'
                   : null}
                 講師へ相談したくなったときだけ、無料会員マイページから希望する受講方法を選べます。
               </p>
