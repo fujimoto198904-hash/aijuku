@@ -1111,7 +1111,7 @@ export function LessonReader({
         <aside className="hidden xl:block">
           <div className="sticky top-5 border-l border-rule pl-6">
             <p className="text-xs font-semibold tracking-[0.14em] text-rust">
-              今日の進め方
+              この課題の進め方
             </p>
             <nav className="mt-5 grid gap-1" aria-label={`${task.id}の目次`}>
               {lessonSections.map((section, index) => (
