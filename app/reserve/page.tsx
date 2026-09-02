@@ -1,31 +1,104 @@
-import type { Metadata } from 'next';
-import { ShieldCheck } from 'lucide-react';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { ArrowLeft, LogOut, ShieldCheck } from "lucide-react";
 
-import { ReservationForm } from '@/components/reservation-form';
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
+import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
+import { BrandMark } from "@/components/brand-mark";
+import { MemberApplicationForm } from "@/components/member-application-form";
+import Link from "@/components/site-link";
+import { getMember, hasCurrentMembershipConsent } from "@/db/membership";
+import { canonicalMemberUrl, isVercelRuntime } from "@/lib/site-runtime";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: '無料体験を予約｜豊田Ai塾',
-  description: '豊田Ai塾の初回無料体験を予約。平日18:00〜21:00、ブリッジスタッフサービスで開催します。',
+  title: "受講を申し込む｜藤本実学塾",
+  description:
+    "無料会員マイページから、対面・オンライン・教科書自習式の受講希望を送れます。",
+  robots: { index: false, follow: false },
 };
 
-export default function ReservePage() {
+export default async function ReservePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ service?: string }>;
+}) {
+  if (isVercelRuntime()) {
+    const params = (await searchParams) ?? {};
+    const service = params.service
+      ? `?service=${encodeURIComponent(params.service)}`
+      : "";
+    redirect(canonicalMemberUrl(`/reserve${service}`));
+  }
+  const user = await requireChatGPTUser("/reserve");
+  const member = await getMember(user.userId);
+  if (
+    !member ||
+    member.status !== "active" ||
+    !hasCurrentMembershipConsent(member)
+  ) {
+    redirect("/mypage/onboarding");
+  }
+  const params = (await searchParams) ?? {};
+
   return (
-    <main className="min-h-screen bg-[#fbf8f1] text-ink">
-      <SiteHeader />
-      <section className="px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
-        <div className="mx-auto w-full max-w-[1160px]">
-          <div className="mb-10 max-w-[760px]">
-            <div className="mb-5 flex items-center gap-3 font-mono text-[10px] font-bold tracking-[0.2em] text-coral"><span className="h-px w-7 bg-coral" aria-hidden="true" />FREE TRIAL</div>
-            <h1 className="text-[clamp(2.7rem,6vw,5.5rem)] font-black leading-[0.98] tracking-[-0.06em]">最初の1問を、<br /><span className="text-coral">無料で完成</span>させる。</h1>
-            <p className="mt-6 max-w-[650px] text-base leading-8 text-ink/58">AIが初めてでも大丈夫です。現在地を確認し、あなたに合うミッションを一つ選んで、実際の成果物まで一緒に進めます。</p>
-            <div className="mt-5 inline-flex items-start gap-2 rounded-xl bg-amber/18 px-4 py-3 text-xs leading-6 text-[#765017]"><ShieldCheck className="mt-1 size-3.5 shrink-0" aria-hidden="true" />先行公開中の予約体験デモです。本番の送信・決済は、運営情報と規約の確定後に有効化します。</div>
+    <main id="main-content" className="min-h-screen bg-paper text-ink">
+      <header className="border-b border-white/15 bg-brand-dark px-5 py-5 text-white sm:px-8">
+        <div className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-4">
+          <Link className="flex items-center gap-3" href="/mypage">
+            <BrandMark framed />
+            <span>
+              <span className="block font-mincho text-lg">藤本実学塾</span>
+              <span className="block text-[10px] tracking-[0.12em] text-white/55">
+                MEMBER APPLICATION
+              </span>
+            </span>
+          </Link>
+          <Link
+            className="inline-flex items-center gap-2 text-xs text-white/60 hover:text-white"
+            href={chatGPTSignOutPath("/")}
+            target="_top"
+          >
+            <LogOut className="size-4" aria-hidden="true" />
+            ログアウト
+          </Link>
+        </div>
+      </header>
+      <section className="border-b border-rule bg-paper-white px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto w-full max-w-[1120px]">
+          <Link
+            className="inline-flex items-center gap-2 text-xs font-semibold text-sapphire"
+            href="/mypage"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            マイページへ戻る
+          </Link>
+          <p className="mt-10 text-xs font-semibold tracking-[0.16em] text-sapphire">
+            MEMBER APPLICATION
+          </p>
+          <h1 className="text-soft-glow mt-5 font-mincho text-[clamp(2.6rem,5vw,4.8rem)] leading-[1.12] tracking-[-0.04em]">
+            受講の希望を、
+            <br />
+            マイページから送る。
+          </h1>
+          <div className="mt-7 flex max-w-3xl items-start gap-3 text-sm leading-7 text-quiet">
+            <ShieldCheck
+              className="mt-1 size-4 shrink-0 text-sapphire"
+              aria-hidden="true"
+            />
+            <p>
+              登録中の連絡先は {user.email}{" "}
+              です。電話番号やカード情報は、この画面では入力しません。
+            </p>
           </div>
-          <ReservationForm />
         </div>
       </section>
-      <SiteFooter />
+
+      <section className="px-5 py-14 sm:px-8 sm:py-20">
+        <div className="soft-panel mx-auto w-full max-w-[1120px] border border-rule bg-paper-white p-6 sm:p-9 lg:p-11">
+          <MemberApplicationForm initialService={params.service} />
+        </div>
+      </section>
     </main>
   );
 }

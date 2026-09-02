@@ -1,0 +1,3652 @@
+{
+ "Lv.01": [
+  "none",
+  "chat",
+  15
+ ],
+ "Lv.02": [
+  "paste",
+  "chat",
+  15
+ ],
+ "Lv.03": [
+  "paste",
+  "chat",
+  20
+ ],
+ "Lv.04": [
+  "paste",
+  "chat",
+  20
+ ],
+ "Lv.05": [
+  "paste",
+  "chat",
+  10
+ ],
+ "Lv.06": [
+  "mixed",
+  "chat",
+  20
+ ],
+ "Lv.07": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.08": [
+  "mixed",
+  "work",
+  30
+ ],
+ "Lv.09": [
+  "paste",
+  "work",
+  30
+ ],
+ "Lv.10": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.11": [
+  "paste",
+  "chat",
+  15
+ ],
+ "Lv.12": [
+  "mixed",
+  "chat",
+  20
+ ],
+ "Lv.13": [
+  "attach",
+  "chat",
+  20
+ ],
+ "Lv.14": [
+  "paste",
+  "chat",
+  25
+ ],
+ "Lv.15": [
+  "attach",
+  "chat",
+  30
+ ],
+ "Lv.16": [
+  "mixed",
+  "work",
+  35
+ ],
+ "Lv.17": [
+  "attach",
+  "chat",
+  30
+ ],
+ "Lv.18": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.19": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.20": [
+  "attach",
+  "work",
+  60
+ ],
+ "Lv.21": [
+  "none",
+  "chat",
+  15
+ ],
+ "Lv.22": [
+  "paste",
+  "chat",
+  20
+ ],
+ "Lv.23": [
+  "paste",
+  "chat",
+  20
+ ],
+ "Lv.24": [
+  "paste",
+  "chat",
+  15
+ ],
+ "Lv.25": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.26": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.27": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.28": [
+  "paste",
+  "chat",
+  20
+ ],
+ "Lv.29": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.30": [
+  "attach",
+  "work",
+  60
+ ],
+ "Lv.31": [
+  "attach",
+  "chat",
+  15
+ ],
+ "Lv.32": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.33": [
+  "attach",
+  "chat",
+  15
+ ],
+ "Lv.34": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.35": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.36": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.37": [
+  "attach",
+  "chat",
+  25
+ ],
+ "Lv.38": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.39": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.40": [
+  "attach",
+  "work",
+  90
+ ],
+ "Lv.41": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.42": [
+  "mixed",
+  "work",
+  30
+ ],
+ "Lv.43": [
+  "attach",
+  "work",
+  15
+ ],
+ "Lv.44": [
+  "mixed",
+  "work",
+  30
+ ],
+ "Lv.45": [
+  "mixed",
+  "work",
+  30
+ ],
+ "Lv.46": [
+  "attach",
+  "chat",
+  20
+ ],
+ "Lv.47": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.48": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.49": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.50": [
+  "attach",
+  "work",
+  90
+ ],
+ "Lv.51": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.52": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.53": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.54": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.55": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.56": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.57": [
+  "mixed",
+  "work",
+  35
+ ],
+ "Lv.58": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.59": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.60": [
+  "attach",
+  "work",
+  70
+ ],
+ "Lv.61": [
+  "mixed",
+  "work",
+  30
+ ],
+ "Lv.62": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.63": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.64": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.65": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.66": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.67": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.68": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.69": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.70": [
+  "attach",
+  "work",
+  60
+ ],
+ "Lv.71": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.72": [
+  "none",
+  "chat",
+  20
+ ],
+ "Lv.73": [
+  "paste",
+  "chat",
+  20
+ ],
+ "Lv.74": [
+  "mixed",
+  "work",
+  35
+ ],
+ "Lv.75": [
+  "mixed",
+  "chat",
+  35
+ ],
+ "Lv.76": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.77": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.78": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.79": [
+  "mixed",
+  "work",
+  45
+ ],
+ "Lv.80": [
+  "mixed",
+  "work",
+  45
+ ],
+ "Lv.81": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.82": [
+  "mixed",
+  "work",
+  30
+ ],
+ "Lv.83": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.84": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.85": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.86": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.87": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.88": [
+  "attach",
+  "work",
+  45
+ ],
+ "Lv.89": [
+  "attach",
+  "work",
+  45
+ ],
+ "Lv.90": [
+  "attach",
+  "work",
+  90
+ ],
+ "Lv.91": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.92": [
+  "mixed",
+  "work",
+  30
+ ],
+ "Lv.93": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.94": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.95": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.96": [
+  "mixed",
+  "work",
+  35
+ ],
+ "Lv.97": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.98": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.99": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.100": [
+  "mixed",
+  "work",
+  90
+ ],
+ "Lv.101": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.102": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.103": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.104": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.105": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.106": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.107": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.108": [
+  "attach",
+  "work",
+  60
+ ],
+ "Lv.109": [
+  "attach",
+  "work",
+  60
+ ],
+ "Lv.110": [
+  "attach",
+  "work",
+  90
+ ],
+ "Lv.111": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.112": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.113": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.114": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.115": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.116": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.117": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.118": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.119": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.120": [
+  "mixed",
+  "work",
+  90
+ ],
+ "Lv.121": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.122": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.123": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.124": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.125": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.126": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.127": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.128": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.129": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.130": [
+  "mixed",
+  "work",
+  90
+ ],
+ "Lv.131": [
+  "mixed",
+  "work",
+  20
+ ],
+ "Lv.132": [
+  "attach",
+  "work",
+  30
+ ],
+ "Lv.133": [
+  "mixed",
+  "work",
+  30
+ ],
+ "Lv.134": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.135": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.136": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.137": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.138": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.139": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.140": [
+  "attach",
+  "work",
+  90
+ ],
+ "Lv.141": [
+  "mixed",
+  "work",
+  35
+ ],
+ "Lv.142": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.143": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.144": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.145": [
+  "mixed",
+  "work",
+  35
+ ],
+ "Lv.146": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.147": [
+  "mixed",
+  "work",
+  45
+ ],
+ "Lv.148": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.149": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.150": [
+  "mixed",
+  "work",
+  90
+ ],
+ "Lv.151": [
+  "mixed",
+  "work",
+  35
+ ],
+ "Lv.152": [
+  "attach",
+  "work",
+  35
+ ],
+ "Lv.153": [
+  "mixed",
+  "work",
+  45
+ ],
+ "Lv.154": [
+  "mixed",
+  "work",
+  40
+ ],
+ "Lv.155": [
+  "attach",
+  "work",
+  45
+ ],
+ "Lv.156": [
+  "mixed",
+  "work",
+  45
+ ],
+ "Lv.157": [
+  "mixed",
+  "work",
+  45
+ ],
+ "Lv.158": [
+  "mixed",
+  "work",
+  70
+ ],
+ "Lv.159": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.160": [
+  "mixed",
+  "work",
+  100
+ ],
+ "Lv.161": [
+  "mixed",
+  "work",
+  20
+ ],
+ "Lv.162": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.163": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.164": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.165": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.166": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.167": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.168": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.169": [
+  "attach",
+  "work",
+  20
+ ],
+ "Lv.170": [
+  "attach",
+  "work",
+  70
+ ],
+ "Lv.171": [
+  "mixed",
+  "work",
+  35
+ ],
+ "Lv.172": [
+  "attach",
+  "work",
+  45
+ ],
+ "Lv.173": [
+  "attach",
+  "work",
+  45
+ ],
+ "Lv.174": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.175": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.176": [
+  "mixed",
+  "work",
+  45
+ ],
+ "Lv.177": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.178": [
+  "mixed",
+  "work",
+  55
+ ],
+ "Lv.179": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.180": [
+  "mixed",
+  "work",
+  100
+ ],
+ "Lv.181": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.182": [
+  "mixed",
+  "work",
+  45
+ ],
+ "Lv.183": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.184": [
+  "mixed",
+  "work",
+  60
+ ],
+ "Lv.185": [
+  "attach",
+  "work",
+  45
+ ],
+ "Lv.186": [
+  "mixed",
+  "work",
+  65
+ ],
+ "Lv.187": [
+  "mixed",
+  "work",
+  65
+ ],
+ "Lv.188": [
+  "mixed",
+  "work",
+  65
+ ],
+ "Lv.189": [
+  "attach",
+  "work",
+  50
+ ],
+ "Lv.190": [
+  "mixed",
+  "work",
+  120
+ ],
+ "Lv.191": [
+  "attach",
+  "work",
+  40
+ ],
+ "Lv.192": [
+  "attach",
+  "work",
+  45
+ ],
+ "Lv.193": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.194": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.195": [
+  "mixed",
+  "work",
+  55
+ ],
+ "Lv.196": [
+  "mixed",
+  "work",
+  50
+ ],
+ "Lv.197": [
+  "mixed",
+  "work",
+  80
+ ],
+ "Lv.198": [
+  "mixed",
+  "work",
+  75
+ ],
+ "Lv.199": [
+  "mixed",
+  "work",
+  80
+ ],
+ "Lv.200": [
+  "mixed",
+  "work",
+  130
+ ],
+ "MGT-01": [
+  "attach",
+  "chat",
+  15
+ ],
+ "MGT-02": [
+  "attach",
+  "work",
+  30
+ ],
+ "MGT-03": [
+  "mixed",
+  "work",
+  40
+ ],
+ "MGT-04": [
+  "attach",
+  "work",
+  40
+ ],
+ "MGT-05": [
+  "attach",
+  "work",
+  40
+ ],
+ "MGT-06": [
+  "attach",
+  "work",
+  40
+ ],
+ "MGT-07": [
+  "mixed",
+  "work",
+  35
+ ],
+ "MGT-08": [
+  "attach",
+  "work",
+  60
+ ],
+ "MGT-09": [
+  "mixed",
+  "work",
+  60
+ ],
+ "MGT-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "BIZ-01": [
+  "attach",
+  "work",
+  30
+ ],
+ "BIZ-02": [
+  "attach",
+  "chat",
+  30
+ ],
+ "BIZ-03": [
+  "mixed",
+  "chat",
+  40
+ ],
+ "BIZ-04": [
+  "attach",
+  "work",
+  40
+ ],
+ "BIZ-05": [
+  "attach",
+  "work",
+  40
+ ],
+ "BIZ-06": [
+  "mixed",
+  "work",
+  60
+ ],
+ "BIZ-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "BIZ-08": [
+  "attach",
+  "work",
+  40
+ ],
+ "BIZ-09": [
+  "mixed",
+  "work",
+  60
+ ],
+ "BIZ-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "SLS-01": [
+  "mixed",
+  "chat",
+  20
+ ],
+ "SLS-02": [
+  "mixed",
+  "chat",
+  20
+ ],
+ "SLS-03": [
+  "paste",
+  "chat",
+  30
+ ],
+ "SLS-04": [
+  "attach",
+  "work",
+  30
+ ],
+ "SLS-05": [
+  "paste",
+  "chat",
+  15
+ ],
+ "SLS-06": [
+  "mixed",
+  "work",
+  40
+ ],
+ "SLS-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "SLS-08": [
+  "attach",
+  "work",
+  30
+ ],
+ "SLS-09": [
+  "mixed",
+  "work",
+  60
+ ],
+ "SLS-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "REV-01": [
+  "mixed",
+  "chat",
+  15
+ ],
+ "REV-02": [
+  "attach",
+  "work",
+  30
+ ],
+ "REV-03": [
+  "attach",
+  "work",
+  35
+ ],
+ "REV-04": [
+  "attach",
+  "work",
+  40
+ ],
+ "REV-05": [
+  "attach",
+  "work",
+  40
+ ],
+ "REV-06": [
+  "mixed",
+  "work",
+  40
+ ],
+ "REV-07": [
+  "attach",
+  "work",
+  60
+ ],
+ "REV-08": [
+  "attach",
+  "work",
+  35
+ ],
+ "REV-09": [
+  "paste",
+  "work",
+  60
+ ],
+ "REV-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "MKT-01": [
+  "attach",
+  "work",
+  20
+ ],
+ "MKT-02": [
+  "mixed",
+  "work",
+  30
+ ],
+ "MKT-03": [
+  "attach",
+  "work",
+  40
+ ],
+ "MKT-04": [
+  "mixed",
+  "work",
+  40
+ ],
+ "MKT-05": [
+  "mixed",
+  "work",
+  60
+ ],
+ "MKT-06": [
+  "attach",
+  "work",
+  40
+ ],
+ "MKT-07": [
+  "attach",
+  "work",
+  40
+ ],
+ "MKT-08": [
+  "attach",
+  "work",
+  30
+ ],
+ "MKT-09": [
+  "mixed",
+  "work",
+  60
+ ],
+ "MKT-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "COM-01": [
+  "attach",
+  "work",
+  20
+ ],
+ "COM-02": [
+  "mixed",
+  "chat",
+  20
+ ],
+ "COM-03": [
+  "attach",
+  "work",
+  30
+ ],
+ "COM-04": [
+  "mixed",
+  "work",
+  40
+ ],
+ "COM-05": [
+  "mixed",
+  "work",
+  40
+ ],
+ "COM-06": [
+  "mixed",
+  "work",
+  40
+ ],
+ "COM-07": [
+  "mixed",
+  "work",
+  40
+ ],
+ "COM-08": [
+  "mixed",
+  "work",
+  40
+ ],
+ "COM-09": [
+  "mixed",
+  "work",
+  60
+ ],
+ "COM-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "CS-01": [
+  "mixed",
+  "chat",
+  15
+ ],
+ "CS-02": [
+  "mixed",
+  "work",
+  30
+ ],
+ "CS-03": [
+  "attach",
+  "chat",
+  30
+ ],
+ "CS-04": [
+  "attach",
+  "work",
+  40
+ ],
+ "CS-05": [
+  "mixed",
+  "work",
+  40
+ ],
+ "CS-06": [
+  "attach",
+  "work",
+  40
+ ],
+ "CS-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "CS-08": [
+  "attach",
+  "work",
+  30
+ ],
+ "CS-09": [
+  "mixed",
+  "work",
+  60
+ ],
+ "CS-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "FIN-01": [
+  "attach",
+  "work",
+  20
+ ],
+ "FIN-02": [
+  "attach",
+  "work",
+  30
+ ],
+ "FIN-03": [
+  "attach",
+  "work",
+  35
+ ],
+ "FIN-04": [
+  "attach",
+  "work",
+  40
+ ],
+ "FIN-05": [
+  "attach",
+  "work",
+  45
+ ],
+ "FIN-06": [
+  "attach",
+  "work",
+  50
+ ],
+ "FIN-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "FIN-08": [
+  "attach",
+  "work",
+  35
+ ],
+ "FIN-09": [
+  "mixed",
+  "work",
+  70
+ ],
+ "FIN-10": [
+  "attach",
+  "work",
+  120
+ ],
+ "HR-01": [
+  "attach",
+  "work",
+  30
+ ],
+ "HR-02": [
+  "attach",
+  "work",
+  35
+ ],
+ "HR-03": [
+  "attach",
+  "work",
+  40
+ ],
+ "HR-04": [
+  "attach",
+  "work",
+  50
+ ],
+ "HR-05": [
+  "attach",
+  "work",
+  45
+ ],
+ "HR-06": [
+  "attach",
+  "work",
+  55
+ ],
+ "HR-07": [
+  "mixed",
+  "work",
+  55
+ ],
+ "HR-08": [
+  "attach",
+  "work",
+  40
+ ],
+ "HR-09": [
+  "mixed",
+  "work",
+  75
+ ],
+ "HR-10": [
+  "mixed",
+  "work",
+  140
+ ],
+ "LAB-01": [
+  "attach",
+  "chat",
+  30
+ ],
+ "LAB-02": [
+  "attach",
+  "work",
+  35
+ ],
+ "LAB-03": [
+  "attach",
+  "chat",
+  35
+ ],
+ "LAB-04": [
+  "attach",
+  "work",
+  50
+ ],
+ "LAB-05": [
+  "mixed",
+  "work",
+  45
+ ],
+ "LAB-06": [
+  "attach",
+  "work",
+  55
+ ],
+ "LAB-07": [
+  "attach",
+  "work",
+  50
+ ],
+ "LAB-08": [
+  "attach",
+  "work",
+  50
+ ],
+ "LAB-09": [
+  "mixed",
+  "work",
+  75
+ ],
+ "LAB-10": [
+  "attach",
+  "work",
+  120
+ ],
+ "ADM-01": [
+  "attach",
+  "work",
+  35
+ ],
+ "ADM-02": [
+  "attach",
+  "work",
+  45
+ ],
+ "ADM-03": [
+  "mixed",
+  "work",
+  45
+ ],
+ "ADM-04": [
+  "mixed",
+  "work",
+  55
+ ],
+ "ADM-05": [
+  "mixed",
+  "work",
+  50
+ ],
+ "ADM-06": [
+  "mixed",
+  "work",
+  55
+ ],
+ "ADM-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "ADM-08": [
+  "attach",
+  "work",
+  50
+ ],
+ "ADM-09": [
+  "mixed",
+  "work",
+  75
+ ],
+ "ADM-10": [
+  "mixed",
+  "work",
+  140
+ ],
+ "LEG-01": [
+  "attach",
+  "work",
+  30
+ ],
+ "LEG-02": [
+  "attach",
+  "work",
+  45
+ ],
+ "LEG-03": [
+  "attach",
+  "work",
+  50
+ ],
+ "LEG-04": [
+  "mixed",
+  "work",
+  55
+ ],
+ "LEG-05": [
+  "mixed",
+  "work",
+  60
+ ],
+ "LEG-06": [
+  "attach",
+  "work",
+  55
+ ],
+ "LEG-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "LEG-08": [
+  "mixed",
+  "work",
+  65
+ ],
+ "LEG-09": [
+  "mixed",
+  "work",
+  85
+ ],
+ "LEG-10": [
+  "mixed",
+  "work",
+  150
+ ],
+ "PRC-01": [
+  "mixed",
+  "work",
+  30
+ ],
+ "PRC-02": [
+  "attach",
+  "work",
+  50
+ ],
+ "PRC-03": [
+  "mixed",
+  "work",
+  45
+ ],
+ "PRC-04": [
+  "mixed",
+  "work",
+  60
+ ],
+ "PRC-05": [
+  "attach",
+  "work",
+  65
+ ],
+ "PRC-06": [
+  "attach",
+  "work",
+  60
+ ],
+ "PRC-07": [
+  "mixed",
+  "work",
+  65
+ ],
+ "PRC-08": [
+  "attach",
+  "work",
+  55
+ ],
+ "PRC-09": [
+  "mixed",
+  "work",
+  85
+ ],
+ "PRC-10": [
+  "mixed",
+  "work",
+  150
+ ],
+ "PD-01": [
+  "mixed",
+  "work",
+  30
+ ],
+ "PD-02": [
+  "mixed",
+  "work",
+  40
+ ],
+ "PD-03": [
+  "attach",
+  "work",
+  45
+ ],
+ "PD-04": [
+  "attach",
+  "work",
+  50
+ ],
+ "PD-05": [
+  "attach",
+  "work",
+  55
+ ],
+ "PD-06": [
+  "attach",
+  "work",
+  70
+ ],
+ "PD-07": [
+  "attach",
+  "work",
+  60
+ ],
+ "PD-08": [
+  "attach",
+  "work",
+  65
+ ],
+ "PD-09": [
+  "mixed",
+  "work",
+  90
+ ],
+ "PD-10": [
+  "mixed",
+  "work",
+  140
+ ],
+ "IT-01": [
+  "mixed",
+  "work",
+  25
+ ],
+ "IT-02": [
+  "mixed",
+  "work",
+  45
+ ],
+ "IT-03": [
+  "mixed",
+  "work",
+  40
+ ],
+ "IT-04": [
+  "mixed",
+  "work",
+  50
+ ],
+ "IT-05": [
+  "mixed",
+  "work",
+  60
+ ],
+ "IT-06": [
+  "mixed",
+  "work",
+  65
+ ],
+ "IT-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "IT-08": [
+  "attach",
+  "work",
+  60
+ ],
+ "IT-09": [
+  "mixed",
+  "work",
+  95
+ ],
+ "IT-10": [
+  "mixed",
+  "work",
+  160
+ ],
+ "MFG-01": [
+  "attach",
+  "work",
+  30
+ ],
+ "MFG-02": [
+  "attach",
+  "work",
+  55
+ ],
+ "MFG-03": [
+  "mixed",
+  "work",
+  40
+ ],
+ "MFG-04": [
+  "attach",
+  "work",
+  65
+ ],
+ "MFG-05": [
+  "mixed",
+  "work",
+  45
+ ],
+ "MFG-06": [
+  "attach",
+  "work",
+  60
+ ],
+ "MFG-07": [
+  "attach",
+  "work",
+  65
+ ],
+ "MFG-08": [
+  "attach",
+  "work",
+  65
+ ],
+ "MFG-09": [
+  "mixed",
+  "work",
+  100
+ ],
+ "MFG-10": [
+  "mixed",
+  "work",
+  180
+ ],
+ "QA-01": [
+  "attach",
+  "work",
+  30
+ ],
+ "QA-02": [
+  "attach",
+  "work",
+  45
+ ],
+ "QA-03": [
+  "attach",
+  "work",
+  55
+ ],
+ "QA-04": [
+  "attach",
+  "work",
+  60
+ ],
+ "QA-05": [
+  "mixed",
+  "work",
+  65
+ ],
+ "QA-06": [
+  "mixed",
+  "work",
+  65
+ ],
+ "QA-07": [
+  "attach",
+  "work",
+  65
+ ],
+ "QA-08": [
+  "attach",
+  "work",
+  65
+ ],
+ "QA-09": [
+  "mixed",
+  "work",
+  100
+ ],
+ "QA-10": [
+  "mixed",
+  "work",
+  180
+ ],
+ "SCM-01": [
+  "attach",
+  "work",
+  30
+ ],
+ "SCM-02": [
+  "mixed",
+  "work",
+  45
+ ],
+ "SCM-03": [
+  "mixed",
+  "work",
+  40
+ ],
+ "SCM-04": [
+  "attach",
+  "work",
+  65
+ ],
+ "SCM-05": [
+  "attach",
+  "work",
+  60
+ ],
+ "SCM-06": [
+  "mixed",
+  "work",
+  70
+ ],
+ "SCM-07": [
+  "attach",
+  "work",
+  65
+ ],
+ "SCM-08": [
+  "attach",
+  "work",
+  65
+ ],
+ "SCM-09": [
+  "mixed",
+  "work",
+  105
+ ],
+ "SCM-10": [
+  "mixed",
+  "work",
+  190
+ ],
+ "CRT-01": [
+  "mixed",
+  "work",
+  30
+ ],
+ "CRT-02": [
+  "mixed",
+  "work",
+  40
+ ],
+ "CRT-03": [
+  "mixed",
+  "work",
+  45
+ ],
+ "CRT-04": [
+  "attach",
+  "work",
+  50
+ ],
+ "CRT-05": [
+  "attach",
+  "work",
+  60
+ ],
+ "CRT-06": [
+  "attach",
+  "work",
+  70
+ ],
+ "CRT-07": [
+  "mixed",
+  "work",
+  75
+ ],
+ "CRT-08": [
+  "mixed",
+  "work",
+  65
+ ],
+ "CRT-09": [
+  "mixed",
+  "work",
+  90
+ ],
+ "CRT-10": [
+  "mixed",
+  "work",
+  130
+ ],
+ "PMO-01": [
+  "mixed",
+  "work",
+  30
+ ],
+ "PMO-02": [
+  "attach",
+  "work",
+  45
+ ],
+ "PMO-03": [
+  "mixed",
+  "work",
+  45
+ ],
+ "PMO-04": [
+  "attach",
+  "work",
+  55
+ ],
+ "PMO-05": [
+  "mixed",
+  "work",
+  60
+ ],
+ "PMO-06": [
+  "attach",
+  "work",
+  65
+ ],
+ "PMO-07": [
+  "mixed",
+  "work",
+  70
+ ],
+ "PMO-08": [
+  "mixed",
+  "work",
+  75
+ ],
+ "PMO-09": [
+  "mixed",
+  "work",
+  90
+ ],
+ "PMO-10": [
+  "mixed",
+  "work",
+  150
+ ],
+ "RTL-01": [
+  "attach",
+  "work",
+  40
+ ],
+ "RTL-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "RTL-03": [
+  "mixed",
+  "work",
+  20
+ ],
+ "RTL-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "RTL-05": [
+  "mixed",
+  "work",
+  20
+ ],
+ "RTL-06": [
+  "attach",
+  "work",
+  20
+ ],
+ "RTL-07": [
+  "attach",
+  "work",
+  20
+ ],
+ "RTL-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "RTL-09": [
+  "mixed",
+  "work",
+  55
+ ],
+ "RTL-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "FNB-01": [
+  "attach",
+  "work",
+  45
+ ],
+ "FNB-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "FNB-03": [
+  "mixed",
+  "work",
+  20
+ ],
+ "FNB-04": [
+  "mixed",
+  "work",
+  20
+ ],
+ "FNB-05": [
+  "mixed",
+  "work",
+  20
+ ],
+ "FNB-06": [
+  "attach",
+  "work",
+  20
+ ],
+ "FNB-07": [
+  "attach",
+  "work",
+  20
+ ],
+ "FNB-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "FNB-09": [
+  "mixed",
+  "work",
+  60
+ ],
+ "FNB-10": [
+  "attach",
+  "work",
+  100
+ ],
+ "SAL-01": [
+  "attach",
+  "work",
+  20
+ ],
+ "SAL-02": [
+  "mixed",
+  "chat",
+  30
+ ],
+ "SAL-03": [
+  "attach",
+  "chat",
+  20
+ ],
+ "SAL-04": [
+  "mixed",
+  "work",
+  40
+ ],
+ "SAL-05": [
+  "attach",
+  "work",
+  40
+ ],
+ "SAL-06": [
+  "attach",
+  "work",
+  40
+ ],
+ "SAL-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "SAL-08": [
+  "attach",
+  "work",
+  30
+ ],
+ "SAL-09": [
+  "mixed",
+  "work",
+  60
+ ],
+ "SAL-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "HSP-01": [
+  "mixed",
+  "work",
+  45
+ ],
+ "HSP-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "HSP-03": [
+  "mixed",
+  "work",
+  20
+ ],
+ "HSP-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "HSP-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "HSP-06": [
+  "attach",
+  "work",
+  20
+ ],
+ "HSP-07": [
+  "attach",
+  "work",
+  20
+ ],
+ "HSP-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "HSP-09": [
+  "mixed",
+  "work",
+  65
+ ],
+ "HSP-10": [
+  "attach",
+  "work",
+  100
+ ],
+ "TRV-01": [
+  "mixed",
+  "work",
+  45
+ ],
+ "TRV-02": [
+  "attach",
+  "work",
+  45
+ ],
+ "TRV-03": [
+  "mixed",
+  "work",
+  20
+ ],
+ "TRV-04": [
+  "attach",
+  "work",
+  50
+ ],
+ "TRV-05": [
+  "mixed",
+  "work",
+  50
+ ],
+ "TRV-06": [
+  "attach",
+  "work",
+  50
+ ],
+ "TRV-07": [
+  "mixed",
+  "work",
+  50
+ ],
+ "TRV-08": [
+  "attach",
+  "work",
+  55
+ ],
+ "TRV-09": [
+  "mixed",
+  "work",
+  65
+ ],
+ "TRV-10": [
+  "attach",
+  "work",
+  100
+ ],
+ "CON-01": [
+  "mixed",
+  "work",
+  45
+ ],
+ "CON-02": [
+  "mixed",
+  "work",
+  45
+ ],
+ "CON-03": [
+  "mixed",
+  "work",
+  45
+ ],
+ "CON-04": [
+  "mixed",
+  "work",
+  50
+ ],
+ "CON-05": [
+  "attach",
+  "work",
+  55
+ ],
+ "CON-06": [
+  "mixed",
+  "work",
+  55
+ ],
+ "CON-07": [
+  "mixed",
+  "work",
+  60
+ ],
+ "CON-08": [
+  "attach",
+  "work",
+  60
+ ],
+ "CON-09": [
+  "mixed",
+  "work",
+  70
+ ],
+ "CON-10": [
+  "attach",
+  "work",
+  110
+ ],
+ "REA-01": [
+  "mixed",
+  "work",
+  40
+ ],
+ "REA-02": [
+  "mixed",
+  "work",
+  50
+ ],
+ "REA-03": [
+  "attach",
+  "work",
+  45
+ ],
+ "REA-04": [
+  "mixed",
+  "work",
+  50
+ ],
+ "REA-05": [
+  "attach",
+  "work",
+  60
+ ],
+ "REA-06": [
+  "mixed",
+  "work",
+  60
+ ],
+ "REA-07": [
+  "mixed",
+  "work",
+  65
+ ],
+ "REA-08": [
+  "attach",
+  "work",
+  60
+ ],
+ "REA-09": [
+  "mixed",
+  "work",
+  80
+ ],
+ "REA-10": [
+  "attach",
+  "work",
+  115
+ ],
+ "MFD-01": [
+  "mixed",
+  "work",
+  50
+ ],
+ "MFD-02": [
+  "mixed",
+  "work",
+  55
+ ],
+ "MFD-03": [
+  "mixed",
+  "work",
+  20
+ ],
+ "MFD-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "MFD-05": [
+  "mixed",
+  "work",
+  45
+ ],
+ "MFD-06": [
+  "mixed",
+  "work",
+  20
+ ],
+ "MFD-07": [
+  "mixed",
+  "work",
+  55
+ ],
+ "MFD-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "MFD-09": [
+  "mixed",
+  "work",
+  75
+ ],
+ "MFD-10": [
+  "attach",
+  "work",
+  120
+ ],
+ "PRF-01": [
+  "mixed",
+  "work",
+  40
+ ],
+ "PRF-02": [
+  "mixed",
+  "work",
+  50
+ ],
+ "PRF-03": [
+  "mixed",
+  "work",
+  55
+ ],
+ "PRF-04": [
+  "mixed",
+  "work",
+  20
+ ],
+ "PRF-05": [
+  "mixed",
+  "work",
+  20
+ ],
+ "PRF-06": [
+  "mixed",
+  "work",
+  55
+ ],
+ "PRF-07": [
+  "mixed",
+  "work",
+  55
+ ],
+ "PRF-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "PRF-09": [
+  "mixed",
+  "work",
+  75
+ ],
+ "PRF-10": [
+  "attach",
+  "work",
+  120
+ ],
+ "EDU-01": [
+  "mixed",
+  "work",
+  55
+ ],
+ "EDU-02": [
+  "mixed",
+  "work",
+  55
+ ],
+ "EDU-03": [
+  "mixed",
+  "work",
+  55
+ ],
+ "EDU-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "EDU-05": [
+  "mixed",
+  "work",
+  20
+ ],
+ "EDU-06": [
+  "mixed",
+  "work",
+  20
+ ],
+ "EDU-07": [
+  "mixed",
+  "work",
+  55
+ ],
+ "EDU-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "EDU-09": [
+  "mixed",
+  "work",
+  75
+ ],
+ "EDU-10": [
+  "attach",
+  "work",
+  130
+ ],
+ "BOK-01": [
+  "none",
+  "work",
+  30
+ ],
+ "BOK-02": [
+  "attach",
+  "work",
+  40
+ ],
+ "BOK-03": [
+  "attach",
+  "work",
+  55
+ ],
+ "BOK-04": [
+  "attach",
+  "work",
+  50
+ ],
+ "BOK-05": [
+  "attach",
+  "work",
+  90
+ ],
+ "BOK-06": [
+  "attach",
+  "work",
+  75
+ ],
+ "BOK-07": [
+  "attach",
+  "work",
+  70
+ ],
+ "BOK-08": [
+  "attach",
+  "work",
+  75
+ ],
+ "BOK-09": [
+  "mixed",
+  "work",
+  70
+ ],
+ "BOK-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "NOV-01": [
+  "none",
+  "work",
+  30
+ ],
+ "NOV-02": [
+  "attach",
+  "work",
+  40
+ ],
+ "NOV-03": [
+  "attach",
+  "work",
+  50
+ ],
+ "NOV-04": [
+  "attach",
+  "work",
+  60
+ ],
+ "NOV-05": [
+  "attach",
+  "work",
+  90
+ ],
+ "NOV-06": [
+  "attach",
+  "work",
+  100
+ ],
+ "NOV-07": [
+  "attach",
+  "work",
+  80
+ ],
+ "NOV-08": [
+  "attach",
+  "work",
+  80
+ ],
+ "NOV-09": [
+  "mixed",
+  "work",
+  70
+ ],
+ "NOV-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "PCT-01": [
+  "none",
+  "work",
+  30
+ ],
+ "PCT-02": [
+  "attach",
+  "work",
+  45
+ ],
+ "PCT-03": [
+  "attach",
+  "work",
+  60
+ ],
+ "PCT-04": [
+  "attach",
+  "work",
+  55
+ ],
+ "PCT-05": [
+  "attach",
+  "work",
+  70
+ ],
+ "PCT-06": [
+  "attach",
+  "work",
+  90
+ ],
+ "PCT-07": [
+  "attach",
+  "work",
+  75
+ ],
+ "PCT-08": [
+  "attach",
+  "work",
+  65
+ ],
+ "PCT-09": [
+  "mixed",
+  "work",
+  70
+ ],
+ "PCT-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "MNG-01": [
+  "none",
+  "work",
+  30
+ ],
+ "MNG-02": [
+  "attach",
+  "work",
+  55
+ ],
+ "MNG-03": [
+  "attach",
+  "work",
+  40
+ ],
+ "MNG-04": [
+  "attach",
+  "work",
+  60
+ ],
+ "MNG-05": [
+  "attach",
+  "work",
+  90
+ ],
+ "MNG-06": [
+  "attach",
+  "work",
+  140
+ ],
+ "MNG-07": [
+  "attach",
+  "work",
+  80
+ ],
+ "MNG-08": [
+  "attach",
+  "work",
+  70
+ ],
+ "MNG-09": [
+  "mixed",
+  "work",
+  80
+ ],
+ "MNG-10": [
+  "attach",
+  "work",
+  75
+ ],
+ "BLG-01": [
+  "none",
+  "work",
+  30
+ ],
+ "BLG-02": [
+  "attach",
+  "work",
+  50
+ ],
+ "BLG-03": [
+  "attach",
+  "work",
+  45
+ ],
+ "BLG-04": [
+  "attach",
+  "work",
+  70
+ ],
+ "BLG-05": [
+  "attach",
+  "work",
+  90
+ ],
+ "BLG-06": [
+  "attach",
+  "work",
+  110
+ ],
+ "BLG-07": [
+  "attach",
+  "work",
+  110
+ ],
+ "BLG-08": [
+  "attach",
+  "work",
+  90
+ ],
+ "BLG-09": [
+  "mixed",
+  "work",
+  80
+ ],
+ "BLG-10": [
+  "attach",
+  "work",
+  80
+ ],
+ "NWS-01": [
+  "none",
+  "work",
+  30
+ ],
+ "NWS-02": [
+  "attach",
+  "work",
+  45
+ ],
+ "NWS-03": [
+  "attach",
+  "work",
+  55
+ ],
+ "NWS-04": [
+  "attach",
+  "work",
+  45
+ ],
+ "NWS-05": [
+  "attach",
+  "work",
+  80
+ ],
+ "NWS-06": [
+  "attach",
+  "work",
+  90
+ ],
+ "NWS-07": [
+  "attach",
+  "work",
+  90
+ ],
+ "NWS-08": [
+  "attach",
+  "work",
+  70
+ ],
+ "NWS-09": [
+  "mixed",
+  "work",
+  80
+ ],
+ "NWS-10": [
+  "attach",
+  "work",
+  75
+ ],
+ "RPT-01": [
+  "none",
+  "chat",
+  20
+ ],
+ "RPT-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "RPT-03": [
+  "attach",
+  "work",
+  70
+ ],
+ "RPT-04": [
+  "mixed",
+  "work",
+  20
+ ],
+ "RPT-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "RPT-06": [
+  "attach",
+  "work",
+  80
+ ],
+ "RPT-07": [
+  "attach",
+  "work",
+  60
+ ],
+ "RPT-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "RPT-09": [
+  "mixed",
+  "work",
+  80
+ ],
+ "RPT-10": [
+  "attach",
+  "work",
+  30
+ ],
+ "IGC-01": [
+  "none",
+  "chat",
+  20
+ ],
+ "IGC-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "IGC-03": [
+  "mixed",
+  "work",
+  50
+ ],
+ "IGC-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "IGC-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "IGC-06": [
+  "attach",
+  "work",
+  20
+ ],
+ "IGC-07": [
+  "attach",
+  "work",
+  70
+ ],
+ "IGC-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "IGC-09": [
+  "mixed",
+  "work",
+  65
+ ],
+ "IGC-10": [
+  "attach",
+  "work",
+  25
+ ],
+ "SNS-01": [
+  "none",
+  "chat",
+  25
+ ],
+ "SNS-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "SNS-03": [
+  "mixed",
+  "work",
+  40
+ ],
+ "SNS-04": [
+  "attach",
+  "work",
+  45
+ ],
+ "SNS-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "SNS-06": [
+  "mixed",
+  "work",
+  20
+ ],
+ "SNS-07": [
+  "mixed",
+  "work",
+  45
+ ],
+ "SNS-08": [
+  "attach",
+  "work",
+  70
+ ],
+ "SNS-09": [
+  "mixed",
+  "work",
+  65
+ ],
+ "SNS-10": [
+  "attach",
+  "work",
+  30
+ ],
+ "YTB-01": [
+  "none",
+  "chat",
+  25
+ ],
+ "YTB-02": [
+  "attach",
+  "work",
+  45
+ ],
+ "YTB-03": [
+  "mixed",
+  "work",
+  55
+ ],
+ "YTB-04": [
+  "attach",
+  "work",
+  75
+ ],
+ "YTB-05": [
+  "mixed",
+  "work",
+  55
+ ],
+ "YTB-06": [
+  "mixed",
+  "work",
+  75
+ ],
+ "YTB-07": [
+  "mixed",
+  "work",
+  85
+ ],
+ "YTB-08": [
+  "attach",
+  "work",
+  55
+ ],
+ "YTB-09": [
+  "mixed",
+  "work",
+  95
+ ],
+ "YTB-10": [
+  "attach",
+  "work",
+  35
+ ],
+ "SVD-01": [
+  "none",
+  "chat",
+  25
+ ],
+ "SVD-02": [
+  "attach",
+  "work",
+  40
+ ],
+ "SVD-03": [
+  "mixed",
+  "work",
+  50
+ ],
+ "SVD-04": [
+  "attach",
+  "work",
+  50
+ ],
+ "SVD-05": [
+  "mixed",
+  "work",
+  75
+ ],
+ "SVD-06": [
+  "attach",
+  "work",
+  55
+ ],
+ "SVD-07": [
+  "attach",
+  "work",
+  100
+ ],
+ "SVD-08": [
+  "mixed",
+  "work",
+  50
+ ],
+ "SVD-09": [
+  "mixed",
+  "work",
+  105
+ ],
+ "SVD-10": [
+  "attach",
+  "work",
+  30
+ ],
+ "POD-01": [
+  "none",
+  "chat",
+  20
+ ],
+ "POD-02": [
+  "attach",
+  "work",
+  40
+ ],
+ "POD-03": [
+  "attach",
+  "work",
+  40
+ ],
+ "POD-04": [
+  "attach",
+  "work",
+  40
+ ],
+ "POD-05": [
+  "attach",
+  "work",
+  60
+ ],
+ "POD-06": [
+  "attach",
+  "work",
+  20
+ ],
+ "POD-07": [
+  "attach",
+  "work",
+  75
+ ],
+ "POD-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "POD-09": [
+  "attach",
+  "work",
+  60
+ ],
+ "POD-10": [
+  "attach",
+  "work",
+  75
+ ],
+ "MUS-01": [
+  "none",
+  "chat",
+  20
+ ],
+ "MUS-02": [
+  "attach",
+  "work",
+  40
+ ],
+ "MUS-03": [
+  "attach",
+  "work",
+  40
+ ],
+ "MUS-04": [
+  "attach",
+  "work",
+  45
+ ],
+ "MUS-05": [
+  "attach",
+  "work",
+  40
+ ],
+ "MUS-06": [
+  "attach",
+  "work",
+  50
+ ],
+ "MUS-07": [
+  "attach",
+  "work",
+  40
+ ],
+ "MUS-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "MUS-09": [
+  "attach",
+  "work",
+  60
+ ],
+ "MUS-10": [
+  "attach",
+  "work",
+  70
+ ],
+ "IMG-01": [
+  "paste",
+  "work",
+  25
+ ],
+ "IMG-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "IMG-03": [
+  "mixed",
+  "work",
+  25
+ ],
+ "IMG-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "IMG-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "IMG-06": [
+  "attach",
+  "work",
+  20
+ ],
+ "IMG-07": [
+  "attach",
+  "work",
+  55
+ ],
+ "IMG-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "IMG-09": [
+  "mixed",
+  "work",
+  50
+ ],
+ "IMG-10": [
+  "attach",
+  "work",
+  40
+ ],
+ "CAT-01": [
+  "none",
+  "chat",
+  25
+ ],
+ "CAT-02": [
+  "attach",
+  "work",
+  40
+ ],
+ "CAT-03": [
+  "attach",
+  "work",
+  120
+ ],
+ "CAT-04": [
+  "attach",
+  "work",
+  60
+ ],
+ "CAT-05": [
+  "attach",
+  "work",
+  40
+ ],
+ "CAT-06": [
+  "attach",
+  "work",
+  80
+ ],
+ "CAT-07": [
+  "attach",
+  "work",
+  100
+ ],
+ "CAT-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "CAT-09": [
+  "attach",
+  "work",
+  80
+ ],
+ "CAT-10": [
+  "attach",
+  "work",
+  90
+ ],
+ "BRD-01": [
+  "none",
+  "chat",
+  20
+ ],
+ "BRD-02": [
+  "attach",
+  "work",
+  40
+ ],
+ "BRD-03": [
+  "attach",
+  "work",
+  45
+ ],
+ "BRD-04": [
+  "attach",
+  "work",
+  60
+ ],
+ "BRD-05": [
+  "attach",
+  "work",
+  40
+ ],
+ "BRD-06": [
+  "attach",
+  "work",
+  60
+ ],
+ "BRD-07": [
+  "attach",
+  "work",
+  70
+ ],
+ "BRD-08": [
+  "attach",
+  "work",
+  40
+ ],
+ "BRD-09": [
+  "attach",
+  "work",
+  70
+ ],
+ "BRD-10": [
+  "attach",
+  "work",
+  80
+ ],
+ "WEB-01": [
+  "attach",
+  "work",
+  25
+ ],
+ "WEB-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "WEB-03": [
+  "attach",
+  "work",
+  20
+ ],
+ "WEB-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "WEB-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "WEB-06": [
+  "attach",
+  "work",
+  70
+ ],
+ "WEB-07": [
+  "mixed",
+  "work",
+  20
+ ],
+ "WEB-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "WEB-09": [
+  "mixed",
+  "work",
+  65
+ ],
+ "WEB-10": [
+  "attach",
+  "work",
+  30
+ ],
+ "ADS-01": [
+  "attach",
+  "work",
+  25
+ ],
+ "ADS-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "ADS-03": [
+  "attach",
+  "work",
+  20
+ ],
+ "ADS-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "ADS-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "ADS-06": [
+  "attach",
+  "work",
+  55
+ ],
+ "ADS-07": [
+  "attach",
+  "work",
+  20
+ ],
+ "ADS-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "ADS-09": [
+  "mixed",
+  "work",
+  65
+ ],
+ "ADS-10": [
+  "attach",
+  "work",
+  30
+ ],
+ "SLD-01": [
+  "mixed",
+  "work",
+  25
+ ],
+ "SLD-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "SLD-03": [
+  "mixed",
+  "work",
+  30
+ ],
+ "SLD-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "SLD-05": [
+  "mixed",
+  "work",
+  55
+ ],
+ "SLD-06": [
+  "attach",
+  "work",
+  70
+ ],
+ "SLD-07": [
+  "attach",
+  "work",
+  20
+ ],
+ "SLD-08": [
+  "attach",
+  "work",
+  60
+ ],
+ "SLD-09": [
+  "mixed",
+  "work",
+  75
+ ],
+ "SLD-10": [
+  "attach",
+  "work",
+  45
+ ],
+ "CRS-01": [
+  "none",
+  "chat",
+  30
+ ],
+ "CRS-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "CRS-03": [
+  "attach",
+  "work",
+  70
+ ],
+ "CRS-04": [
+  "attach",
+  "work",
+  90
+ ],
+ "CRS-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "CRS-06": [
+  "attach",
+  "work",
+  20
+ ],
+ "CRS-07": [
+  "attach",
+  "work",
+  75
+ ],
+ "CRS-08": [
+  "attach",
+  "work",
+  20
+ ],
+ "CRS-09": [
+  "mixed",
+  "work",
+  75
+ ],
+ "CRS-10": [
+  "attach",
+  "work",
+  30
+ ],
+ "GAM-01": [
+  "none",
+  "chat",
+  20
+ ],
+ "GAM-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "GAM-03": [
+  "attach",
+  "work",
+  50
+ ],
+ "GAM-04": [
+  "attach",
+  "work",
+  20
+ ],
+ "GAM-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "GAM-06": [
+  "attach",
+  "work",
+  60
+ ],
+ "GAM-07": [
+  "attach",
+  "work",
+  20
+ ],
+ "GAM-08": [
+  "attach",
+  "work",
+  55
+ ],
+ "GAM-09": [
+  "mixed",
+  "work",
+  70
+ ],
+ "GAM-10": [
+  "attach",
+  "work",
+  30
+ ],
+ "APP-01": [
+  "paste",
+  "work",
+  20
+ ],
+ "APP-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "APP-03": [
+  "attach",
+  "work",
+  35
+ ],
+ "APP-04": [
+  "attach",
+  "work",
+  45
+ ],
+ "APP-05": [
+  "attach",
+  "work",
+  50
+ ],
+ "APP-06": [
+  "attach",
+  "work",
+  75
+ ],
+ "APP-07": [
+  "attach",
+  "work",
+  60
+ ],
+ "APP-08": [
+  "attach",
+  "work",
+  60
+ ],
+ "APP-09": [
+  "attach",
+  "work",
+  null
+ ],
+ "APP-10": [
+  "attach",
+  "work",
+  75
+ ],
+ "XLS-01": [
+  "attach",
+  "work",
+  30
+ ],
+ "XLS-02": [
+  "attach",
+  "work",
+  20
+ ],
+ "XLS-03": [
+  "mixed",
+  "work",
+  30
+ ],
+ "XLS-04": [
+  "mixed",
+  "work",
+  20
+ ],
+ "XLS-05": [
+  "attach",
+  "work",
+  20
+ ],
+ "XLS-06": [
+  "mixed",
+  "work",
+  20
+ ],
+ "XLS-07": [
+  "mixed",
+  "work",
+  20
+ ],
+ "XLS-08": [
+  "attach",
+  "work",
+  60
+ ],
+ "XLS-09": [
+  "attach",
+  "work",
+  65
+ ],
+ "XLS-10": [
+  "attach",
+  "work",
+  90
+ ]
+}

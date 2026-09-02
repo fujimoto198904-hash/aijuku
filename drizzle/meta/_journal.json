@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788268760546,
+      "tag": "0000_magenta_thena",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788274721303,
+      "tag": "0001_great_silver_fox",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788275850837,
+      "tag": "0002_abandoned_mulholland_black",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788281710022,
+      "tag": "0003_lame_titanium_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788281956148,
+      "tag": "0004_busy_doctor_octopus",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788332226674,
+      "tag": "0005_abandoned_captain_cross",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1788336535502,
+      "tag": "0006_calm_tyrannus",
+      "breakpoints": true
+    }
+  ]
+}

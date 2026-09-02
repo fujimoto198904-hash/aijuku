@@ -1,50 +1,43 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
+import type { Metadata } from "next";
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+import { canonicalSiteUrl, withSiteBasePath } from "@/lib/site-paths";
+import { textbookCatalog } from "@/lib/textbook-catalog";
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+import "./globals.css";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  'https://toyota-ai-school.mondism.chatgpt.site';
+const siteUrl = canonicalSiteUrl;
+const socialImageUrl = `${canonicalSiteUrl}/brand/fujimoto-jitsugaku-og-1200x630.png`;
+const allLessonDetailsPublished =
+  textbookCatalog.stats.lessonDrafts === textbookCatalog.stats.total;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: '豊田Ai塾｜AIを、使えるから、つくれるへ。',
-  description:
-    '豊田市で学ぶ大人向けの対面AI塾。100の実践課題を自分のペースで進め、困った時はMONがサポート。平日18時〜21時、月額5,000円。',
+  title: "藤本実学塾｜AIを、暮らしと仕事の力に",
+  description: `AIが初めての方も、${allLessonDetailsPublished ? `詳しい手順つきの全${textbookCatalog.stats.total}課題` : `現在公開中の詳しい${textbookCatalog.stats.lessonDrafts}課題と、選べる全${textbookCatalog.stats.total}課題の骨格`}から、暮らしや仕事で使えるものを一つずつ形にするAI実学塾です。`,
   icons: {
-    icon: '/favicon.svg',
+    icon: withSiteBasePath("/brand/fujimoto-jitsugaku-mark.svg"),
   },
   openGraph: {
-    title: '豊田Ai塾｜AIを、使えるから、つくれるへ。',
+    title: "藤本実学塾｜AIを、暮らしと仕事の力に",
     description:
-      '100の実践課題を、自分のペースで。ひとりで進める。困った時は、隣にMONがいる。',
-    type: 'website',
-    locale: 'ja_JP',
+      "730を全部やるのではなく、今つくりたい一つから。東京23区内の対面と全国オンラインで学ぶAI実学塾です。",
+    type: "website",
+    locale: "ja_JP",
     images: [
       {
-        url: '/og.png',
-        width: 1672,
-        height: 941,
-        alt: '豊田Ai塾 - AIを、使えるから、つくれるへ。',
+        url: socialImageUrl,
+        width: 1200,
+        height: 630,
+        alt: "蝶のシンボルと『AIを、すべての人の実学へ。』のメッセージ",
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: '豊田Ai塾｜AIを、使えるから、つくれるへ。',
+    card: "summary_large_image",
+    title: "藤本実学塾｜AIを、暮らしと仕事の力に",
     description:
-      '豊田の夜にひらく、大人のための対面AI工房。平日18時〜21時、月額5,000円。',
-    images: ['/og.png'],
+      "730を全部やるのではなく、今つくりたい一つから。東京23区内の対面と全国オンラインで学ぶAI実学塾です。",
+    images: [socialImageUrl],
   },
 };
 
@@ -55,9 +48,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="soft-ui antialiased">
+        <a
+          className="fixed left-3 top-3 z-[100] -translate-y-24 rounded-xl bg-brand-dark px-5 py-3 text-sm font-semibold text-white shadow-xl transition-transform focus:translate-y-0 focus:outline-none focus:ring-4 focus:ring-future-mint/70"
+          href="#main-content"
+        >
+          本文へ進む
+        </a>
         {children}
       </body>
     </html>

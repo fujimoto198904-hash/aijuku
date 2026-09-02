@@ -1,44 +1,67 @@
-import { Menu, Sparkles } from 'lucide-react';
+import { BrandMark } from "@/components/brand-mark";
+import { MobileSiteNav } from "@/components/mobile-site-nav";
+import Link from "@/components/site-link";
 
-export function SiteHeader({ dark = false }: { dark?: boolean }) {
+const navItems = [
+  { href: "/#philosophy", label: "理念" },
+  { href: "/#goals", label: "学んだ先" },
+  { href: "/#curriculum", label: "カリキュラム" },
+  { href: "/textbook", label: "Web教科書" },
+  { href: "/textbook#demo-data", label: "練習データ" },
+  { href: "/#services", label: "受講方法" },
+  { href: "/#faq", label: "よくある質問" },
+] as const;
+
+export function SiteHeader() {
   return (
-    <header className={`border-b ${dark ? 'border-white/10 bg-ink text-ivory' : 'border-ink/10 bg-ivory/92 text-ink backdrop-blur'}`}>
-      <div className="mx-auto flex min-h-[76px] w-full max-w-[1240px] items-center justify-between px-5 sm:px-8 lg:px-10">
-        <a className="group flex items-center gap-3" href="/" aria-label="豊田Ai塾 トップ">
-          <span className={`grid size-10 place-items-center rounded-full border ${dark ? 'border-cyan/40 bg-cyan/10 text-cyan' : 'border-ink/10 bg-ink text-cyan'} transition-transform group-hover:rotate-6`}>
-            <Sparkles className="size-[18px]" aria-hidden="true" />
+    <header className="relative z-40 border-b border-rule bg-paper/95 text-ink backdrop-blur-xl">
+      <div className="mx-auto flex min-h-[78px] w-full max-w-[1440px] items-center justify-between gap-5 px-5 sm:px-8 lg:px-12">
+        <Link
+          className="flex min-w-0 items-center gap-3"
+          href="/"
+          aria-label="藤本実学塾 トップ"
+        >
+          <BrandMark />
+          <span className="min-w-0">
+            <span className="block truncate font-mincho text-lg font-semibold tracking-[0.04em]">
+              藤本実学塾
+            </span>
+            <span className="hidden text-xs tracking-[0.06em] text-quiet sm:block">
+              AIが初めての方から、仕事に使えるところまで
+            </span>
           </span>
-          <span>
-            <span className="block text-base font-bold tracking-[0.08em]">豊田Ai塾</span>
-            <span className={`block font-mono text-[9px] tracking-[0.2em] ${dark ? 'text-ivory/45' : 'text-ink/45'}`}>TOYOTA AI SCHOOL</span>
-          </span>
-        </a>
+        </Link>
 
-        <nav className="hidden items-center gap-6 text-sm md:flex" aria-label="メインナビゲーション">
-          <a className="transition-colors hover:text-coral" href="/#learning">学び方</a>
-          <a className="transition-colors hover:text-coral" href="/#levels">100レベル</a>
-          <a className="transition-colors hover:text-coral" href="/#price">料金</a>
-          <a className="transition-colors hover:text-coral" href="/mypage">マイページ</a>
+        <nav
+          className="hidden items-center gap-6 text-xs font-semibold xl:flex xl:gap-8"
+          aria-label="メインナビゲーション"
+        >
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
+              href={item.href}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-2">
-          <a className={`hidden min-h-11 items-center justify-center rounded-full border px-4 text-sm font-bold transition hover:-translate-y-0.5 sm:inline-flex ${dark ? 'border-white/15 hover:border-cyan/50' : 'border-ink/15 hover:border-ink/30'}`} href="/mypage">
+          <Link
+            className="hidden min-h-11 items-center justify-center px-3 text-xs font-semibold text-quiet transition-colors hover:text-sapphire md:inline-flex"
+            href="/mypage"
+          >
             ログイン
-          </a>
-          <a className="inline-flex min-h-11 items-center justify-center rounded-full bg-coral px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#f07b5d]" href="/reserve">
-            無料体験
-          </a>
-          <details className="relative md:hidden">
-            <summary className={`grid size-11 cursor-pointer list-none place-items-center rounded-full border ${dark ? 'border-white/15' : 'border-ink/15'}`} aria-label="メニューを開く">
-              <Menu className="size-4" aria-hidden="true" />
-            </summary>
-            <nav className="absolute right-0 top-14 z-50 grid w-52 gap-1 rounded-2xl border border-ink/10 bg-ivory p-2 text-sm text-ink shadow-2xl" aria-label="モバイルナビゲーション">
-              <a className="rounded-xl px-4 py-3 hover:bg-ink/5" href="/#learning">学び方</a>
-              <a className="rounded-xl px-4 py-3 hover:bg-ink/5" href="/#levels">100レベル</a>
-              <a className="rounded-xl px-4 py-3 hover:bg-ink/5" href="/#price">料金</a>
-              <a className="rounded-xl px-4 py-3 hover:bg-ink/5" href="/mypage">マイページ</a>
-            </nav>
-          </details>
+          </Link>
+          <Link
+            className="button-glow hidden min-h-11 items-center justify-center px-5 text-xs font-semibold text-white min-[430px]:inline-flex"
+            href="/join"
+          >
+            無料会員登録
+          </Link>
+
+          <MobileSiteNav items={navItems} />
         </div>
       </div>
     </header>

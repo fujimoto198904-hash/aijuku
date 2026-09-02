@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm exec vite build",
+  "rewrites": [
+    {
+      "source": "/aijuku/brand/:path*",
+      "destination": "/brand/:path*"
+    },
+    {
+      "source": "/aijuku/downloads/:path*",
+      "destination": "/downloads/:path*"
+    },
+    {
+      "source": "/aijuku/og.png",
+      "destination": "/og.png"
+    },
+    {
+      "source": "/aijuku/favicon.svg",
+      "destination": "/favicon.svg"
+    }
+  ]
+}

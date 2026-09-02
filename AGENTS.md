@@ -2,11 +2,10 @@
 
 ## Project
 
-- This repository contains the public website for 豊田Ai塾.
+- This repository contains the public website for 藤本実学塾.
 - Use Japanese for customer-facing copy and handoff notes.
 - The source of truth is the GitHub `main` branch.
-- The GitHub repository is public: anonymous read/clone is allowed, while pushes still require write access.
-- The current production URL is https://toyota-ai-school.mondism.chatgpt.site.
+- The target public URL is https://mon-ai.jp/aijuku; until that path rollout is published and verified, the current production URL remains https://toyota-ai-school.mondism.chatgpt.site.
 
 ## Setup and validation
 
@@ -21,6 +20,7 @@
 - Reuse the existing Sites project in `.openai/hosting.json`.
 - Do not create a new Site or replace `project_id` unless the user explicitly requests a migration.
 - A GitHub push does not publish the production Site. Sites deployment is a separate step.
+- The Vercel build alone does not activate `mon-ai.jp/aijuku`; the parent `mon-ai` Vercel project must also publish its rewrite.
 - Never persist Sites write credentials, GitHub tokens, API keys, or payment secrets in the repository.
 
 ## Editing boundaries

@@ -2,7 +2,8 @@ import { sites } from '@openai/sites-vite-plugin';
 import tailwindcss from '@tailwindcss/postcss';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
-import hostingConfig from './.openai/hosting.json';
+import { fileURLToPath } from 'node:url';
+import hostingConfig from './.openai/hosting.json' with { type: 'json' };
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   '00000000-0000-4000-8000-000000000000';
@@ -41,11 +42,32 @@ export default defineConfig(async () => {
   process.env.WRANGLER_LOG_PATH ??= '.wrangler/logs';
   process.env.MINIFLARE_REGISTRY_PATH ??= '.wrangler/registry';
 
+  const isVercelBuild =
+    process.env.VERCEL === '1' || process.env.NITRO_PRESET === 'vercel';
+
+  if (isVercelBuild) {
+    const { nitro } = await import('nitro/vite');
+    const { default: tailwindcssVite } = await import('@tailwindcss/vite');
+
+    return {
+      resolve: {
+        alias: {
+          'cloudflare:workers': fileURLToPath(
+            new URL('./lib/cloudflare-workers-vercel-stub.ts', import.meta.url),
+          ),
+        },
+      },
+      optimizeDeps: { exclude: ['lucide-react'] },
+      plugins: [tailwindcssVite(), vinext(), nitro()],
+    };
+  }
+
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const { cloudflare } = await import('@cloudflare/vite-plugin');
 
   return {
     css: { postcss: { plugins: [tailwindcss()] } },
+    optimizeDeps: { exclude: ['lucide-react'] },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,

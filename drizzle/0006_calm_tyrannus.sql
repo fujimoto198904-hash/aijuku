@@ -1,0 +1,1 @@
+CREATE INDEX `application_status_events_created_idx` ON `application_status_events` (`created_at`);

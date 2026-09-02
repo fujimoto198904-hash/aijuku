@@ -1,0 +1,1 @@
+ALTER TABLE `application_status_events` ADD `operation_snapshot` text DEFAULT '{}' NOT NULL;

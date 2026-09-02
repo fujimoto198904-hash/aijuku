@@ -19,25 +19,25 @@ FONT_CANDIDATES = [
     Path("/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc"),
 ]
 
-INK = HexColor("#081019")
-IVORY = HexColor("#F7F2E8")
-CYAN = HexColor("#45E6FF")
-CORAL = HexColor("#E66D51")
-AMBER = HexColor("#F2BC5B")
-LIME = HexColor("#C8F65A")
+INK = HexColor("#172128")
+IVORY = HexColor("#F6F0E4")
+CYAN = HexColor("#64C7CF")
+CORAL = HexColor("#C95843")
+AMBER = HexColor("#D8AA51")
+LIME = HexColor("#B8D879")
 WHITE = HexColor("#FFFFFF")
 MUTED = HexColor("#647078")
 
 
 def find_japanese_font() -> Path:
-    custom_font = os.environ.get("TOYOTA_AI_JP_FONT")
+    custom_font = os.environ.get("FUJIMOTO_JITSUGAKU_JP_FONT") or os.environ.get("TOYOTA_AI_JP_FONT")
     candidates = ([Path(custom_font).expanduser()] if custom_font else []) + FONT_CANDIDATES
     for candidate in candidates:
         if candidate.is_file():
             return candidate
     checked = "\n".join(f"  - {path}" for path in candidates)
     raise FileNotFoundError(
-        "日本語フォントが見つかりません。TOYOTA_AI_JP_FONT に "
+        "日本語フォントが見つかりません。FUJIMOTO_JITSUGAKU_JP_FONT に "
         f"TTF/TTCファイルのパスを指定してください。\n確認した場所:\n{checked}"
     )
 
@@ -106,7 +106,7 @@ def footer(pdf, page_number):
     pdf.line(42, 35, width - 42, 35)
     pdf.setFont("JP", 7)
     pdf.setFillColor(MUTED)
-    pdf.drawString(42, 22, "豊田Ai塾 | START GUIDE | 2026.08")
+    pdf.drawString(42, 22, "藤本実学塾 | 2026.11.01 現地開講ガイド")
     pdf.drawRightString(width - 42, 22, f"{page_number} / 2")
 
 
@@ -114,9 +114,9 @@ def build():
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     pdfmetrics.registerFont(TTFont("JP", str(find_japanese_font())))
     pdf = canvas.Canvas(str(OUTPUT), pagesize=A4)
-    pdf.setTitle("豊田Ai塾 スタートガイド")
-    pdf.setAuthor("豊田Ai塾")
-    pdf.setSubject("初回体験・受講方法・料金・AI安全ルール")
+    pdf.setTitle("藤本実学塾 スタートガイド")
+    pdf.setAuthor("藤本実学塾")
+    pdf.setSubject("2026年11月1日の現地開講予定・受講方法・料金・AI安全ルール")
     width, height = A4
 
     # Page 1
@@ -132,11 +132,11 @@ def build():
     content_y -= 34
     pdf.setFont("JP", 25)
     pdf.setFillColor(WHITE)
-    pdf.drawString(42, content_y, "最初の1問を、完成させる夜。")
+    pdf.drawString(42, content_y, "自分の仕事を、ひとつ完成させる。")
     content_y -= 28
     content_y = draw_wrapped(
         pdf,
-        "豊田Ai塾は、100の実践ミッションを自分のペースで進める、大人向けの対面AI塾です。ひとりで進め、詰まった時だけMONに質問します。",
+        "藤本実学塾は、公開Web教科書を見ながら自分の仕事を進める、大人向けのAI実学塾です。2026年11月1日から、東京23区内で対面・教科書自習式を開始予定。自習中に詰まった時は、当日の担当講師へ質問できます。",
         42,
         content_y,
         width - 84,
@@ -149,13 +149,13 @@ def build():
     card_gap = 8
     card_width = (width - 84 - card_gap * 2) / 3
     cards = [
-        ("月会費", "5,000円", CYAN),
-        ("開講時間", "平日 18:00-21:00", AMBER),
-        ("初回体験", "0円", LIME),
+        ("現地開講予定", "2026.11.01", CYAN),
+        ("対面自習・月額", "10,000円", AMBER),
+        ("毎日の開講時間", "17:00-21:00", LIME),
     ]
     for index, (small, large, accent) in enumerate(cards):
         x = 42 + index * (card_width + card_gap)
-        rounded_box(pdf, x, content_y - 70, card_width, 70, HexColor("#0D1923"), HexColor("#1B2C37"), 12)
+        rounded_box(pdf, x, content_y - 70, card_width, 70, HexColor("#1C2931"), HexColor("#30434E"), 7)
         pdf.setFont("JP", 7.5)
         pdf.setFillColor(HexColor("#7C8C93"))
         pdf.drawString(x + 13, content_y - 20, small)
@@ -164,24 +164,35 @@ def build():
         pdf.drawString(x + 13, content_y - 46, large)
 
     content_y -= 96
-    label(pdf, "YOUR FIRST MISSION", 42, content_y, CORAL)
+    label(pdf, "TEXTBOOK SELF-STUDY", 42, content_y, CORAL)
     content_y -= 28
     rounded_box(pdf, 42, content_y - 92, width - 84, 92, IVORY, None, 14)
     pdf.setFont("JP", 8)
     pdf.setFillColor(CORAL)
-    pdf.drawString(57, content_y - 18, "LEVEL 08 | 調査")
+    pdf.drawString(57, content_y - 18, "実務課題例 | 調査")
     pdf.setFont("JP", 14)
     pdf.setFillColor(INK)
     pdf.drawString(57, content_y - 43, "地域別最低賃金を、出典つきの表にしよう")
     draw_wrapped(
         pdf,
-        "基準日、47都道府県、一次情報、参照URL、不明時の扱いをAIへ伝え、最後に抜け漏れまで自己点検します。",
+        "教科書の手順に沿ってAIへ依頼し、出典と抜け漏れを自分で確認。迷った箇所だけ当日の講師へ相談します。",
         57,
         content_y - 64,
         width - 114,
         8.2,
         MUTED,
         13,
+        2,
+    )
+    draw_wrapped(
+        pdf,
+        "730課題をWebで順次無料公開します。現在は課題定義と教科書の骨格を公開し、本文・見本・練習素材を追加していきます。",
+        57,
+        content_y - 109,
+        width - 114,
+        7.2,
+        MUTED,
+        11,
         2,
     )
     footer(pdf, 1)
@@ -192,22 +203,22 @@ def build():
     pdf.rect(0, 0, width, height, fill=1, stroke=0)
     pdf.setFillColor(INK)
     pdf.rect(0, height - 155, width, 155, fill=1, stroke=0)
-    label(pdf, "THE EVENING LAB", 42, height - 48, CYAN)
+    label(pdf, "JITSUGAKU, YOUR WAY", 42, height - 48, CYAN)
     pdf.setFont("JP", 25)
     pdf.setFillColor(WHITE)
-    pdf.drawString(42, height - 88, "ひとりで進める。")
+    pdf.drawString(42, height - 88, "教科書で進める。")
     pdf.setFillColor(AMBER)
-    pdf.drawString(42, height - 120, "でも、ひとりで悩まない。")
+    pdf.drawString(42, height - 120, "分からない時は、講師に聞ける。")
 
     y = height - 195
-    label(pdf, "HOW TO SPEND YOUR EVENING", 42, y)
+    label(pdf, "HOW TO LEARN", 42, y)
     y -= 32
     steps = [
-        "予約して、仕事帰りに教室へ",
-        "今日のミッションを自分で選ぶ",
-        "AIだけを使って、まず試してみる",
-        "詰まった瞬間だけMONに質問",
-        "成果物を保存し、次のレベルへ",
+        "正式案内で、その日の会場を確認",
+        "教科書から今日の課題を選ぶ",
+        "自分でAIを使い、成果物を作る",
+        "詰まった箇所を当日の講師に聞く",
+        "成果物と次に直す点を持ち帰る",
     ]
     for index, step in enumerate(steps):
         x = 42 + (index % 3) * 172
@@ -218,30 +229,39 @@ def build():
         pdf.setFont("JP", 7)
         pdf.setFillColor(INK if index < 3 else WHITE)
         pdf.drawCentredString(x + 18, row_y - 25.5, str(index + 1))
-        draw_wrapped(pdf, step, x + 35, row_y - 18, 115, 8, INK, 12, 2)
+        draw_wrapped(pdf, step, x + 32, row_y - 18, 124, 8, INK, 12, 2)
 
     y -= 145
-    label(pdf, "BRING / RENT", 42, y)
+    label(pdf, "WAYS TO JOIN", 42, y)
     y -= 28
-    col_width = (width - 92) / 2
-    rounded_box(pdf, 42, y - 116, col_width, 116, WHITE, HexColor("#DDD6CB"), 12)
-    pdf.setFont("JP", 12)
-    pdf.setFillColor(INK)
-    pdf.drawString(57, y - 23, "自分の環境で参加")
-    draw_wrapped(pdf, "ノートPC / 電源 / AIアカウント / 作りたいもののメモ", 57, y - 47, col_width - 30, 8.5, MUTED, 14)
-    pdf.setFont("JP", 9)
-    pdf.setFillColor(HexColor("#4D7207"))
-    pdf.drawString(57, y - 96, "追加料金なし")
+    card_gap = 6
+    join_width = (width - 84 - card_gap * 2) / 3
+    join_cards = [
+        ("01 対面家庭教師", "10,000円 / 60分", "東京23区内 / 企業は5人まで", WHITE, INK),
+        ("02 オンライン", "4,000円 / 50分", "全国 / Google Meet", WHITE, INK),
+        ("03 対面自習", "月額 10,000円", "17:00-21:00 / 23区内", INK, WHITE),
+    ]
+    for index, (title, price, detail, fill, text_color) in enumerate(join_cards):
+        x = 42 + index * (join_width + card_gap)
+        rounded_box(pdf, x, y - 112, join_width, 112, fill, HexColor("#DDD6CB") if fill == WHITE else None, 10)
+        pdf.setFont("JP", 9)
+        pdf.setFillColor(text_color)
+        pdf.drawString(x + 12, y - 22, title)
+        pdf.setFont("JP", 11)
+        pdf.drawString(x + 12, y - 48, price)
+        draw_wrapped(pdf, detail, x + 12, y - 72, join_width - 24, 7.2, MUTED if fill == WHITE else HexColor("#AAB4B8"), 11, 2)
 
-    right_x = 50 + col_width
-    rounded_box(pdf, right_x, y - 116, col_width, 116, INK, None, 12)
-    pdf.setFont("JP", 12)
-    pdf.setFillColor(WHITE)
-    pdf.drawString(right_x + 15, y - 23, "PC + AI環境をレンタル")
-    draw_wrapped(pdf, "手ぶらでも参加できます。受講者ごとに分離した安全な利用環境を準備します。", right_x + 15, y - 47, col_width - 30, 8.5, HexColor("#AAB4B8"), 14)
-    pdf.setFont("JP", 9)
-    pdf.setFillColor(AMBER)
-    pdf.drawString(right_x + 15, y - 96, "1回 最大3時間 1,000円")
+    draw_wrapped(
+        pdf,
+        "共通: 入会金10,000円。Web教科書は購入不要。紙版は希望者のみ1冊2,000円前後。税区分・予約・支払条件は申込前に案内します。",
+        42,
+        y - 126,
+        width - 84,
+        7.2,
+        MUTED,
+        11,
+        2,
+    )
 
     y -= 151
     label(pdf, "SAFE AI RULES", 42, y)
@@ -259,6 +279,24 @@ def build():
         pdf.setFont("JP", 8.5)
         pdf.setFillColor(INK)
         pdf.drawString(60, item_y, item)
+
+    y -= len(safety) * 27 + 4
+    label(pdf, "OPERATIONS / CONTACT", 42, y, CORAL)
+    y -= 23
+    draw_wrapped(
+        pdf,
+        "運営本部｜豊田市東梅坪町10-4-9　お問い合わせ｜メールのみ｜info@mon-ai.jp",
+        42,
+        y,
+        width - 84,
+        8.2,
+        MUTED,
+        13,
+        2,
+    )
+    pdf.setFont("JP", 7.2)
+    pdf.setFillColor(MUTED)
+    pdf.drawString(42, y - 31, "本文・日ごとの会場・予約方法・税区分・規約は準備中です。確定内容は申込前に案内します。")
 
     footer(pdf, 2)
     pdf.save()

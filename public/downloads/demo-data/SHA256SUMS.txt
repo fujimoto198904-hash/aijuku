@@ -1,0 +1,3 @@
+7de3a2a6ab3ed7e71c452432a0643508a7890894215c9393bdfa2700f9b56b8e  salon-demo-data-full-v1.zip
+40ec7063fb157ca4e9248da2cf8ef6b0040a8a19981f999254736aa98bd60be3  construction-demo-data-full-v1.zip
+7339ec0ac99806605afb86f5a339c182aa24e4573644c94363f21ba6b0f52c52  real-estate-demo-data-full-v1.zip

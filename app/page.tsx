@@ -1,500 +1,874 @@
-import Image from 'next/image';
 import {
-  ArrowDown,
+  AppWindow,
   ArrowRight,
-  ArrowUpRight,
-  Award,
   BookOpenText,
+  CalendarCheck2,
   CalendarDays,
   Check,
-  ChevronRight,
-  CircleHelp,
-  Clock3,
-  CodeXml,
-  Download,
-  Footprints,
-  Laptop,
-  MapPin,
-  MessageCircleQuestion,
-  MoonStar,
-  Play,
+  FileSpreadsheet,
+  Images,
+  Presentation,
   ShieldCheck,
-  Sparkles,
-  Target,
+  Smartphone,
   UsersRound,
-  WandSparkles,
+  Video,
 } from 'lucide-react';
+import type { Metadata } from 'next';
+import Image from 'next/image';
+import Link from '@/components/site-link';
 
+import { BrandMark } from '@/components/brand-mark';
 import { FaqSection } from '@/components/faq-section';
-import { MissionExplorer } from '@/components/mission-explorer';
+import { FutureSection } from '@/components/home/future-section';
+import { GoalSection } from '@/components/home/goal-section';
+import { LearningCycleSection } from '@/components/home/learning-cycle-section';
+import { QuickStartSection } from '@/components/home/quick-start-section';
+import { SectionIntro } from '@/components/home/section-intro';
+import { OnlinePriceSpotlight } from '@/components/online-price-spotlight';
 import { SiteFooter } from '@/components/site-footer';
-import { learningStages } from '@/lib/site-content';
+import { SiteHeader } from '@/components/site-header';
+import { memberServicePlans, sharedFees } from '@/lib/member-service-plans';
+import { canonicalPublicPath } from '@/lib/site-paths';
+import { faqItems } from '@/lib/site-content';
+import { textbookCatalog } from '@/lib/textbook-catalog';
+import heroFutureImage from '@/sozai/kazoku-sougen.jpg';
+import onlineImage from '@/sozai/zaitaku-pc.jpg';
 
-const levelDots = Array.from({ length: 21 }, (_, index) => index);
+export const metadata: Metadata = {
+  alternates: { canonical: canonicalPublicPath() },
+};
 
-const outcomes = [
+const curriculumTracks = [
   {
-    level: 'LV.08',
-    title: '信頼できる情報を調べる',
-    detail: '地域別最低賃金を、出典・発効日つきの表にする',
-    tag: 'RESEARCH',
+    index: '01',
+    role: '技術の幹',
+    english: 'COMMON',
+    count: '200',
+    title: '共通制作',
+    body: 'AI秘書、調査、データ、Web、認証、連携、安全運用まで。作りたいものに必要な技術の章を選びます。',
+    examples: '文章・調査・データ・Web・安全',
   },
   {
-    level: 'LV.42',
-    title: 'ホームページを公開する',
-    detail: '企画からスマホ対応、公開、動作確認まで進める',
-    tag: 'PUBLISH',
+    index: '02',
+    role: '仕事の担当',
+    english: 'DEPARTMENT',
+    count: '200',
+    title: '20部門 × 10',
+    body: '経営、営業、経理、人事、製造、AI推進など。自分の担当業務で使える旗艦作品を育てます。',
+    examples: '経営・営業・経理・人事・製造・AI推進',
   },
   {
-    level: 'LV.55',
-    title: '自分専用アプリを作る',
-    detail: '毎日使えるルーティンチェックを完成させる',
-    tag: 'BUILD',
+    index: '03',
+    role: '現場の舞台',
+    english: 'INDUSTRY',
+    count: '100',
+    title: '10業種 × 10',
+    body: '小売、飲食、美容、宿泊、建設、不動産、製造、教育など。業界固有の仕事を一つの流れにつなぎます。',
+    examples: '小売・飲食・美容・宿泊・建設・製造',
   },
   {
-    level: 'LV.68',
-    title: '毎朝届く新聞を作る',
-    detail: '情報収集、要約、重複排除、定時配信を自動化する',
-    tag: 'AUTOMATE',
-  },
-  {
-    level: 'LV.78',
-    title: '業務システムを試作する',
-    detail: '架空データで、安全な出退勤Webアプリを作る',
-    tag: 'SYSTEM',
-  },
-  {
-    level: 'LV.100',
-    title: '現場の課題を解決する',
-    detail: '設計、公開、計測、改善、引き継ぎまでやり切る',
-    tag: 'IMPACT',
+    index: '04',
+    role: '表現の工房',
+    english: 'CREATION',
+    count: '230',
+    title: '23タイプ × 10',
+    body: '本、SNS、画像、動画、音声、Web、ゲーム、スマホアプリ、PowerPoint、Excelなど。一作品の表現・体験と、毎日使える仕事ファイルを磨きます。',
+    examples: '本・SNS・画像・動画・Web・ゲーム・アプリ・資料・Excel',
   },
 ] as const;
 
-const featureCards = [
+const joinPlans = [
   {
+    ...memberServicePlans[0],
     number: '01',
-    Icon: Target,
-    title: '100の実務ミッション',
-    text: '読むだけでは終わりません。毎回、仕事や暮らしで使える成果物をひとつ完成させます。',
-    color: 'cyan',
+    Icon: UsersRound,
+    timing: '60分 / 1コマ',
+    badge: '会員ページから申込',
   },
   {
+    ...memberServicePlans[1],
     number: '02',
-    Icon: Footprints,
-    title: '自分のペースで進む',
-    text: '一斉授業はありません。得意なところは速く、難しいところはじっくり。休んでも続きから。',
-    color: 'amber',
+    Icon: Video,
+    timing: '50分 / 1コマ',
+    badge: '会員ページから申込',
   },
   {
+    ...memberServicePlans[2],
     number: '03',
-    Icon: MessageCircleQuestion,
-    title: '詰まった時だけMONへ',
-    text: '答えを代わりに作るのではなく、次の一手が見えるヒントを。自走できる力を育てます。',
-    color: 'coral',
-  },
-  {
-    number: '04',
-    Icon: MoonStar,
-    title: '平日の夜、何度でも',
-    text: '18:00〜21:00、予約枠と空席の範囲内で何度でも。仕事帰りに「できた」を増やせます。',
-    color: 'lime',
+    Icon: BookOpenText,
+    timing: '毎日 17:00〜21:00',
+    badge: '2026年11月1日開始予定',
   },
 ] as const;
 
-function accentClasses(color: string) {
-  if (color === 'amber') return 'bg-amber/14 text-[#9a6413]';
-  if (color === 'coral') return 'bg-coral/12 text-coral';
-  if (color === 'lime') return 'bg-lime/22 text-[#4d7207]';
-  return 'bg-cyan/16 text-[#087f91]';
-}
+const featuredTextbookSample = {
+  category: '商談・会議',
+  title: '商談が終わったら、次の仕事まで片づく。',
+  body: '殴り書きの商談メモを、お礼メール、担当と期限つきのToDo、次回予定候補へ。一つの記録から、確認すべきことまでまとめます。',
+  input: '商談後の雑なメモ',
+  outputs: ['お礼メール', '担当別ToDo', '次回予定候補'],
+  href: '/textbook?task=SLS-05',
+  Icon: CalendarCheck2,
+} as const;
 
-function SectionLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
-  return (
-    <div className={`mb-5 flex items-center gap-3 font-mono text-[10px] font-bold tracking-[0.2em] ${light ? 'text-cyan' : 'text-coral'}`}>
-      <span className={`h-px w-7 ${light ? 'bg-cyan' : 'bg-coral'}`} aria-hidden="true" />
-      {children}
-    </div>
-  );
-}
+const textbookSampleCards = [
+  {
+    category: '数字・事務',
+    title: '商品と数を選ぶだけ。合計が出る見積書Excelを。',
+    body: '合計・税・印刷まで整え、あとから自分で直せる見積書を作ります。',
+    deliverable: '見積書.xlsx／商品マスター／計算照合表',
+    note: '発行前に、金額・税・宛先を人が確認',
+    href: '/textbook?task=XLS-03',
+    Icon: FileSpreadsheet,
+  },
+  {
+    category: '会社・お店',
+    title: '会社や店の魅力が伝わる、スマホサイトを。',
+    body: 'サービス、料金、FAQ、相談への入口を整理し、お客様が迷わない画面にします。',
+    deliverable: 'スマホ対応の会社ホームページ',
+    note: 'まず手元で確認。公開は内容確認後の別工程',
+    href: '/textbook?task=Lv.80',
+    Icon: Smartphone,
+  },
+  {
+    category: '説明・提案',
+    title: '3分で伝わる、5枚のPowerPointを。',
+    body: '課題、解決策、効果、お願いを、あとから編集できる資料へまとめます。',
+    deliverable: '編集できるPowerPoint／3分説明原稿',
+    note: '開いて文字を直し、保存できる所まで確認',
+    href: '/textbook?task=SLD-03',
+    Icon: Presentation,
+  },
+  {
+    category: 'SNS・発信',
+    title: 'SNSにもサイトにも使える「顔」を4サイズ。',
+    body: '一つの企画から、横長・縦長・文字入り・文字なしを作り、発信の見た目をそろえます。',
+    deliverable: '主画像4版／レイアウト指示／修正履歴',
+    note: '文字・権利・不自然な箇所を人が確認',
+    href: '/textbook?task=IMG-03',
+    Icon: Images,
+  },
+  {
+    category: '自分専用ツール',
+    title: '毎日の面倒を、自分専用アプリへ。',
+    body: '登録、保存、編集、完了、削除まで動く、小さなルーティン管理アプリを作ります。',
+    deliverable: 'スマホで使えるローカル保存アプリ',
+    note: '全ボタンと、閉じた後の保存まで試す',
+    href: '/textbook?task=APP-04',
+    Icon: AppWindow,
+  },
+] as const;
 
 export default function Home() {
+  const allLessonDetailsPublished =
+    textbookCatalog.stats.lessonDrafts === textbookCatalog.stats.total;
+
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
-      <section className="hero-grid relative min-h-[760px] bg-ink text-ivory">
-        <div className="level-glow absolute inset-0" aria-hidden="true" />
-
-        <header className="relative z-20 mx-auto flex w-full max-w-[1240px] items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
-          <a className="group flex items-center gap-3" href="#top" aria-label="豊田Ai塾 トップ">
-            <span className="grid size-10 place-items-center rounded-full border border-cyan/40 bg-cyan/10 text-cyan transition-transform group-hover:rotate-6">
-              <Sparkles className="size-[18px]" aria-hidden="true" />
-            </span>
-            <span>
-              <span className="block text-base font-bold tracking-[0.08em]">豊田Ai塾</span>
-              <span className="block font-mono text-[9px] tracking-[0.2em] text-ivory/50">TOYOTA AI SCHOOL</span>
-            </span>
-          </a>
-
-          <nav className="hidden items-center gap-7 text-sm text-ivory/70 md:flex" aria-label="メインナビゲーション">
-            <a className="transition-colors hover:text-cyan" href="#learning">学び方</a>
-            <a className="transition-colors hover:text-cyan" href="#levels">100レベル</a>
-            <a className="transition-colors hover:text-cyan" href="#price">料金</a>
-            <a className="transition-colors hover:text-cyan" href="#access">アクセス</a>
-            <a className="transition-colors hover:text-cyan" href="/mypage">マイページ</a>
-          </nav>
-
-          <a className="rounded-full bg-coral px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_30px_rgba(230,109,81,0.18)] transition hover:-translate-y-0.5 hover:bg-[#f07b5d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan" href="/reserve">
-            無料体験を予約
-          </a>
-        </header>
-
-        <div id="top" className="relative z-10 mx-auto grid w-full max-w-[1240px] gap-12 px-5 pb-10 pt-14 sm:px-8 md:pt-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:px-10 lg:pt-24">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber/35 bg-amber/10 px-3.5 py-2 text-xs font-bold tracking-[0.08em] text-amber">
-              <span className="size-1.5 animate-pulse rounded-full bg-amber" aria-hidden="true" />
-              豊田の夜にひらく、大人のAI工房
-            </div>
-
-            <h1 className="max-w-[760px] text-[clamp(3.15rem,7.4vw,6.9rem)] font-black leading-[0.94] tracking-[-0.065em]">
-              AIを、
-              <br />
-              <span className="text-cyan">使える</span>から、
-              <br />
-              <span className="relative inline-block">
-                つくれる
-                <span className="absolute -bottom-1 left-0 h-[3px] w-full bg-gradient-to-r from-coral via-amber to-transparent" aria-hidden="true" />
-              </span>
-              へ。
-            </h1>
-
-            <p className="mt-8 max-w-[590px] text-base leading-8 text-ivory/72 sm:text-lg">
-              100の実践課題を、自分のペースで。ひとりで進める。
-              <br className="hidden sm:block" />
-              困った時は、隣にMONがいる。
-            </p>
-
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <a className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-coral px-7 text-base font-bold text-white shadow-[0_16px_45px_rgba(230,109,81,0.25)] transition hover:-translate-y-1 hover:bg-[#f07b5d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan" href="/reserve">
-                無料体験で最初の1問を完成
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-              </a>
-              <a className="inline-flex min-h-14 items-center justify-center rounded-full border border-ivory/20 bg-white/[0.04] px-7 text-base font-bold text-ivory transition hover:border-cyan/60 hover:bg-cyan/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan" href="#levels">
-                100レベルを見る
-              </a>
-            </div>
-          </div>
-
-          <div className="relative mx-auto w-full max-w-[530px] lg:justify-self-end">
-            <div className="absolute -inset-7 rounded-[42px] bg-cyan/[0.035] blur-2xl" aria-hidden="true" />
-            <div className="relative overflow-hidden rounded-[30px] border border-white/12 bg-[#0d1721]/88 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div>
-                  <p className="font-mono text-[10px] tracking-[0.19em] text-cyan">YOUR LEARNING PATH</p>
-                  <p className="mt-1 text-sm font-bold">できることが、目に見えて増えていく。</p>
+    <>
+      <SiteHeader />
+      <main id="main-content" className="overflow-x-clip bg-paper text-ink">
+        <section
+          id="philosophy"
+          aria-labelledby="hero-title"
+          className="section-aura border-b border-rule bg-paper-white px-3 py-3 sm:px-5 sm:py-5 lg:px-8 lg:py-8"
+        >
+          <div className="soft-panel soft-panel-clip mx-auto grid w-full max-w-[1380px] bg-paper-white lg:min-h-[720px] lg:grid-cols-[1.04fr_0.96fr]">
+            <div className="flex items-center px-5 py-16 sm:px-8 sm:py-20 lg:px-14 xl:px-20">
+              <div className="max-w-[720px]">
+                <div className="flex items-center gap-4">
+                  <BrandMark className="size-11" />
+                  <p className="text-xs font-semibold tracking-[0.16em] text-quiet">
+                    藤本実学塾｜AI未経験から始める実学
+                  </p>
                 </div>
-                <span className="rounded-full border border-lime/30 bg-lime/10 px-2.5 py-1 font-mono text-[10px] text-lime">LIVE</span>
-              </div>
 
-              <div className="relative my-6 min-h-[280px] overflow-hidden rounded-[22px] bg-white/[0.025] px-4 py-5 sm:min-h-[320px] sm:px-6">
-                <div className="absolute left-1/2 top-4 h-[280px] w-px bg-gradient-to-b from-cyan/0 via-cyan/25 to-cyan/0" aria-hidden="true" />
-                <div className="relative flex h-full min-h-[240px] flex-col justify-between sm:min-h-[280px]">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-mono text-[10px] text-ivory/40">START / FREE</p>
-                      <p className="mt-1 text-2xl font-black">LEVEL 01</p>
-                    </div>
-                    <div className="max-w-[180px] rounded-2xl rounded-tr-sm bg-ivory px-4 py-3 text-ink shadow-lg">
-                      <p className="text-[10px] font-bold text-coral">PROMPT MISSION</p>
-                      <p className="mt-1 text-xs font-bold leading-5">AIだけで、地域の最低賃金を調べよう</p>
-                    </div>
-                  </div>
+                <h1
+                  id="hero-title"
+                  className="text-soft-glow mt-10 font-mincho text-[clamp(3rem,6.6vw,6.3rem)] font-medium leading-[1.08] tracking-[-0.055em]"
+                >
+                  AIを、
+                  <br />
+                  すべての人の
+                  <br />
+                  <span className="text-highlight text-human-coral">
+                    実学へ。
+                  </span>
+                </h1>
 
-                  <div className="py-5" aria-hidden="true">
-                    <div className="grid grid-cols-7 items-center gap-2">
-                      {levelDots.map((dot) => (
-                        <span
-                          key={dot}
-                          className={`mx-auto rounded-full ${dot === 10 ? 'size-4 bg-coral shadow-[0_0_24px_rgba(230,109,81,0.8)]' : dot < 10 ? 'size-1.5 bg-cyan/70' : 'size-1.5 border border-white/20'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                <p className="mt-9 max-w-[650px] text-base leading-8 text-quiet sm:text-lg sm:leading-9">
+                  わからないまま、来てください。はじめて触るところから、暮らし・仕事・チームに必要なところまで。自分のペースで、使えるものを一つずつ作ります。
+                </p>
 
-                  <div className="flex items-end justify-between gap-3">
-                    <div className="rounded-2xl rounded-bl-sm border border-cyan/20 bg-cyan/8 px-4 py-3">
-                      <p className="text-[10px] font-bold text-cyan">BUILD MISSION</p>
-                      <p className="mt-1 text-xs font-bold leading-5">自分専用のWebアプリを公開</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-[10px] text-ivory/40">GOAL / CREATOR</p>
-                      <p className="mt-1 text-2xl font-black text-amber">LEVEL 100</p>
-                    </div>
-                  </div>
+                <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    href="/textbook"
+                    className="button-glow group inline-flex min-h-14 items-center justify-between gap-8 px-6 text-sm font-semibold text-white"
+                  >
+                    0円でWeb教科書を始める
+                    <ArrowRight
+                      className="size-4 transition-transform group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                  <Link
+                    href="/join"
+                    className="soft-outline-button inline-flex min-h-14 items-center justify-center border border-brand-dark px-6 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+                  >
+                    無料会員登録
+                  </Link>
+                </div>
+
+                <div className="mt-12 grid gap-4 border-t border-rule pt-5 text-sm text-quiet sm:grid-cols-2">
+                  <p className="flex items-center gap-3">
+                    <Check
+                      className="size-4 text-sapphire"
+                      aria-hidden="true"
+                    />
+                    Web教科書は登録なしで無料。会員登録は記録や相談を使いたい方向け
+                  </p>
+                  <p className="flex items-center gap-3">
+                    <CalendarDays
+                      className="size-4 text-sapphire"
+                      aria-hidden="true"
+                    />
+                    対面自習式は2026年11月1日開始予定
+                  </p>
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 divide-x divide-white/10 text-center">
-                <div className="px-2"><p className="font-mono text-lg font-bold text-cyan">100</p><p className="mt-0.5 text-[10px] text-ivory/45">実践課題</p></div>
-                <div className="px-2"><p className="font-mono text-lg font-bold text-amber">2</p><p className="mt-0.5 text-[10px] text-ivory/45">別々の教材</p></div>
-                <div className="px-2"><p className="font-mono text-lg font-bold text-lime">1→100</p><p className="mt-0.5 text-[10px] text-ivory/45">成長の証明</p></div>
-              </div>
             </div>
+
+            <figure className="relative min-h-[360px] overflow-hidden bg-rule sm:min-h-[440px] lg:min-h-full">
+              <Image
+                src={heroFutureImage}
+                alt="AIを学んだ先の、穏やかな暮らしを表したイメージ写真"
+                fill
+                priority
+                sizes="(min-width: 1024px) 48vw, 100vw"
+                className="object-cover object-center saturate-[0.97]"
+              />
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"
+                aria-hidden="true"
+              />
+              <figcaption className="absolute bottom-4 right-4 rounded-full bg-black/45 px-3 py-1.5 text-xs text-white/85 backdrop-blur-sm">
+                素材写真
+              </figcaption>
+            </figure>
           </div>
-        </div>
+        </section>
 
-        <div className="relative z-10 mx-auto grid w-full max-w-[1240px] grid-cols-2 border-y border-white/10 bg-white/[0.025] lg:grid-cols-4" aria-label="受講情報">
-          <div className="flex min-h-24 items-center gap-3 border-b border-r border-white/10 px-5 lg:border-b-0 lg:px-7"><CalendarDays className="size-5 text-cyan" aria-hidden="true" /><div><p className="text-xs text-ivory/45">月会費</p><p className="mt-1 text-base font-bold">5,000円</p></div></div>
-          <div className="flex min-h-24 items-center gap-3 border-b border-white/10 px-5 lg:border-b-0 lg:border-r lg:px-7"><Clock3 className="size-5 text-amber" aria-hidden="true" /><div><p className="text-xs text-ivory/45">開講時間</p><p className="mt-1 text-base font-bold">平日 18:00–21:00</p></div></div>
-          <div className="flex min-h-24 items-center gap-3 border-r border-white/10 px-5 lg:px-7"><MapPin className="size-5 text-coral" aria-hidden="true" /><div><p className="text-xs text-ivory/45">通い方</p><p className="mt-1 text-base font-bold">予約枠内で何度でも</p></div></div>
-          <div className="flex min-h-24 items-center gap-3 px-5 lg:px-7"><Laptop className="size-5 text-lime" aria-hidden="true" /><div><p className="text-xs text-ivory/45">手ぶらでもOK</p><p className="mt-1 text-base font-bold">PCレンタルあり</p></div></div>
-        </div>
+        <QuickStartSection />
 
-        <a href="#learning" aria-label="次のセクションへ" className="absolute bottom-7 left-1/2 z-20 hidden -translate-x-1/2 rounded-full border border-white/15 p-3 text-ivory/45 transition hover:border-cyan/50 hover:text-cyan xl:block">
-          <ArrowDown className="size-4" aria-hidden="true" />
-        </a>
-      </section>
+        <FutureSection />
 
-      <section id="learning" className="bg-ivory px-5 py-24 sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto w-full max-w-[1160px]">
-          <div className="grid gap-7 lg:grid-cols-[0.84fr_1.16fr] lg:items-end">
-            <div>
-              <SectionLabel>HOW IT WORKS</SectionLabel>
-              <h2 className="text-[clamp(2.35rem,5vw,4.7rem)] font-black leading-[1.02] tracking-[-0.055em] text-ink">
-                講義を待たない。<br />正解を待たない。
-              </h2>
-            </div>
-            <p className="max-w-[620px] text-base leading-8 text-ink/60 lg:justify-self-end lg:text-lg">
-              先生の説明を聞いて終わる場所ではありません。AIだけを相棒に、調べ、考え、作り、公開する。MONは、あなたが止まったその瞬間だけ隣に来ます。
-            </p>
-          </div>
+        <GoalSection />
 
-          <div className="mt-14 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-            {featureCards.map(({ number, Icon, title, text, color }) => (
-              <article key={number} className="group relative min-h-[310px] overflow-hidden rounded-[26px] border border-ink/10 bg-white/60 p-6 transition hover:-translate-y-1 hover:bg-white hover:shadow-[0_22px_60px_rgba(8,16,25,0.08)]">
-                <div className="flex items-start justify-between">
-                  <span className={`grid size-12 place-items-center rounded-2xl ${accentClasses(color)}`}><Icon className="size-5" aria-hidden="true" /></span>
-                  <span className="font-mono text-xs text-ink/30">{number}</span>
-                </div>
-                <h3 className="mt-16 text-xl font-black text-ink">{title}</h3>
-                <p className="mt-4 text-sm leading-7 text-ink/58">{text}</p>
-                <div className="absolute inset-x-6 bottom-5 h-px origin-left scale-x-0 bg-gradient-to-r from-coral to-cyan transition-transform duration-500 group-hover:scale-x-100" aria-hidden="true" />
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+        <section
+          id="curriculum"
+          className="relative overflow-hidden bg-brand-dark px-5 py-24 text-white sm:px-8 sm:py-32"
+        >
+          <div
+            className="editorial-grid pointer-events-none absolute inset-0"
+            aria-hidden="true"
+          />
+          <div className="relative mx-auto max-w-[1240px]">
+            <SectionIntro
+              index="03"
+              label="CURRICULUM MAP"
+              light
+              title={
+                <>
+                  730を、全部やる塾ではありません。
+                  <br />
+                  今つくりたい一つから。
+                </>
+              }
+              body={
+                <>
+                  <p>
+                    藤本実学塾のカリキュラム全体設計は完成しています。4系統・730の制作ミッションから、いま必要な一つを主プロジェクトに。足りない力だけを組み合わせ、使える形まで育てます。
+                  </p>
+                  <p className="mt-3 text-sm text-white/55">
+                    730は選べる制作ミッションの総数です。全員が同じ順番で受講する730段階ではありません。
+                  </p>
+                </>
+              }
+            />
 
-      <section className="bg-ink px-5 py-24 text-ivory sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto w-full max-w-[1160px]">
-          <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <SectionLabel light>WHAT YOU WILL MAKE</SectionLabel>
-              <h2 className="text-[clamp(2.25rem,5vw,4.5rem)] font-black leading-[1.03] tracking-[-0.055em]">
-                100問ではなく、<br /><span className="text-cyan">100の仕事</span>を完成させる。
-              </h2>
-            </div>
-            <p className="max-w-sm text-sm leading-7 text-ivory/55">小さな調査から、Web公開、自動化、現場実装まで。レベルが上がるたび、見せられる成果が増えていきます。</p>
-          </div>
-
-          <div className="mt-14 grid gap-px overflow-hidden rounded-[28px] border border-white/10 bg-white/10 md:grid-cols-2 lg:grid-cols-3">
-            {outcomes.map((item, index) => (
-              <article key={item.level} className="group min-h-[250px] bg-[#0b151f] p-6 transition hover:bg-[#101e2a] sm:p-8">
-                <div className="flex items-center justify-between font-mono text-[10px] tracking-[0.16em]">
-                  <span className={index < 2 ? 'text-cyan' : index < 4 ? 'text-amber' : 'text-lime'}>{item.level}</span>
-                  <span className="text-ivory/25">{item.tag}</span>
-                </div>
-                <h3 className="mt-16 text-xl font-black">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-ivory/50">{item.detail}</p>
-                <ChevronRight className="mt-5 size-4 -translate-x-1 text-coral opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" aria-hidden="true" />
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="levels" className="bg-[#fbf8f1] px-5 py-24 sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto w-full max-w-[1160px]">
-          <div className="grid gap-7 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div>
-              <SectionLabel>LEVEL 01 → 100</SectionLabel>
-              <h2 className="text-[clamp(2.4rem,5vw,4.7rem)] font-black leading-[1.02] tracking-[-0.055em] text-ink">
-                無料から始めて、<br />現場実装まで。
-              </h2>
-            </div>
-            <div className="lg:justify-self-end">
-              <p className="max-w-[550px] text-base leading-8 text-ink/60">
-                最初の30レベルは原則無料枠中心。作りたいものが高度になる段階で、必要な有料プランや外部費用を先に明示します。
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-bold">
-                <span className="rounded-full bg-cyan/15 px-3 py-1.5 text-[#087f91]">無料枠中心</span>
-                <span className="rounded-full bg-amber/20 px-3 py-1.5 text-[#92600e]">有料AI推奨</span>
-                <span className="rounded-full bg-coral/15 px-3 py-1.5 text-coral">開発・外部費用の場合あり</span>
-                <span className="rounded-full bg-lime/28 px-3 py-1.5 text-[#4d7207]">高度実践</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative mt-16">
-            <div className="absolute bottom-4 left-[26px] top-4 hidden w-px bg-gradient-to-b from-cyan via-coral to-lime md:block" aria-hidden="true" />
-            <div className="grid gap-3">
-              {learningStages.map(({ range, title, description, plan, color, Icon }, index) => (
-                <article key={range} className="group relative grid gap-4 rounded-[22px] border border-ink/9 bg-white/70 p-5 transition hover:border-ink/20 hover:bg-white hover:shadow-[0_16px_45px_rgba(8,16,25,0.06)] md:grid-cols-[55px_150px_1fr_auto] md:items-center md:gap-6 md:p-4 md:pr-6">
-                  <div className={`relative z-10 grid size-[52px] place-items-center rounded-2xl border-4 border-[#fbf8f1] ${accentClasses(color)}`}><Icon className="size-5" aria-hidden="true" /></div>
+            <div className="soft-panel soft-panel-clip soft-dark-glow mt-16 border border-white/20 bg-[#173743]/75">
+              <div className="grid border-b border-white/20 lg:grid-cols-[0.72fr_1.28fr]">
+                <div className="flex min-h-[290px] flex-col justify-between border-b border-white/20 p-7 sm:p-10 lg:border-b-0 lg:border-r lg:p-12">
                   <div>
-                    <p className="font-mono text-[10px] text-ink/35">LEVEL</p>
-                    <p className="mt-0.5 font-mono text-base font-bold text-ink">{range}</p>
+                    <p className="text-xs font-semibold tracking-[0.16em] text-white/65">
+                      CURRENT PROJECT
+                    </p>
+                    <p className="mt-7 font-mincho text-3xl leading-[1.45] sm:text-4xl">
+                      いま作るものは、
+                      <br />
+                      いつも一つ。
+                    </p>
                   </div>
-                  <div>
-                    <h3 className="text-base font-black text-ink">{title}</h3>
-                    <p className="mt-1 text-sm leading-6 text-ink/52">{description}</p>
-                  </div>
-                  <span className={`w-fit rounded-full px-3 py-1.5 text-[10px] font-bold ${accentClasses(color)}`}>{plan}</span>
-                  <span className="absolute right-5 top-5 font-mono text-[9px] text-ink/15 md:hidden">{String(index + 1).padStart(2, '0')}</span>
-                </article>
+                  <p className="mt-10 max-w-md text-sm leading-7 text-white/60">
+                    同じものを教材ごとに作り直しません。完成した素材を受け取り、必要な差分だけを加えて、主作品へ戻します。
+                  </p>
+                </div>
+
+                <div className="grid sm:grid-cols-2">
+                  {curriculumTracks.map((track) => (
+                    <article
+                      key={track.index}
+                      className="group border-b border-white/20 p-7 transition-colors hover:bg-white/[0.035] sm:p-8 sm:[&:nth-child(odd)]:border-r sm:[&:nth-last-child(-n+2)]:border-b-0"
+                    >
+                      <div className="flex items-start justify-between gap-5">
+                        <div>
+                          <p className="text-xs font-semibold tracking-[0.14em] text-future-mint">
+                            {track.role} / {track.english}
+                          </p>
+                          <h3 className="mt-4 font-mincho text-2xl">
+                            {track.title}
+                          </h3>
+                        </div>
+                        <p className="font-mono text-2xl tabular-nums text-white/55">
+                          {track.count}
+                        </p>
+                      </div>
+                      <p className="mt-6 text-sm leading-7 text-white/65">
+                        {track.body}
+                      </p>
+                      <p className="mt-5 border-t border-white/15 pt-4 text-xs leading-6 text-white/60">
+                        {track.examples}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
+                <div className="border-b border-white/20 p-7 sm:p-10 lg:border-b-0 lg:border-r lg:p-12">
+                  <p className="text-xs font-semibold tracking-[0.14em] text-future-mint">
+                    全体を支える運用 / LEARNING SYSTEM
+                  </p>
+                  <p className="mt-5 font-mincho text-2xl leading-9">
+                    保存場所・会話・版・証拠・費用・引き継ぎ
+                  </p>
+                  <p className="mt-4 text-sm leading-7 text-white/55">
+                    作ったものを毎回白紙へ戻さず、講師や教材が変わっても続きから進めるための共通ルールです。
+                  </p>
+                </div>
+                <div className="p-7 sm:p-10 lg:p-12">
+                  <p className="text-xs font-semibold tracking-[0.14em] text-white/65">
+                    たとえば、美容室の予約サイトなら
+                  </p>
+                  <p className="mt-5 font-mincho text-2xl leading-10 sm:text-3xl sm:leading-[1.55]">
+                    業種別「美容」を主役に、共通編からWebと受付の技術を借り、見た目を磨く時だけ生成特化を足します。
+                  </p>
+                  <p className="mt-5 text-sm leading-7 text-white/55">
+                    三つのサイトを作るのではなく、一つのサイトを完成させます。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="soft-panel soft-panel-clip mt-6 grid border border-white/20 bg-white/[0.025] sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ['技術が足りない', '共通制作へ'],
+                ['仕事の判断が足りない', '部署別へ'],
+                ['業界の条件が足りない', '業種別へ'],
+                ['表現の質を上げたい', '生成特化へ'],
+              ].map(([question, answer]) => (
+                <div
+                  key={question}
+                  className="border-b border-white/20 p-5 sm:[&:nth-child(odd)]:border-r lg:border-r lg:last:border-r-0"
+                >
+                  <p className="text-xs leading-6 text-white/65">{question}</p>
+                  <p className="mt-2 font-mincho text-lg text-white/85">
+                    {answer}
+                  </p>
+                </div>
               ))}
             </div>
+            <p className="mt-5 text-xs leading-6 text-white/65">
+              共通編のレベル番号は、人の優劣ではなく、作品の利用者数・データ・接続・権限・復旧など技術と運用範囲の難易度を表します。
+            </p>
+            <Link
+              className="soft-outline-button mt-8 inline-flex min-h-12 items-center gap-6 border border-white/35 px-5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-brand-dark"
+              href="/textbook"
+            >
+              730課題から作りたいものを探す
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="bg-ivory px-5 py-24 sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto w-full max-w-[1160px]">
-          <div className="mb-12 max-w-[760px]">
-            <SectionLabel>MISSION PREVIEW</SectionLabel>
-            <h2 className="text-[clamp(2.25rem,5vw,4.25rem)] font-black leading-[1.04] tracking-[-0.05em] text-ink">問題だけで終わらない。<br />プロンプト、改善、応用まで。</h2>
-            <p className="mt-5 text-base leading-8 text-ink/58">代表ミッションを選び、教材でどう学ぶかを体験してください。</p>
-          </div>
-          <MissionExplorer />
-        </div>
-      </section>
+        <LearningCycleSection />
 
-      <section className="bg-[#eee7da] px-5 py-24 sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto w-full max-w-[1160px]">
-          <div className="text-center">
-            <SectionLabel>TEXTBOOKS</SectionLabel>
-            <h2 className="text-[clamp(2.3rem,5vw,4.6rem)] font-black leading-[1.04] tracking-[-0.055em] text-ink">同じ問題を、<br className="sm:hidden" />別のAIで解くだけじゃない。</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-ink/58">ChatGPT編とClaude編は、入口も課題も異なる二つの100ミッション。Amazon KDPで順次刊行予定です。</p>
-          </div>
+        <section
+          id="textbook"
+          className="bg-brand-dark px-5 py-24 text-white sm:px-8 sm:py-32"
+        >
+          <div className="mx-auto max-w-[1240px]">
+            <SectionIntro
+              index="05"
+              label="PRACTICAL TEXTBOOK"
+              light
+              title={
+                <>
+                  明日、仕事で使うものを
+                  <br />
+                  つくる。
+                </>
+              }
+              body={
+                <p>
+                  メールの言い換えだけでは終わりません。商談後の段取り、見積書、ホームページ、PowerPoint、発信用画像、自分用アプリまで。欲しい完成物から教材を選べます。
+                </p>
+              }
+            />
 
-          <div className="mt-14 grid gap-5 lg:grid-cols-2">
-            <article className="relative overflow-hidden rounded-[30px] bg-ink p-7 text-ivory shadow-[0_24px_70px_rgba(8,16,25,0.14)] sm:p-10">
-              <div className="absolute -right-16 -top-16 size-56 rounded-full bg-cyan/10 blur-2xl" aria-hidden="true" />
-              <div className="relative">
-                <div className="flex items-center justify-between"><span className="font-mono text-[10px] tracking-[0.18em] text-cyan">CHATGPT EDITION</span><span className="grid size-11 place-items-center rounded-2xl bg-cyan/10 text-cyan"><WandSparkles className="size-5" aria-hidden="true" /></span></div>
-                <p className="mt-12 text-sm font-bold text-ivory/45">AIスキルを確実にアップするための問題集</p>
-                <h3 className="mt-3 text-3xl font-black leading-tight">仕事を前へ進める<br />100ミッション</h3>
-                <p className="mt-6 text-sm leading-7 text-ivory/55">調査・分析・生成・自動化・制作。アイデアをすばやく試し、成果物へ変える力を鍛えます。</p>
-                <div className="mt-8 flex flex-wrap gap-2 text-[10px] font-bold text-cyan"><span className="rounded-full border border-cyan/20 px-3 py-1.5">調査</span><span className="rounded-full border border-cyan/20 px-3 py-1.5">生成</span><span className="rounded-full border border-cyan/20 px-3 py-1.5">自動化</span><span className="rounded-full border border-cyan/20 px-3 py-1.5">Web制作</span></div>
+            <div className="soft-panel soft-panel-clip soft-dark-glow mt-16 border border-white/20 bg-paper-white text-ink">
+              <div className="grid lg:grid-cols-[1.18fr_0.82fr]">
+                <article className="relative overflow-hidden bg-sapphire-soft p-7 sm:p-10 lg:p-12">
+                  <div
+                    className="absolute -right-28 -top-28 size-72 rounded-full border-[46px] border-white/45"
+                    aria-hidden="true"
+                  />
+                  <div className="relative">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.12em] text-sapphire">
+                        <featuredTextbookSample.Icon
+                          className="size-4"
+                          aria-hidden="true"
+                        />
+                        {featuredTextbookSample.category}
+                      </span>
+                      <span className="soft-badge border border-sapphire/25 bg-white/65 px-3 py-1.5 text-xs font-semibold text-sapphire">
+                        詳しい本文あり
+                      </span>
+                    </div>
+
+                    <h3 className="mt-9 max-w-2xl font-mincho text-[clamp(2rem,4vw,3.8rem)] font-medium leading-[1.2] tracking-[-0.035em]">
+                      {featuredTextbookSample.title}
+                    </h3>
+                    <p className="mt-6 max-w-2xl text-sm leading-8 text-quiet sm:text-base">
+                      {featuredTextbookSample.body}
+                    </p>
+
+                    <div className="mt-9 grid gap-px bg-sapphire/15 sm:grid-cols-[0.82fr_1.18fr]">
+                      <div className="bg-white/70 p-5 sm:p-6">
+                        <p className="text-xs font-semibold tracking-[0.1em] text-sapphire">
+                          元になるもの
+                        </p>
+                        <p className="mt-3 text-sm font-semibold">
+                          {featuredTextbookSample.input}
+                        </p>
+                      </div>
+                      <div className="bg-white/70 p-5 sm:p-6">
+                        <p className="text-xs font-semibold tracking-[0.1em] text-sapphire">
+                          できあがるもの
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {featuredTextbookSample.outputs.map((output) => (
+                            <span
+                              key={output}
+                              className="soft-badge border border-sapphire/20 bg-white px-2.5 py-1.5 text-xs font-semibold"
+                            >
+                              {output}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-7 flex flex-col gap-5 border-t border-sapphire/20 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="flex items-start gap-3 text-xs leading-6 text-quiet">
+                        <ShieldCheck
+                          className="mt-0.5 size-4 shrink-0 text-[#2d746f]"
+                          aria-hidden="true"
+                        />
+                        メール送信や予定登録の前に、人が内容を確認します。
+                      </p>
+                      <Link
+                        href={featuredTextbookSample.href}
+                        className="button-glow group inline-flex min-h-11 shrink-0 items-center justify-center gap-3 px-5 text-xs font-semibold text-white"
+                      >
+                        この教材を開く
+                        <ArrowRight
+                          className="size-4 transition-transform group-hover:translate-x-1"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+
+                <div className="grid divide-y divide-rule border-t border-rule sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-1 lg:divide-x-0 lg:divide-y lg:border-l lg:border-t-0">
+                  {textbookSampleCards.slice(0, 2).map((sample) => (
+                    <Link
+                      key={sample.href}
+                      href={sample.href}
+                      className="group flex min-h-[310px] flex-col p-7 transition-colors hover:bg-paper sm:p-8"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-2 text-xs font-semibold tracking-[0.08em] text-sapphire">
+                          <sample.Icon className="size-4" aria-hidden="true" />
+                          {sample.category}
+                        </span>
+                        <span className="text-xs text-quiet">
+                          詳しい本文あり
+                        </span>
+                      </div>
+                      <h3 className="mt-7 font-mincho text-2xl leading-9 tracking-[-0.02em]">
+                        {sample.title}
+                      </h3>
+                      <p className="mt-4 text-sm leading-7 text-quiet">
+                        {sample.body}
+                      </p>
+                      <div className="mt-auto pt-8">
+                        <p className="border-l-2 border-future-mint pl-4 text-xs font-semibold leading-6">
+                          {sample.deliverable}
+                        </p>
+                        <p className="mt-4 flex items-center gap-2 text-xs font-semibold text-sapphire">
+                          教材を開く
+                          <ArrowRight
+                            className="size-3.5 transition-transform group-hover:translate-x-1"
+                            aria-hidden="true"
+                          />
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </article>
 
-            <article className="relative overflow-hidden rounded-[30px] bg-[#fdfaf3] p-7 text-ink shadow-[0_24px_70px_rgba(8,16,25,0.08)] sm:p-10">
-              <div className="absolute -right-16 -top-16 size-56 rounded-full bg-coral/10 blur-2xl" aria-hidden="true" />
-              <div className="relative">
-                <div className="flex items-center justify-between"><span className="font-mono text-[10px] tracking-[0.18em] text-coral">CLAUDE EDITION</span><span className="grid size-11 place-items-center rounded-2xl bg-coral/10 text-coral"><BookOpenText className="size-5" aria-hidden="true" /></span></div>
-                <p className="mt-12 text-sm font-bold text-ink/38">AIスキルを確実にアップするための問題集</p>
-                <h3 className="mt-3 text-3xl font-black leading-tight">考えを構造に変える<br />100ミッション</h3>
-                <p className="mt-6 text-sm leading-7 text-ink/55">長文理解・設計・仕様化・推敲・共同開発。複雑な考えを、他者が使える形へ整える力を鍛えます。</p>
-                <div className="mt-8 flex flex-wrap gap-2 text-[10px] font-bold text-coral"><span className="rounded-full border border-coral/20 px-3 py-1.5">長文理解</span><span className="rounded-full border border-coral/20 px-3 py-1.5">構造化</span><span className="rounded-full border border-coral/20 px-3 py-1.5">仕様化</span><span className="rounded-full border border-coral/20 px-3 py-1.5">共同開発</span></div>
+              <div className="grid divide-y divide-rule border-t border-rule sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                {textbookSampleCards.slice(2).map((sample) => (
+                  <Link
+                    key={sample.href}
+                    href={sample.href}
+                    className="group flex min-h-[360px] flex-col p-7 transition-colors hover:bg-paper sm:p-8"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="grid size-10 place-items-center bg-brand-dark text-future-mint transition-colors group-hover:bg-sapphire group-hover:text-white">
+                        <sample.Icon className="size-5" aria-hidden="true" />
+                      </span>
+                      <span className="text-xs font-semibold tracking-[0.06em] text-quiet">
+                        {sample.category}
+                      </span>
+                    </div>
+                    <h3 className="mt-7 font-mincho text-2xl leading-9 tracking-[-0.02em]">
+                      {sample.title}
+                    </h3>
+                    <p className="mt-4 text-sm leading-7 text-quiet">
+                      {sample.body}
+                    </p>
+                    <div className="mt-auto pt-8">
+                      <p className="text-xs font-semibold leading-6">
+                        {sample.deliverable}
+                      </p>
+                      <p className="mt-2 text-xs leading-6 text-quiet">
+                        {sample.note}
+                      </p>
+                      <p className="mt-5 flex items-center gap-2 text-xs font-semibold text-sapphire">
+                        この課題を開く
+                        <ArrowRight
+                          className="size-3.5 transition-transform group-hover:translate-x-1"
+                          aria-hidden="true"
+                        />
+                      </p>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            </article>
+            </div>
+
+            <div className="mt-7 flex flex-col gap-6 border-t border-white/20 pt-7 sm:flex-row sm:items-start sm:justify-between">
+              <p className="max-w-3xl text-xs leading-6 text-white/55">
+                {allLessonDetailsPublished ? (
+                  <>
+                    全{textbookCatalog.stats.total}
+                    課題に、使う材料、最初の一言、実際に触る手順、やりがちなミス、完成条件までの固有の本文があります。
+                  </>
+                ) : (
+                  <>
+                    現在{textbookCatalog.stats.lessonDrafts}
+                    課題に詳しい手順があり、残り
+                    {textbookCatalog.stats.outlines}
+                    課題は選べる骨格を公開しています。詳しい本文は制作できた課題から順次反映します。
+                  </>
+                )}
+                73章それぞれが、前の課題の完成品を育てて一つの旗艦作品へ届く構成です。正式な修了条件・修了証は別途案内します。
+              </p>
+              <Link
+                href="/textbook"
+                className="soft-outline-button group inline-flex min-h-11 shrink-0 items-center justify-center gap-3 border border-white/35 px-5 text-xs font-semibold text-white transition-colors hover:border-white hover:bg-white hover:text-brand-dark"
+              >
+                730の教材テーマを見る
+                <ArrowRight
+                  className="size-4 transition-transform group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </Link>
+            </div>
           </div>
-          <p className="mt-6 text-center text-[11px] leading-6 text-ink/42">豊田Ai塾の独自教材です。OpenAI社・Anthropic社の公式教材または提携教材ではありません。</p>
-        </div>
-      </section>
+        </section>
 
-      <section className="bg-ink px-5 py-24 text-ivory sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto grid w-full max-w-[1160px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-white/5 shadow-[0_30px_90px_rgba(0,0,0,0.32)]">
-            <Image src="/og.png" alt="夜の教室で、MONと大人の受講者が並んでAIを学ぶ豊田Ai塾のイメージ" width={1672} height={941} className="h-auto w-full" sizes="(min-width: 1024px) 52vw, 100vw" />
-            <div className="absolute bottom-4 right-4 rounded-full border border-white/15 bg-ink/65 px-3 py-1.5 text-[10px] font-bold text-ivory/65 backdrop-blur">対面だから、ひとりにならない</div>
-          </div>
+        <section
+          id="services"
+          className="section-aura border-b border-rule bg-paper-white px-5 py-24 sm:px-8 sm:py-32"
+        >
+          <div className="mx-auto max-w-[1240px]">
+            <SectionIntro
+              index="06"
+              label="HOW TO JOIN"
+              title={
+                <>
+                  3つの学び方から、
+                  <br />
+                  今に合うものを。
+                </>
+              }
+              body={
+                <p>
+                  教科書を見て自分で進むか、先生と一緒に進むか。まず無料会員になり、マイページから住んでいる場所、人数、作りたいものに合う方法を選びます。
+                </p>
+              }
+            />
 
-          <div>
-            <SectionLabel light>THE EVENING LAB</SectionLabel>
-            <h2 className="text-[clamp(2.45rem,5vw,4.7rem)] font-black leading-[1.03] tracking-[-0.055em]">ひとりで進める。<br />でも、<span className="text-amber">ひとりで悩まない。</span></h2>
-            <p className="mt-6 max-w-[540px] text-base leading-8 text-ivory/58">自分の画面に集中しながら、困れば声をかけられる。完成したものは、話したい人だけ見せ合える。強制されない、でも孤独ではない大人の学び場です。</p>
-
-            <ol className="mt-9 grid gap-3">
-              {['予約して、仕事帰りに教室へ', '今日のミッションを自分で選ぶ', 'AIだけを使って、まず試してみる', '詰まった瞬間だけMONに質問', '成果物を保存し、次のレベルへ'].map((step, index) => (
-                <li key={step} className="flex items-center gap-4 rounded-2xl border border-white/8 bg-white/[0.035] px-4 py-3.5 text-sm font-bold text-ivory/75">
-                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-cyan/10 font-mono text-[10px] text-cyan">{index + 1}</span>
-                  {step}
+            <ol className="soft-panel soft-panel-clip mt-12 grid border border-rule bg-paper-white sm:grid-cols-5">
+              {[
+                ['01', '無料会員登録'],
+                ['02', '学び方を選ぶ'],
+                ['03', '希望を送る'],
+                ['04', '条件を確認'],
+                ['05', '受講を開始'],
+              ].map(([number, label]) => (
+                <li
+                  className="border-b border-r border-rule bg-paper-white p-5"
+                  key={number}
+                >
+                  <span className="numeric-text text-xs text-sapphire">
+                    {number}
+                  </span>
+                  <p className="mt-3 text-sm font-semibold">{label}</p>
                 </li>
               ))}
             </ol>
-          </div>
-        </div>
-      </section>
 
-      <section className="bg-ivory px-5 py-24 sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto grid w-full max-w-[1160px] gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
-            <SectionLabel>LEVEL CERTIFICATE</SectionLabel>
-            <h2 className="text-[clamp(2.3rem,5vw,4.5rem)] font-black leading-[1.04] tracking-[-0.055em] text-ink">テストはHPで。<br />合格の記録はマイページへ。</h2>
-            <p className="mt-6 max-w-[520px] text-base leading-8 text-ink/58">Lv10・25・50・75・100の4択テストは、このHPからオンライン受験。自動採点後、合否と受験履歴をマイページで確認し、成果物レビューと合わせて到達証を発行します。</p>
-            <div className="mt-7 flex flex-wrap gap-2 text-xs font-bold text-ink/60"><span className="rounded-full border border-ink/10 bg-white px-3 py-2">HPで受験</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">自動採点</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">受験履歴</span><span className="rounded-full border border-ink/10 bg-white px-3 py-2">デジタル到達証</span></div>
-            <a className="group mt-8 inline-flex min-h-13 items-center gap-3 rounded-full bg-ink px-6 text-sm font-bold text-ivory transition hover:-translate-y-0.5 hover:bg-[#162431]" href="/level-test">
-              HPでレベルテストを受ける
-              <Play className="size-4 fill-current" aria-hidden="true" />
-            </a>
-            <p className="mt-5 max-w-lg text-[11px] leading-6 text-ink/40">豊田Ai塾カリキュラム内の到達度を示す独自基準です。国家資格・公的資格、OpenAI社・Anthropic社の公式認定ではありません。</p>
-          </div>
+            <div className="soft-panel soft-panel-clip mt-14 grid border border-rule bg-paper-white px-6 sm:grid-cols-3 sm:px-8">
+              <div className="border-b border-rule py-5 sm:border-b-0 sm:border-r sm:pr-6">
+                <p className="text-xs text-quiet">共通の入会金</p>
+                <p className="numeric-text mt-2 text-2xl">
+                  {sharedFees.entrance}
+                </p>
+                <p className="mt-2 text-xs text-quiet">
+                  いずれの受講方法にも必要です
+                </p>
+              </div>
+              <div className="border-b border-rule py-5 sm:border-b-0 sm:border-r sm:px-6">
+                <p className="text-xs text-quiet">Web教科書</p>
+                <p className="mt-2 font-mincho text-2xl">登録なしで完全無料</p>
+                <p className="mt-2 text-xs text-quiet">
+                  詳しい手順がある{textbookCatalog.stats.lessonDrafts}
+                  課題から始められます
+                </p>
+              </div>
+              <div className="py-5 sm:pl-6">
+                <p className="text-xs text-quiet">紙の教科書</p>
+                <p className="numeric-text mt-2 text-2xl">1冊 2,000円前後</p>
+                <p className="mt-2 text-xs text-quiet">
+                  希望する方だけ購入できます
+                </p>
+              </div>
+            </div>
 
-          <div className="relative mx-auto w-full max-w-[560px] rounded-[30px] border border-ink/10 bg-white p-6 shadow-[0_30px_90px_rgba(8,16,25,0.1)] sm:p-9">
-            <div className="absolute -right-4 -top-4 grid size-16 rotate-6 place-items-center rounded-2xl bg-amber text-ink shadow-xl"><Award className="size-7" aria-hidden="true" /></div>
-            <div className="border border-ink/10 p-6 sm:p-8">
-              <div className="flex items-start justify-between gap-4"><div><p className="font-mono text-[9px] tracking-[0.2em] text-coral">TOYOTA AI SCHOOL</p><p className="mt-2 text-lg font-black tracking-[0.08em]">豊田Ai塾</p></div><ShieldCheck className="size-8 text-[#4d7207]" aria-hidden="true" /></div>
-              <div className="my-9 text-center"><p className="text-xs font-bold tracking-[0.24em] text-ink/40">知識・実践 到達証</p><p className="mt-5 font-mono text-6xl font-black tracking-[-0.08em] text-ink">LV.50</p><p className="mt-3 text-sm font-bold">Webで公開する／自分用アプリを作る</p></div>
-              <div className="grid grid-cols-2 gap-4 border-t border-ink/10 pt-5 text-[10px] text-ink/45"><div><p>ASSESSMENT</p><p className="mt-1 font-bold text-ink">4択 86 / 100</p></div><div><p>ISSUE ID</p><p className="mt-1 font-mono font-bold text-ink">TAI-50-000128</p></div></div>
+            <OnlinePriceSpotlight className="mt-10" />
+
+            <div className="mt-12 grid gap-5 lg:grid-cols-3">
+              {joinPlans.map(
+                ({
+                  number,
+                  Icon,
+                  name,
+                  price,
+                  area,
+                  summary,
+                  timing,
+                  badge,
+                }) => (
+                  <article
+                    key={name}
+                    className="soft-card soft-interactive flex min-h-full flex-col border border-rule bg-paper-white p-6 hover:bg-sapphire-soft/35 sm:p-8"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="numeric-text text-xs text-sapphire">
+                        {number}
+                      </span>
+                      <span className="soft-badge border border-sapphire px-2.5 py-1 text-xs font-semibold text-sapphire">
+                        {badge}
+                      </span>
+                    </div>
+                    <Icon
+                      className="mt-9 size-6 text-sapphire"
+                      aria-hidden="true"
+                    />
+                    <h3 className="mt-5 font-mincho text-2xl leading-tight">
+                      {name}
+                    </h3>
+                    <p className="numeric-text mt-6 text-2xl">{price}</p>
+                    <dl className="mt-6 border-y border-rule py-4 text-xs">
+                      <div className="flex items-center justify-between gap-4">
+                        <dt className="text-quiet">対応地域</dt>
+                        <dd className="font-semibold">{area}</dd>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between gap-4">
+                        <dt className="text-quiet">時間</dt>
+                        <dd className="font-semibold">{timing}</dd>
+                      </div>
+                    </dl>
+                    <p className="mt-5 text-sm leading-7 text-quiet">
+                      {summary}
+                    </p>
+                    {number === '03' ? (
+                      <p className="mt-4 border-l-2 border-future-mint pl-3 text-xs leading-6 text-quiet">
+                        通い放題。予約人数に応じて、東京23区内の会場を毎回変更します。
+                      </p>
+                    ) : null}
+                  </article>
+                ),
+              )}
+            </div>
+
+            <div className="soft-card mt-6 flex flex-col gap-5 border border-rule bg-sapphire-soft/55 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+              <div>
+                <p className="text-sm font-semibold">
+                  無料会員登録後、マイページから申し込めます。
+                </p>
+                <p className="mt-2 text-xs leading-6 text-quiet">
+                  まず受講希望を受付し、運営が日程と条件を確認します。送信だけで予約・契約・決済は確定しません。
+                </p>
+              </div>
+              <Link
+                className="button-glow inline-flex min-h-12 shrink-0 items-center gap-5 px-5 text-sm font-semibold text-white"
+                href="/join"
+              >
+                無料会員登録
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+
+            <figure className="soft-panel soft-panel-clip image-soft-zoom mt-10 grid border border-rule md:grid-cols-[0.82fr_1.18fr]">
+              <div className="relative min-h-[300px] bg-rule">
+                <Image
+                  src={onlineImage}
+                  alt="Google Meetで画面を共有しながら相談するイメージ写真"
+                  fill
+                  sizes="(min-width: 768px) 40vw, 100vw"
+                  className="object-cover"
+                />
+                <span className="absolute bottom-4 left-4 rounded-full bg-brand-dark/80 px-3 py-1.5 text-[10px] font-semibold tracking-[0.08em] text-white backdrop-blur-sm">
+                  素材写真
+                </span>
+              </div>
+              <figcaption className="flex items-center p-7 sm:p-10">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
+                    GOOGLE MEET
+                  </p>
+                  <p className="mt-5 font-mincho text-3xl leading-tight">
+                    場所が離れていても、
+                    <br />
+                    同じ画面を見ながら進めます。
+                  </p>
+                  <p className="mt-5 max-w-xl text-sm leading-7 text-quiet">
+                    家庭教師型（オンライン）は全国から受講できます。Google
+                    Meetで同じ画面を見ながら、50分で一つの成果物を進めます。
+                  </p>
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section
+          id="faq"
+          className="section-aura border-t border-rule bg-paper-white px-5 py-24 sm:px-8 sm:py-32"
+        >
+          <div className="mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.55fr)] lg:gap-20">
+            <div className="self-start border-t-2 border-brand-dark pt-6 lg:sticky lg:top-8">
+              <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
+                よくある質問
+              </p>
+              <h2 className="soft-section-heading mt-7 font-mincho text-[clamp(2.5rem,5vw,4.8rem)] font-medium leading-[1.16] tracking-[-0.04em]">
+                迷いを、
+                <br />
+                ひとつずつ
+                <br />
+                ほどく。
+              </h2>
+              <p className="mt-7 max-w-sm text-sm leading-8 text-quiet sm:text-base">
+                学び方、通い方、料金、講師について。はじめる前によく聞かれることをまとめました。
+              </p>
+
+              <div className="mt-10 border-y border-rule py-5">
+                <p className="flex items-center gap-3 text-sm leading-7 text-quiet">
+                  <ArrowRight
+                    className="size-4 shrink-0 text-sapphire"
+                    aria-hidden="true"
+                  />
+                  気になる項目を選ぶと、その場で回答を読めます。
+                </p>
+              </div>
+            </div>
+
+            <FaqSection items={faqItems} />
+          </div>
+        </section>
+
+        <section className="bg-brand-dark px-5 py-20 text-white sm:px-8 sm:py-24">
+          <div className="soft-panel soft-dark-glow mx-auto grid max-w-[1240px] gap-10 border border-white/10 bg-white/[0.035] p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.16em] text-white/65">
+                START FREE
+              </p>
+              <h2 className="mt-6 font-mincho text-[clamp(2.4rem,5.8vw,5.2rem)] font-medium leading-[1.16] tracking-[-0.04em]">
+                まずは0円で、自分で進める。
+                <br />
+                迷ったときだけ、講師に聞く。
+              </h2>
+              <p className="mt-6 max-w-2xl text-base leading-8 text-white/75">
+                Web教科書は登録なしで無料です。詳しい手順がある
+                {textbookCatalog.stats.lessonDrafts}
+                課題から、今日すぐに始められます。
+                {!allLessonDetailsPublished
+                  ? `残り${textbookCatalog.stats.outlines}課題の本文も順次公開します。`
+                  : null}
+                講師へ相談したくなったときだけ、無料会員マイページから希望する受講方法を選べます。
+              </p>
+            </div>
+
+            <div className="flex w-full flex-col gap-3 sm:min-w-[280px] lg:w-auto">
+              <Link
+                href="/textbook"
+                className="button-glow group inline-flex min-h-14 items-center justify-between px-6 text-sm font-semibold text-white"
+              >
+                0円で教科書を始める
+                <ArrowRight
+                  className="size-4 transition-transform group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </Link>
+              <Link
+                href="/join"
+                className="soft-outline-button inline-flex min-h-14 items-center justify-between gap-3 border border-white/45 px-6 text-sm font-semibold transition-colors hover:bg-white hover:text-sapphire"
+              >
+                迷ったときの受講を申し込む
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section id="price" className="bg-[#eee7da] px-5 py-24 sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto w-full max-w-[1160px]">
-          <div className="text-center"><SectionLabel>PRICE</SectionLabel><h2 className="text-[clamp(2.45rem,5vw,4.7rem)] font-black leading-[1.03] tracking-[-0.055em] text-ink">続けやすく、<br className="sm:hidden" />わかりやすく。</h2><p className="mx-auto mt-5 max-w-xl text-base leading-8 text-ink/58">自分の端末なら月会費だけ。必要な日だけPCとAI環境をレンタルできます。</p></div>
-
-          <div className="mx-auto mt-14 grid max-w-[940px] gap-5 md:grid-cols-[1.2fr_0.8fr]">
-            <article className="relative overflow-hidden rounded-[32px] bg-ink p-7 text-ivory shadow-[0_28px_80px_rgba(8,16,25,0.16)] sm:p-10">
-              <div className="absolute -right-20 -top-20 size-64 rounded-full bg-cyan/10 blur-3xl" aria-hidden="true" />
-              <div className="relative"><div className="flex items-center justify-between"><span className="rounded-full bg-cyan/10 px-3 py-1.5 text-[10px] font-bold text-cyan">MONTHLY MEMBER</span><UsersRound className="size-5 text-ivory/35" aria-hidden="true" /></div><div className="mt-10 flex items-end gap-2"><span className="font-mono text-[clamp(3.8rem,8vw,6rem)] font-black leading-none tracking-[-0.09em]">5,000</span><span className="pb-2 text-sm font-bold text-ivory/55">円 / 月</span></div><p className="mt-5 text-sm leading-7 text-ivory/58">平日18:00〜21:00。予約枠・空席の範囲内で何度でも利用できます。</p><ul className="mt-8 grid gap-3 text-sm font-bold text-ivory/75 sm:grid-cols-2">{['教室利用', 'MONへの質問', 'マイページ', '補助資料ダウンロード', '受講予約・進捗管理', 'コミュニティ参加（任意）'].map((item) => <li key={item} className="flex items-center gap-2"><Check className="size-4 text-lime" aria-hidden="true" />{item}</li>)}</ul><a className="mt-9 inline-flex min-h-13 w-full items-center justify-center rounded-full bg-coral px-6 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#f07b5d]" href="/reserve">初回体験 0円で始める</a></div>
-            </article>
-
-            <div className="grid gap-5">
-              <article className="rounded-[28px] border border-ink/10 bg-white/80 p-7"><div className="flex items-center justify-between"><span className="rounded-full bg-amber/20 px-3 py-1.5 text-[10px] font-bold text-[#92600e]">OPTION</span><Laptop className="size-5 text-ink/35" aria-hidden="true" /></div><p className="mt-8 text-sm font-bold text-ink/45">PC＋受講用AI環境</p><p className="mt-2 font-mono text-4xl font-black tracking-[-0.06em] text-ink">1,000<span className="ml-2 text-sm tracking-normal">円 / 回</span></p><p className="mt-4 text-sm leading-7 text-ink/52">1回最大3時間。受講者ごとに分離した安全な環境を準備します。</p></article>
-              <article className="rounded-[28px] border border-ink/10 bg-transparent p-7"><p className="font-mono text-[10px] tracking-[0.16em] text-coral">NOT INCLUDED</p><ul className="mt-4 grid gap-2 text-xs leading-6 text-ink/55"><li>・Amazon KDPで販売する書籍代</li><li>・個人のAI有料プラン</li><li>・API、ドメイン、ホスティング等の外部費用</li></ul></article>
-            </div>
-          </div>
-          <p className="mx-auto mt-6 max-w-[850px] text-center text-[11px] leading-6 text-ink/42">表示価格の税込・税別、課金日、日割り、休会・退会、キャンセル条件は、正式申込画面と利用規約で確定表示します。外部サービス費が発生する課題は、開始前に明示します。</p>
-        </div>
-      </section>
-
-      <section id="access" className="bg-ivory px-5 py-24 sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto grid w-full max-w-[1160px] gap-10 lg:grid-cols-2">
-          <article className="rounded-[30px] border border-ink/10 bg-white p-7 sm:p-10"><SectionLabel>YOUR GUIDE</SectionLabel><div className="flex flex-col gap-7 sm:flex-row sm:items-center"><div className="grid size-28 shrink-0 place-items-center rounded-[28px] bg-gradient-to-br from-coral to-amber text-4xl font-black text-white">MON</div><div><p className="text-sm font-bold text-coral">先生ではなく、伴走者。</p><h2 className="mt-2 text-3xl font-black text-ink">質問が生まれた時、<br />すぐ隣に。</h2></div></div><p className="mt-7 text-sm leading-7 text-ink/58">MONは答えを代わりに作る人ではありません。あなたが試したプロンプトと出力を一緒に見て、次に何を変えればよいかを支援します。プロフィール・実績は正式公開時に掲載します。</p></article>
-          <article className="relative overflow-hidden rounded-[30px] bg-ink p-7 text-ivory sm:p-10"><div className="absolute inset-0 opacity-30 hero-grid" aria-hidden="true" /><div className="relative"><SectionLabel light>ACCESS</SectionLabel><p className="font-mono text-[10px] tracking-[0.16em] text-ivory/35">VENUE</p><h2 className="mt-3 text-3xl font-black">ブリッジスタッフ<br />サービス</h2><div className="mt-8 grid gap-4 text-sm"><div className="flex items-center gap-3"><MapPin className="size-4 text-coral" aria-hidden="true" /><span>愛知県豊田市</span></div><div className="flex items-center gap-3"><Clock3 className="size-4 text-amber" aria-hidden="true" /><span>平日 18:00–21:00</span></div><div className="flex items-center gap-3"><CalendarDays className="size-4 text-cyan" aria-hidden="true" /><span>予約制・初回体験無料</span></div></div><p className="mt-8 text-xs leading-6 text-ivory/42">詳細住所、駐車場、入館方法、祝日・休業日は、運営確認後に予約画面へ掲載します。</p><a className="group mt-7 inline-flex items-center gap-2 text-sm font-bold text-cyan" href="/reserve">体験可能日を見る<ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" /></a></div></article>
-        </div>
-      </section>
-
-      <section className="bg-[#fbf8f1] px-5 py-24 sm:px-8 sm:py-32 lg:px-10">
-        <div className="mx-auto grid w-full max-w-[1160px] gap-10 lg:grid-cols-[0.62fr_1.38fr]">
-          <div><SectionLabel>FAQ</SectionLabel><h2 className="text-[clamp(2.4rem,5vw,4.4rem)] font-black leading-[1.03] tracking-[-0.055em] text-ink">始める前の、<br />気になること。</h2><div className="mt-8 flex items-start gap-3 rounded-2xl bg-cyan/10 p-4 text-sm leading-6 text-ink/60"><CircleHelp className="mt-0.5 size-4 shrink-0 text-[#087f91]" aria-hidden="true" />ここにない質問は、無料体験の予約時にお知らせください。</div></div>
-          <FaqSection />
-        </div>
-      </section>
-
-      <section className="bg-coral px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-10">
-        <div className="mx-auto flex w-full max-w-[1160px] flex-col gap-9 lg:flex-row lg:items-center lg:justify-between">
-          <div><p className="font-mono text-[10px] font-bold tracking-[0.2em] text-white/65">YOUR FIRST MISSION IS FREE</p><h2 className="mt-4 text-[clamp(2.4rem,5vw,4.8rem)] font-black leading-[1.02] tracking-[-0.055em]">今夜、AIと<br />ひとつ完成させよう。</h2></div>
-          <div className="w-full max-w-[410px]"><a className="group inline-flex min-h-16 w-full items-center justify-between rounded-full bg-ink px-7 text-base font-bold text-ivory shadow-[0_20px_55px_rgba(8,16,25,0.22)] transition hover:-translate-y-1" href="/reserve"><span>無料体験を予約する</span><span className="grid size-9 place-items-center rounded-full bg-cyan text-ink"><ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" /></span></a><a className="mt-4 inline-flex w-full items-center justify-center gap-2 text-sm font-bold text-white/75 hover:text-white" href="/mypage"><Download className="size-4" aria-hidden="true" />受講生マイページを見る</a></div>
-        </div>
-      </section>
-
+        </section>
+      </main>
       <SiteFooter />
-
-      <div className="fixed inset-x-3 bottom-3 z-50 flex items-center gap-3 rounded-2xl border border-white/10 bg-ink/94 p-2.5 pl-4 text-ivory shadow-[0_18px_55px_rgba(0,0,0,0.3)] backdrop-blur md:hidden"><div className="min-w-0 flex-1"><p className="text-xs font-bold">初回体験 0円</p><p className="truncate text-[10px] text-ivory/45">平日18:00–21:00｜豊田市</p></div><a className="inline-flex min-h-11 items-center justify-center rounded-xl bg-coral px-4 text-xs font-bold text-white" href="/reserve">予約する</a></div>
-    </main>
+    </>
   );
 }

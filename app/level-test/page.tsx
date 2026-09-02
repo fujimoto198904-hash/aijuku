@@ -1,31 +1,59 @@
-import type { Metadata } from 'next';
-import { Info } from 'lucide-react';
+import type { Metadata } from "next";
+import { Info } from "lucide-react";
 
-import { LevelTest } from '@/components/level-test';
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
+import { FoundationCheck } from "@/components/level-test";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { canonicalPublicPath } from "@/lib/site-paths";
 
 export const metadata: Metadata = {
-  title: 'オンラインレベルテスト｜豊田Ai塾',
-  description: '豊田Ai塾独自基準の4択レベルテストをHPからオンライン受験できます。',
+  title: "基礎理解チェック｜藤本実学塾",
+  description:
+    "AIを安全に仕事で使うための、情報確認と判断の基礎理解チェックです。",
+  alternates: { canonical: canonicalPublicPath("/level-test") },
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default function LevelTestPage() {
   return (
-    <main className="min-h-screen bg-[#fbf8f1] text-ink">
+    <>
       <SiteHeader />
-      <section className="px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
-        <div className="mx-auto w-full max-w-[1160px]">
-          <div className="mx-auto mb-10 max-w-[850px]">
-            <div className="mb-5 flex items-center gap-3 font-mono text-[10px] font-bold tracking-[0.2em] text-coral"><span className="h-px w-7 bg-coral" aria-hidden="true" />ONLINE LEVEL TEST</div>
-            <h1 className="text-[clamp(2.6rem,6vw,5rem)] font-black leading-[0.99] tracking-[-0.06em]">教室にいない日も、<br /><span className="text-coral">HPから受験</span>できる。</h1>
-            <p className="mt-6 max-w-[680px] text-base leading-8 text-ink/58">4択10問のオンラインテストで、情報確認と安全性の判断をチェックします。塾生はマイページから受験し、自動採点された合否と受験履歴をいつでも確認できます。</p>
-            <div className="mt-5 flex items-start gap-2 rounded-xl bg-cyan/10 px-4 py-3 text-xs leading-6 text-[#176b77]"><Info className="mt-1 size-3.5 shrink-0" aria-hidden="true" />現在は公開確認用のLv.10サンプル試験です。正式運用ではログイン後に結果を保存し、成果物レビューと合わせて到達証を発行します。</div>
+      <main id="main-content" className="min-h-screen bg-paper text-ink">
+        <section className="px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
+          <div className="mx-auto w-full max-w-[1160px]">
+            <div className="mx-auto mb-10 max-w-[850px]">
+              <div className="mb-5 flex items-center gap-3 text-xs font-bold tracking-[0.08em] text-coral">
+                <span className="h-px w-7 bg-coral" aria-hidden="true" />
+                基礎理解チェック{" "}
+                <span className="font-mono text-xs">CHECK</span>
+              </div>
+              <h1 className="display-heading text-[clamp(2.35rem,5vw,4.4rem)]">
+                AIを仕事で使う前に、
+                <br />
+                <span className="display-emphasis text-coral">
+                  基礎を確かめる。
+                </span>
+              </h1>
+              <p className="mt-6 max-w-[680px] text-base leading-8 text-ink/68">
+                4択10問で、情報の確かめ方と安全な判断を確認します。完成した全体カリキュラムの履修・修了判定とは切り分けた体験用チェックです。
+              </p>
+              <div className="mt-5 flex items-start gap-2 rounded-xl bg-sapphire-soft px-4 py-3 text-xs leading-6 text-sapphire">
+                <Info className="mt-1 size-3.5 shrink-0" aria-hidden="true" />
+                現在は公開確認用の体験版です。結果は保存されず、修了・認定・受講可否の判定にも使いません。
+              </div>
+            </div>
+            <FoundationCheck />
           </div>
-          <LevelTest />
-        </div>
-      </section>
+        </section>
+      </main>
       <SiteFooter />
-    </main>
+    </>
   );
 }

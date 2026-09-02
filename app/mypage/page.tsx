@@ -1,131 +1,513 @@
-import type { Metadata } from 'next';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
-  Award,
-  Bell,
   BookOpenText,
   CalendarDays,
-  Check,
-  ChevronRight,
+  CheckCircle2,
   CircleDollarSign,
   Clock3,
-  Download,
-  FileText,
-  Gauge,
-  Home,
-  Laptop,
-  LockKeyhole,
-  MessageCircleQuestion,
-  ReceiptText,
+  LogOut,
   Sparkles,
   UserRound,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { Progress } from '@/components/ui/progress';
+import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
+import { BrandMark } from "@/components/brand-mark";
+import { MemberApplicationActions } from "@/components/member-application-actions";
+import { MemberProfileSettings } from "@/components/member-profile-settings";
+import { MobileMemberNav } from "@/components/mobile-member-nav";
+import Link from "@/components/site-link";
+import {
+  SkillPassport,
+  type SkillTaskOption,
+} from "@/components/skill-passport";
+import {
+  getMember,
+  hasCurrentMembershipConsent,
+  listMemberApplications,
+  refreshMemberEmail,
+} from "@/db/membership";
+import {
+  ensureSkillProfile,
+  listMemberExternalReviews,
+  listMemberExternalReviewRequests,
+  listMemberSkillEvidence,
+} from "@/db/skill-passport";
+import {
+  applicationStatusGuidance,
+  applicationStatusLabels,
+  findMemberServicePlan,
+  memberServicePlans,
+} from "@/lib/member-service-plans";
+import { canonicalMemberUrl, isVercelRuntime } from "@/lib/site-runtime";
+import { textbookCatalog } from "@/lib/textbook-catalog";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: '受講生マイページ｜豊田Ai塾',
-  description: '豊田Ai塾の受講予約、教材、進捗、決済、レベル証明をまとめて確認できるマイページです。',
+  title: "マイページ｜藤本実学塾",
+  description:
+    "藤本実学塾の無料会員マイページです。受講申込、学習記録、講師確認、第三者評価、URL共有プロフィールを管理できます。",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: { index: false, follow: false },
+  },
 };
 
-const navItems = [
-  { label: 'ホーム', Icon: Home, href: '#', active: true },
-  { label: '予約', Icon: CalendarDays, href: '/reserve', active: false },
-  { label: '学習・教材', Icon: BookOpenText, href: '#learning', active: false },
-  { label: 'テスト・認定', Icon: Award, href: '/level-test', active: false },
-  { label: 'お支払い', Icon: CircleDollarSign, href: '#billing', active: false },
-  { label: 'アカウント', Icon: UserRound, href: '#account', active: false },
-] as const;
+const skillTaskOptions: SkillTaskOption[] = textbookCatalog.tasks.map(
+  (task) => ({
+    id: task.id,
+    title: task.title,
+    outcome: task.outcome,
+    courseTitle: task.courseTitle,
+    trackLabel: task.trackLabel,
+  }),
+);
 
-export default function MyPage() {
+function formatDate(value: number) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Tokyo",
+  }).format(new Date(value));
+}
+
+export default async function MyPage() {
+  if (isVercelRuntime()) redirect(canonicalMemberUrl("/mypage"));
+  const user = await requireChatGPTUser("/mypage");
+  const member = await getMember(user.userId);
+  if (
+    !member ||
+    member.status !== "active" ||
+    !hasCurrentMembershipConsent(member)
+  ) {
+    redirect("/mypage/onboarding");
+  }
+
+  await refreshMemberEmail(user);
+  const [
+    applications,
+    skillProfile,
+    skillEvidence,
+    externalReviews,
+    externalReviewRequests,
+  ] = await Promise.all([
+    listMemberApplications(user.userId),
+    ensureSkillProfile(user.userId),
+    listMemberSkillEvidence(user.userId),
+    listMemberExternalReviews(user.userId),
+    listMemberExternalReviewRequests(user.userId),
+  ]);
+  const activeApplications = applications.filter(
+    (application) =>
+      application.status === "received" || application.status === "reviewing",
+  );
+  const nextStep = activeApplications.length
+    ? {
+        title: "申込の確認を待ちながら、教科書を進める",
+        body: "対応中の申込があります。運営の確認中もWeb教科書は無料で進められます。",
+        href: "#applications",
+        label: "申込状況を見る",
+      }
+    : skillEvidence.length === 0
+      ? {
+          title: "最初の課題を一つ選ぶ",
+          body: "Web教科書から今の仕事や暮らしに近い課題を一つ選び、完成物を作ってみましょう。",
+          href: "/textbook",
+          label: "Web教科書から選ぶ",
+        }
+      : {
+          title: "次の実践記録を積み重ねる",
+          body: "できたことを証拠と一緒に残すほど、講師確認と第三者評価へつなげやすくなります。",
+          href: "#skills",
+          label: "AI実学パスポートへ",
+        };
+
   return (
-    <main className="min-h-screen bg-[#f1ede5] text-ink">
-      <div className="border-b border-cyan/20 bg-ink px-4 py-2 text-center text-[11px] font-bold leading-5 text-cyan">
-        受講生体験用のデモ画面です。表示中の予約・進捗・決済はサンプルデータです。
-      </div>
+    <main id="main-content" className="min-h-screen bg-paper text-ink">
+      <div className="grid min-h-screen lg:grid-cols-[260px_1fr]">
+        <aside className="hidden border-r border-white/10 bg-brand-dark p-7 text-white lg:flex lg:flex-col">
+          <Link
+            className="flex items-center gap-3"
+            href="/"
+            aria-label="藤本実学塾 トップ"
+          >
+            <BrandMark framed />
+            <span>
+              <span className="block font-mincho text-lg">藤本実学塾</span>
+              <span className="block text-[10px] tracking-[0.12em] text-white/60">
+                MEMBER PAGE
+              </span>
+            </span>
+          </Link>
 
-      <div className="grid min-h-[calc(100vh-36px)] lg:grid-cols-[250px_1fr]">
-        <aside className="hidden flex-col bg-ink p-6 text-ivory lg:flex">
-          <a className="flex items-center gap-3" href="/" aria-label="豊田Ai塾 トップ">
-            <span className="grid size-10 place-items-center rounded-full border border-cyan/40 bg-cyan/10 text-cyan"><Sparkles className="size-[18px]" aria-hidden="true" /></span>
-            <span><span className="block text-base font-bold tracking-[0.08em]">豊田Ai塾</span><span className="block font-mono text-[9px] tracking-[0.2em] text-ivory/40">MEMBER PORTAL</span></span>
-          </a>
-
-          <nav className="mt-12 grid gap-1" aria-label="マイページナビゲーション">
-            {navItems.map(({ label, Icon, active, href }) => (
-              <a key={label} href={href} className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold transition ${active ? 'bg-cyan/12 text-cyan' : 'text-ivory/48 hover:bg-white/5 hover:text-ivory'}`}>
-                <Icon className="size-4" aria-hidden="true" />
-                {label}
-              </a>
-            ))}
+          <nav className="mt-12 grid text-sm" aria-label="会員メニュー">
+            <a
+              className="border-b border-white/10 py-4 text-white"
+              href="#home"
+            >
+              ホーム
+            </a>
+            <a
+              className="border-b border-white/10 py-4 text-white/60 hover:text-white"
+              href="#apply"
+            >
+              受講を申し込む
+            </a>
+            <a
+              className="border-b border-white/10 py-4 text-white/60 hover:text-white"
+              href="#applications"
+            >
+              申込状況
+            </a>
+            <a
+              className="border-b border-white/10 py-4 text-white/60 hover:text-white"
+              href="#skills"
+            >
+              AI実学パスポート
+            </a>
+            <Link
+              className="border-b border-white/10 py-4 text-white/60 hover:text-white"
+              href="/textbook"
+            >
+              Web教科書
+            </Link>
+            <a
+              className="border-b border-white/10 py-4 text-white/60 hover:text-white"
+              href="#account"
+            >
+              会員情報
+            </a>
           </nav>
 
-          <div className="mt-auto rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-            <div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-full bg-coral text-xs font-black text-white">DEMO</span><div><p className="text-sm font-bold">受講生サンプル</p><p className="mt-0.5 text-[10px] text-ivory/35">Lv.27 / Member</p></div></div>
-            <a className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-ivory/45 hover:text-cyan" href="/"><LockKeyhole className="size-3.5" aria-hidden="true" />公開サイトへ戻る</a>
+          <div className="mt-auto border-t border-white/15 pt-6">
+            <p className="text-[10px] tracking-[0.12em] text-white/55">
+              FREE MEMBER
+            </p>
+            <p className="mt-2 text-sm font-semibold">{member.displayName}</p>
+            <p className="mt-1 break-all text-[10px] text-white/55">
+              {user.email}
+            </p>
+            <Link
+              className="mt-5 inline-flex items-center gap-2 text-xs text-white/55 hover:text-white"
+              href={chatGPTSignOutPath("/")}
+              target="_top"
+            >
+              <LogOut className="size-3.5" aria-hidden="true" />
+              ログアウト
+            </Link>
           </div>
         </aside>
 
         <div className="min-w-0">
-          <header className="flex min-h-[76px] items-center justify-between border-b border-ink/8 bg-white/65 px-5 backdrop-blur sm:px-8">
-            <a className="flex items-center gap-2 font-bold lg:hidden" href="/"><Sparkles className="size-4 text-coral" aria-hidden="true" />豊田Ai塾</a>
-            <div className="hidden lg:block"><p className="text-xs text-ink/38">2026年8月28日 金曜日</p><p className="mt-1 text-sm font-bold">マイページ</p></div>
-            <div className="flex items-center gap-2"><button type="button" aria-label="お知らせ" className="relative grid size-10 place-items-center rounded-full border border-ink/10 bg-white text-ink/60"><Bell className="size-4" aria-hidden="true" /><span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-coral" aria-hidden="true" /></button><span className="grid size-10 place-items-center rounded-full bg-ink text-xs font-black text-cyan">DE</span></div>
+          <header className="border-b border-rule bg-paper-white px-5 py-5 sm:px-8 lg:px-10">
+            <div className="mx-auto flex w-full max-w-[1220px] items-center justify-between gap-4">
+              <Link
+                className="flex items-center gap-2 font-mincho text-lg lg:hidden"
+                href="/"
+              >
+                <BrandMark className="size-8" />
+                藤本実学塾
+              </Link>
+              <div className="hidden lg:block">
+                <p className="text-xs text-quiet">無料会員マイページ</p>
+                <p className="mt-1 text-sm font-semibold">
+                  申込・学び・できることを、一つの場所に。
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  className="soft-control border border-rule px-3 py-2 text-xs font-semibold hover:border-sapphire hover:text-sapphire"
+                  href="/textbook"
+                >
+                  Web教科書
+                </Link>
+                <MobileMemberNav signOutHref={chatGPTSignOutPath("/")} />
+              </div>
+            </div>
           </header>
 
-          <div className="mx-auto w-full max-w-[1220px] px-4 pb-28 pt-8 sm:px-8 sm:pt-10 lg:pb-12">
-            <div className="flex flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
-              <div><p className="font-mono text-[10px] font-bold tracking-[0.18em] text-coral">GOOD EVENING</p><h1 className="mt-3 text-[clamp(2rem,5vw,3.8rem)] font-black leading-[1.02] tracking-[-0.05em]">今夜はLv.27の<br className="sm:hidden" />続きから。</h1><p className="mt-4 text-sm leading-7 text-ink/50">45分で、ひとつ完成できます。</p></div>
-              <a className="group inline-flex min-h-13 items-center justify-between gap-8 rounded-full bg-coral px-6 text-sm font-bold text-white shadow-[0_15px_40px_rgba(230,109,81,0.2)] transition hover:-translate-y-0.5" href="#learning"><span>前回の続きから始める</span><ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" /></a>
-            </div>
-
-            <div className="mt-9 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-              <section id="learning" className="relative overflow-hidden rounded-[28px] bg-ink p-6 text-ivory shadow-[0_22px_65px_rgba(8,16,25,0.16)] sm:p-8">
-                <div className="absolute -right-16 -top-16 size-60 rounded-full bg-cyan/10 blur-3xl" aria-hidden="true" />
-                <div className="relative">
-                  <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="font-mono text-[10px] tracking-[0.18em] text-cyan">CURRENT PATH</p><h2 className="mt-2 text-xl font-black">Lv.21–30｜仕事を整える</h2></div><span className="rounded-full border border-cyan/20 bg-cyan/10 px-3 py-1.5 text-[10px] font-bold text-cyan">27 / 100</span></div>
-                  <Progress value={27} className="mt-7 [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-track]]:bg-white/10 [&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-cyan [&_[data-slot=progress-indicator]]:to-lime" />
-                  <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.045] p-5"><div className="flex items-start gap-4"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-amber/14 font-mono text-xs font-black text-amber">27</span><div><p className="text-[10px] font-bold text-ivory/38">NEXT MISSION</p><h3 className="mt-1 text-base font-black">3つのシナリオで、来月の数字を予測しよう</h3><p className="mt-2 text-xs leading-6 text-ivory/45">楽観・標準・慎重を分け、前提と不確実性まで説明します。</p></div></div></div>
-                  <div className="mt-5 grid grid-cols-3 divide-x divide-white/10 text-center"><div><p className="font-mono text-lg font-bold text-cyan">26</p><p className="mt-1 text-[9px] text-ivory/35">完成</p></div><div><p className="font-mono text-lg font-bold text-amber">7</p><p className="mt-1 text-[9px] text-ivory/35">今月</p></div><div><p className="font-mono text-lg font-bold text-lime">3</p><p className="mt-1 text-[9px] text-ivory/35">成果物</p></div></div>
+          <div className="mx-auto w-full max-w-[1220px] px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+            <section id="home" className="scroll-mt-24">
+              <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
+                    WELCOME
+                  </p>
+                  <h1 className="mt-4 font-mincho text-[clamp(2.5rem,5vw,4.9rem)] font-medium leading-[1.12] tracking-[-0.04em]">
+                    {member.displayName}さん、
+                    <br />
+                    何から始めますか。
+                  </h1>
+                  <p className="mt-5 max-w-2xl text-sm leading-7 text-quiet">
+                    Web教科書はいつでも無料で読めます。作ったものは実践記録として残し、講師確認と第三者評価を加えて、応募先へ説明できる形へ育てられます。
+                  </p>
                 </div>
-              </section>
+                <a
+                  className="soft-button inline-flex min-h-13 items-center justify-between gap-8 bg-sapphire px-6 text-sm font-semibold text-white hover:bg-brand-dark"
+                  href="#apply"
+                >
+                  受講方法を選ぶ
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </a>
+              </div>
 
-              <section className="rounded-[28px] border border-ink/8 bg-white p-6 sm:p-8">
-                <div className="flex items-start justify-between"><div><p className="font-mono text-[10px] tracking-[0.16em] text-coral">NEXT VISIT</p><h2 className="mt-2 text-lg font-black">次回の予約</h2></div><CalendarDays className="size-5 text-coral" aria-hidden="true" /></div>
-                <div className="mt-8 flex items-end gap-4"><span className="font-mono text-5xl font-black tracking-[-0.08em]">9/2</span><span className="pb-1 text-sm font-bold text-ink/45">水曜日</span></div><p className="mt-3 flex items-center gap-2 text-sm font-bold"><Clock3 className="size-4 text-amber" aria-hidden="true" />18:00–21:00</p><div className="mt-6 rounded-xl bg-ivory p-3 text-xs leading-6 text-ink/55"><Laptop className="mr-1.5 inline size-3.5 text-coral" aria-hidden="true" />自分のPC・AIアカウント</div><div className="mt-5 flex gap-2"><a className="inline-flex min-h-10 flex-1 items-center justify-center rounded-full bg-ink px-4 text-xs font-bold text-ivory" href="/reserve">変更する</a><button type="button" className="inline-flex min-h-10 flex-1 items-center justify-center rounded-full border border-ink/12 px-4 text-xs font-bold text-ink">キャンセル</button></div>
-              </section>
-            </div>
-
-            <div className="mt-4 grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
-              <section className="rounded-[28px] border border-ink/8 bg-white p-6 sm:p-8">
-                <div className="flex items-start justify-between"><div><p className="font-mono text-[10px] tracking-[0.16em] text-[#4d7207]">ASK MON</p><h2 className="mt-2 text-lg font-black">詰まった瞬間だけ、質問。</h2></div><MessageCircleQuestion className="size-5 text-[#4d7207]" aria-hidden="true" /></div><p className="mt-4 text-sm leading-7 text-ink/52">作りたいもの、試したプロンプト、困っている出力をまとめると、MONがより早く次の一手を見つけられます。</p><button type="button" className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-lime/45 px-5 text-sm font-black text-[#385503]"><MessageCircleQuestion className="size-4" aria-hidden="true" />MONへ質問メモを作る</button><p className="mt-3 text-center text-[10px] text-ink/35">現在の待ち人数：0人</p>
-              </section>
-
-              <section className="rounded-[28px] border border-ink/8 bg-white p-6 sm:p-8">
-                <div className="flex items-center justify-between"><div><p className="font-mono text-[10px] tracking-[0.16em] text-coral">MATERIALS</p><h2 className="mt-2 text-lg font-black">補助資料</h2></div><a className="text-xs font-bold text-ink/45 hover:text-coral" href="#">すべて見る</a></div>
-                <div className="mt-6 grid gap-3">
-                  <a className="group flex items-center gap-4 rounded-2xl bg-ivory/65 p-4 transition hover:bg-ivory" href="/downloads/toyota-ai-school-start-guide.pdf" download><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-coral/12 text-coral"><FileText className="size-4" aria-hidden="true" /></span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold">豊田Ai塾 スタートガイド</span><span className="mt-1 block text-[10px] text-ink/38">PDF・はじめに読む資料</span></span><Download className="size-4 text-ink/30 transition group-hover:translate-y-0.5 group-hover:text-coral" aria-hidden="true" /></a>
-                  <a className="group flex items-center gap-4 rounded-2xl bg-ivory/65 p-4 transition hover:bg-ivory" href="/downloads/prompt-quality-checklist.txt" download><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-cyan/15 text-[#087f91]"><Check className="size-4" aria-hidden="true" /></span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold">プロンプト品質チェックリスト</span><span className="mt-1 block text-[10px] text-ink/38">TXT・すぐ使える10項目</span></span><Download className="size-4 text-ink/30 transition group-hover:translate-y-0.5 group-hover:text-coral" aria-hidden="true" /></a>
+              <div className="soft-work-surface soft-panel-clip mt-10 grid border border-rule bg-paper-white md:grid-cols-3">
+                <div className="border-b border-rule p-6 md:border-b-0 md:border-r">
+                  <UserRound
+                    className="size-5 text-sapphire"
+                    aria-hidden="true"
+                  />
+                  <p className="mt-4 text-[11px] text-quiet">会員種別</p>
+                  <p className="mt-2 font-semibold">無料会員</p>
                 </div>
-              </section>
-            </div>
+                <div className="border-b border-rule p-6 md:border-b-0 md:border-r">
+                  <CalendarDays
+                    className="size-5 text-sapphire"
+                    aria-hidden="true"
+                  />
+                  <p className="mt-4 text-xs text-quiet">対応中の申込</p>
+                  <p className="numeric-text mt-2 text-2xl">
+                    {activeApplications.length}件
+                  </p>
+                </div>
+                <div className="p-6">
+                  <BookOpenText
+                    className="size-5 text-sapphire"
+                    aria-hidden="true"
+                  />
+                  <p className="mt-4 text-[11px] text-quiet">Web教科書</p>
+                  <Link
+                    className="mt-2 inline-flex items-center gap-2 font-semibold text-sapphire"
+                    href="/textbook"
+                  >
+                    730課題から探す{" "}
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
 
-            <section id="billing" className="mt-4 rounded-[28px] border border-ink/8 bg-white p-6 sm:p-8">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-mono text-[10px] tracking-[0.16em] text-coral">BILLING</p><h2 className="mt-2 text-lg font-black">お支払い</h2></div><div className="inline-flex items-center gap-2 rounded-full bg-lime/28 px-3 py-1.5 text-[10px] font-bold text-[#4d7207]"><Check className="size-3" aria-hidden="true" />会員ステータス：有効（デモ）</div></div>
-              <div className="mt-6 grid gap-3 md:grid-cols-3"><div className="rounded-2xl bg-ivory/65 p-4"><p className="text-[10px] text-ink/38">月会費</p><p className="mt-2 font-mono text-2xl font-black">5,000円</p><p className="mt-2 text-[10px] text-ink/38">次回決済 2026/9/1</p></div><div className="rounded-2xl bg-ivory/65 p-4"><p className="text-[10px] text-ink/38">今月のレンタル</p><p className="mt-2 font-mono text-2xl font-black">0円</p><p className="mt-2 text-[10px] text-ink/38">利用 0回</p></div><div className="rounded-2xl bg-ivory/65 p-4"><p className="text-[10px] text-ink/38">支払方法</p><p className="mt-2 flex items-center gap-2 text-sm font-black"><ReceiptText className="size-4 text-coral" aria-hidden="true" />カード未接続</p><button type="button" disabled className="mt-3 text-[10px] font-bold text-ink/30">本番決済接続後に管理可能</button></div></div>
+              <div className="soft-panel mt-6 grid gap-5 border border-future-mint/55 bg-future-mint-soft p-6 sm:p-8 md:grid-cols-[auto_1fr_auto] md:items-center">
+                <span className="soft-icon grid size-11 place-items-center bg-white text-sapphire">
+                  <Sparkles className="size-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-xs font-semibold text-sapphire">
+                    今日の次の一歩
+                  </p>
+                  <p className="mt-2 break-words font-mincho text-xl">
+                    {nextStep.title}
+                  </p>
+                  <p className="mt-2 text-xs leading-6 text-quiet">
+                    {nextStep.body}
+                  </p>
+                </div>
+                <Link
+                  className="soft-button inline-flex min-h-11 items-center justify-between gap-4 border border-sapphire bg-white px-4 text-xs font-semibold text-sapphire"
+                  href={nextStep.href}
+                >
+                  {nextStep.label}
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </div>
             </section>
 
-            <section className="mt-4 grid gap-4 lg:grid-cols-2">
-              <a className="group flex items-center gap-5 rounded-[26px] border border-ink/8 bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-lg" href="/level-test"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-amber/25 text-[#92600e]"><Award className="size-5" aria-hidden="true" /></span><span className="min-w-0 flex-1"><span className="block text-[10px] font-bold text-ink/38">ONLINE LEVEL TEST</span><span className="mt-1 block text-base font-black">HPでレベルテストを受ける</span><span className="mt-1 block text-xs text-ink/42">次の到達チェック：Lv.50</span></span><ChevronRight className="size-4 text-ink/25 transition group-hover:translate-x-1" aria-hidden="true" /></a>
-              <a className="group flex items-center gap-5 rounded-[26px] border border-ink/8 bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-lg" href="/#levels"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-cyan/15 text-[#087f91]"><Gauge className="size-5" aria-hidden="true" /></span><span className="min-w-0 flex-1"><span className="block text-[10px] font-bold text-ink/38">FULL PATH</span><span className="mt-1 block text-base font-black">100レベルを見直す</span><span className="mt-1 block text-xs text-ink/42">現在 Lv.27 / 100</span></span><ChevronRight className="size-4 text-ink/25 transition group-hover:translate-x-1" aria-hidden="true" /></a>
+            <section
+              id="apply"
+              className="mt-16 scroll-mt-24 border-t-2 border-brand-dark pt-8"
+            >
+              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
+                    APPLY
+                  </p>
+                  <h2 className="mt-3 font-mincho text-3xl sm:text-4xl">
+                    受講を申し込む
+                  </h2>
+                </div>
+                <p className="max-w-xl text-xs leading-6 text-quiet">
+                  まず希望を受け付け、運営が日程と条件を確認します。送信だけで料金は発生しません。
+                </p>
+              </div>
+
+              <div className="mt-8 grid gap-4 lg:grid-cols-3">
+                {memberServicePlans.map((plan) => (
+                  <article
+                    className="soft-work-surface flex flex-col border border-rule bg-paper-white p-6"
+                    key={plan.id}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="numeric-text text-xs text-sapphire">
+                        {plan.number}
+                      </span>
+                      <span className="text-[10px] text-quiet">
+                        {plan.area}
+                      </span>
+                    </div>
+                    <h3 className="mt-6 font-mincho text-2xl">{plan.name}</h3>
+                    <p className="numeric-text mt-4 text-xl">{plan.price}</p>
+                    <p className="mt-4 text-xs leading-6 text-quiet">
+                      {plan.summary}
+                    </p>
+                    <Link
+                      className="soft-control mt-7 inline-flex min-h-11 items-center justify-between border border-sapphire px-4 text-xs font-semibold text-sapphire hover:bg-sapphire hover:text-white"
+                      href={`/reserve?service=${plan.id}`}
+                    >
+                      この方法で申し込む
+                      <ArrowRight className="size-4" aria-hidden="true" />
+                    </Link>
+                  </article>
+                ))}
+              </div>
+              <p className="mt-4 text-xs leading-6 text-quiet">
+                いずれも初回の有料受講時に入会金10,000円が必要です。税込区分、支払方法、変更・取消条件は、確定前に必ず提示します。
+              </p>
             </section>
+
+            <section
+              id="applications"
+              className="mt-16 scroll-mt-24 border-t-2 border-brand-dark pt-8"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
+                    APPLICATIONS
+                  </p>
+                  <h2 className="mt-3 font-mincho text-3xl">申込状況</h2>
+                </div>
+                <CheckCircle2
+                  className="size-6 text-future-mint"
+                  aria-hidden="true"
+                />
+              </div>
+
+              {applications.length === 0 ? (
+                <div className="soft-work-surface mt-7 border border-rule bg-paper-white p-7 sm:p-9">
+                  <p className="font-mincho text-2xl">まだ申込はありません。</p>
+                  <p className="mt-4 text-sm leading-7 text-quiet">
+                    3つの学び方から選び、できるようになりたいことと希望時期を送ってください。
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-7 grid gap-4">
+                  {applications.map((application) => {
+                    const plan = findMemberServicePlan(application.serviceType);
+                    return (
+                      <article
+                        className="soft-work-surface border border-rule bg-paper-white p-6"
+                        key={application.id}
+                      >
+                        <div className="grid gap-6 md:grid-cols-[1fr_0.7fr]">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className="soft-badge border border-sapphire bg-sapphire-soft px-3 py-1 text-xs font-semibold text-sapphire">
+                                {applicationStatusLabels[application.status]}
+                              </span>
+                              <span className="text-xs text-quiet">
+                                受付 {formatDate(application.createdAt)}
+                              </span>
+                            </div>
+                            <h3 className="mt-4 break-words font-mincho text-2xl">
+                              {plan?.name ?? application.serviceType}
+                            </h3>
+                            <p className="mt-2 text-sm font-semibold">
+                              {application.offerSnapshot?.price ?? plan?.price}
+                            </p>
+                            <p className="mt-4 break-words text-sm leading-7">
+                              {application.goal}
+                            </p>
+                            <p className="mt-2 flex items-center gap-2 text-xs text-quiet">
+                              <Clock3
+                                className="size-3.5 text-sapphire"
+                                aria-hidden="true"
+                              />
+                              希望：{application.preferredSchedule}／
+                              {application.participants}名
+                            </p>
+                          </div>
+                          <div className="soft-control border border-rule bg-paper p-5 text-xs leading-6">
+                            <p className="font-semibold text-sapphire">
+                              現在の案内
+                            </p>
+                            <p className="mt-2 text-quiet">
+                              {application.memberMessage ??
+                                applicationStatusGuidance[application.status]}
+                            </p>
+                            {application.status === "confirmed" &&
+                            application.scheduledAt ? (
+                              <p className="mt-3 font-semibold">
+                                実施：{formatDate(application.scheduledAt)}
+                                （日本時間）
+                              </p>
+                            ) : null}
+                            {application.status === "confirmed" &&
+                            application.assignedInstructor ? (
+                              <p className="mt-1">
+                                担当：{application.assignedInstructor}
+                              </p>
+                            ) : null}
+                            {application.status === "confirmed" &&
+                            application.deliveryDetails ? (
+                              <p className="mt-3 whitespace-pre-wrap break-words border-t border-rule pt-3">
+                                {application.deliveryDetails}
+                              </p>
+                            ) : null}
+                            {application.status === "received" ||
+                            application.status === "reviewing" ? (
+                              <MemberApplicationActions
+                                applicationId={application.id}
+                                updatedAt={application.updatedAt}
+                              />
+                            ) : null}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            <SkillPassport
+              evidence={skillEvidence}
+              profile={skillProfile}
+              reviewRequests={externalReviewRequests}
+              reviews={externalReviews}
+              tasks={skillTaskOptions}
+            />
+
+            <section className="mt-10 grid gap-4 md:grid-cols-2">
+              <div className="soft-work-surface border border-rule bg-paper-white p-6">
+                <CircleDollarSign
+                  className="size-5 text-sapphire"
+                  aria-hidden="true"
+                />
+                <h2 className="mt-4 font-mincho text-2xl">支払い</h2>
+                <p className="mt-3 text-xs leading-6 text-quiet">
+                  決済はまだ接続していません。料金と取引条件を確認できる状態にしてから、マイページ内に追加します。
+                </p>
+              </div>
+              <div className="soft-work-surface border border-rule bg-paper-white p-6">
+                <BookOpenText
+                  className="size-5 text-sapphire"
+                  aria-hidden="true"
+                />
+                <h2 className="mt-4 font-mincho text-2xl">学習の続き</h2>
+                <p className="mt-3 text-xs leading-6 text-quiet">
+                  読了位置の自動保存は未実装です。完成した課題や既存の実務成果は、上のAI実学パスポートへ証拠付きで記録できます。
+                </p>
+              </div>
+            </section>
+
+            <MemberProfileSettings
+              displayName={member.displayName}
+              email={user.email}
+            />
           </div>
         </div>
       </div>
-
-      <nav className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-2xl border border-white/10 bg-ink/95 p-2 text-ivory shadow-[0_18px_55px_rgba(0,0,0,0.3)] backdrop-blur lg:hidden" aria-label="マイページモバイルナビゲーション">
-        {navItems.slice(0, 5).map(({ label, Icon, active, href }) => <a key={label} href={href} className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[9px] font-bold ${active ? 'bg-cyan/12 text-cyan' : 'text-ivory/40'}`}><Icon className="size-4" aria-hidden="true" />{label.replace('・教材', '').replace('・認定', '')}</a>)}
-      </nav>
     </main>
   );
 }

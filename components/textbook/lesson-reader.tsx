@@ -1,0 +1,1195 @@
+'use client';
+
+/* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- 読み取り専用のpreをキーボードでスクロールできるようにする */
+
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clipboard,
+  Compass,
+  FileCheck2,
+  Lightbulb,
+  ListOrdered,
+  MessageCircleQuestion,
+  PenLine,
+  RotateCcw,
+  Sparkles,
+  X,
+} from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import Link from '@/components/site-link';
+import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
+import type { TextbookLesson } from '@/lib/textbook-lessons/types';
+import { MaterialPreview } from '@/components/textbook/material-preview';
+import {
+  humanFileName,
+  inputGuides,
+  inputMethodLabels,
+  lessonSections,
+  modeGuides,
+  readStoredChecks,
+  writeStoredChecks,
+} from '@/components/textbook/lesson-shared';
+
+const trackColors: Record<ClientTextbookTask['track'], string> = {
+  common: 'border-sapphire bg-sapphire-soft text-sapphire',
+  department: 'border-human-coral bg-human-coral-soft text-human-coral',
+  industry: 'border-success bg-future-mint-soft text-success',
+  generation: 'border-warning bg-sunrise-soft text-warning',
+};
+
+type ChecksStorageStatus = 'checking' | 'saved' | 'not-saved' | 'unavailable';
+
+type ChecksStorageState = {
+  taskId: string;
+  status: ChecksStorageStatus;
+};
+
+function preferredScrollBehavior(): ScrollBehavior {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? 'auto'
+    : 'smooth';
+}
+
+type LessonReaderProps = {
+  task: ClientTextbookTask;
+  lesson: TextbookLesson;
+  stepUpTargetTask?: ClientTextbookTask;
+  formalNextTask?: ClientTextbookTask;
+  previousTask?: ClientTextbookTask;
+  onSelectTask: (taskId: string) => void;
+};
+
+export function LessonReader({
+  task,
+  lesson,
+  stepUpTargetTask,
+  formalNextTask,
+  previousTask,
+  onSelectTask,
+}: LessonReaderProps) {
+  const taskMistakes = lesson.mistakes;
+  const completionGroups = lesson.completionGroups ?? [
+    { title: null, items: lesson.completion ?? [] },
+  ];
+  const [checks, setChecks] = useState<boolean[]>(() =>
+    taskMistakes.map(() => false),
+  );
+  const [checksStorage, setChecksStorage] = useState<ChecksStorageState>({
+    taskId: task.id,
+    status: 'checking',
+  });
+  const [promptCopyStatus, setPromptCopyStatus] = useState('');
+  const [nextPromptCopyStatus, setNextPromptCopyStatus] = useState('');
+  const [saveCopyStatus, setSaveCopyStatus] = useState('');
+  const [questionCopyStatus, setQuestionCopyStatus] = useState('');
+  const [stepUpCopyStatus, setStepUpCopyStatus] = useState('');
+  const [question, setQuestion] = useState('');
+  const [focusIndex, setFocusIndex] = useState<number | null>(null);
+  const [currentSection, setCurrentSection] = useState(0);
+  const [tocOpen, setTocOpen] = useState(false);
+  const [mobileNavVisible, setMobileNavVisible] = useState(false);
+  const articleRef = useRef<HTMLElement>(null);
+
+  // チェック状態はこの端末だけに保存する(保存できない環境では単に保存されない)。
+  // SSRとの初期表示を一致させるため、マウント後にlocalStorageから読み戻す
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.resolve().then(() => {
+      if (cancelled) return;
+      const stored = readStoredChecks(task.id, taskMistakes.length);
+      setChecks(stored.checks);
+      setChecksStorage({ taskId: task.id, status: stored.status });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [task.id, taskMistakes.length]);
+
+  function updateChecks(nextChecks: boolean[]) {
+    setChecks(nextChecks);
+    setChecksStorage({
+      taskId: task.id,
+      status: writeStoredChecks(task.id, nextChecks) ? 'saved' : 'unavailable',
+    });
+  }
+
+  // 本文が画面から外れたら、スマホ用バーと開いた目次を閉じる。
+  useEffect(() => {
+    const lessonBody = articleRef.current?.querySelector('#lesson-body');
+    if (!lessonBody) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      void Promise.resolve().then(() => setMobileNavVisible(true));
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      const visible = entry?.isIntersecting ?? false;
+      setMobileNavVisible(visible);
+      if (!visible) setTocOpen(false);
+    });
+    observer.observe(lessonBody);
+    return () => observer.disconnect();
+  }, [task.id]);
+
+  // 全体表示では、いま読んでいるステップを追跡して下部バーに出す
+  useEffect(() => {
+    if (focusIndex !== null) return;
+    const article = articleRef.current;
+    if (!article || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const index = lessonSections.findIndex(
+            (section) => section.id === entry.target.id,
+          );
+          if (index >= 0) setCurrentSection(index);
+        }
+      },
+      { rootMargin: '-35% 0px -55% 0px' },
+    );
+    for (const section of lessonSections) {
+      const element = article.querySelector(`#${section.id}`);
+      if (element) observer.observe(element);
+    }
+    return () => observer.disconnect();
+  }, [focusIndex, task.id]);
+
+  async function copyText(
+    value: string,
+    label: string,
+    setStatus: (status: string) => void,
+  ) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setStatus(`${label}をコピーしました`);
+    } catch {
+      setStatus('コピーできませんでした。文字を選択してコピーしてください。');
+    }
+  }
+
+  function goToSection(index: number) {
+    const bounded = Math.min(Math.max(index, 0), lessonSections.length - 1);
+    setCurrentSection(bounded);
+    if (focusIndex !== null) {
+      setFocusIndex(bounded);
+      articleRef.current?.querySelector('#lesson-body')?.scrollIntoView({
+        behavior: preferredScrollBehavior(),
+        block: 'start',
+      });
+      return;
+    }
+    articleRef.current
+      ?.querySelector(`#${lessonSections[bounded].id}`)
+      ?.scrollIntoView({
+        behavior: preferredScrollBehavior(),
+        block: 'start',
+      });
+  }
+
+  const inputGuide = inputGuides[lesson.inputMethod];
+  const modeLabel =
+    lesson.recommendedMode === 'chat' ? '作業画面：Chat' : '作業画面：Work';
+  const inputMethodLabel = inputMethodLabels[lesson.inputMethod];
+  const modeGuide = modeGuides[lesson.recommendedMode];
+  const materialSummary =
+    lesson.files.length > 0
+      ? lesson.files.map(humanFileName).join('、')
+      : (lesson.carryIn ?? '材料なし');
+  const startBadge =
+    lesson.files.length > 0
+      ? '架空のデモファイルですぐ試せます'
+      : lesson.carryIn
+        ? '前の完成品を育てる課題です'
+        : '材料なしですぐ始められます';
+  const checksStorageStatus =
+    checksStorage.taskId === task.id ? checksStorage.status : 'checking';
+  const questionMemo = `${task.id}「${task.title}」で止まりました。\n使った材料：${materialSummary}\n材料の渡し方：中身を貼った・ファイルを添付した（当てはまるものを残す）\n作業画面：Chat・Work（使った方を残す）\nここで止まった：${question || 'まだうまく説明できない'}\n画面のスクショも一緒に送ります。`;
+
+  const sectionVisible = useMemo(
+    () =>
+      lessonSections.map(
+        (_, index) => focusIndex === null || focusIndex === index,
+      ),
+    [focusIndex],
+  );
+
+  const manualSaveCard = (
+    <div
+      className={`soft-card border-l-4 p-5 sm:p-6 ${
+        lesson.recommendedMode === 'chat'
+          ? 'border-rust bg-paper-white'
+          : 'border-rule bg-paper'
+      }`}
+    >
+      <p className="text-sm font-semibold">返答欄にできた物は、自分で残す</p>
+      <p className="mt-2 text-xs leading-6 text-quiet">
+        Chatの返答欄にファイルができたらダウンロードして「完成」フォルダへ移します。文章だけなら、全文をコピーしてテキストやWordへ貼って保存します。保存した物をもう一度開けた時に「残せた」とします。
+      </p>
+    </div>
+  );
+
+  const workSaveCard = (
+    <div
+      className={`soft-card border-l-4 p-6 sm:p-7 ${
+        lesson.recommendedMode === 'work'
+          ? 'border-sapphire bg-sapphire-soft'
+          : 'border-rule bg-paper'
+      }`}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold text-sapphire">
+            Workで作った物は、この一言で保存
+          </p>
+          <p className="mt-3 max-w-3xl text-sm leading-7">
+            {lesson.savePrompt}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() =>
+            copyText(lesson.savePrompt, '保存の一言', setSaveCopyStatus)
+          }
+          className="soft-control inline-flex min-h-11 shrink-0 items-center justify-center gap-2 border border-sapphire px-4 text-xs font-semibold text-sapphire hover:bg-sapphire hover:text-white"
+        >
+          <Clipboard className="size-4" aria-hidden="true" />
+          保存の一言をコピー
+        </button>
+      </div>
+      <p className="mt-3 min-h-5 text-xs text-sapphire" aria-live="polite">
+        {saveCopyStatus}
+      </p>
+    </div>
+  );
+
+  return (
+    <article
+      className="min-w-0 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0"
+      ref={articleRef}
+    >
+      <header className="border-b border-rule bg-paper-white px-5 py-10 sm:px-10 sm:py-14 lg:px-14">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={`soft-badge border px-3 py-1.5 text-xs font-semibold ${trackColors[task.track]}`}
+          >
+            {task.trackLabel}
+          </span>
+          <span className="soft-badge numeric-text border border-rule px-3 py-1.5 text-xs text-quiet">
+            {task.id}
+          </span>
+          <span className="text-xs text-quiet">{task.courseTitle}</span>
+          <span className="soft-badge border border-sapphire/40 bg-sapphire-soft px-3 py-1.5 text-xs font-semibold text-sapphire">
+            {startBadge}
+          </span>
+        </div>
+        <h2
+          id="lesson-title"
+          tabIndex={-1}
+          className="text-soft-glow mt-6 max-w-4xl font-mincho text-[clamp(2rem,4.6vw,4.4rem)] font-medium leading-[1.18] tracking-[-0.04em] outline-none"
+        >
+          {task.title}
+        </h2>
+
+        <div className="soft-panel soft-panel-clip mt-8 grid border border-rule bg-paper-white px-6 sm:grid-cols-3">
+          <div className="border-b border-rule py-5 sm:border-b-0 sm:border-r sm:pr-6">
+            <p className="text-xs font-semibold text-rust">
+              今日手元に残るもの
+            </p>
+            <p className="mt-2 text-sm leading-6">{lesson.deliverable}</p>
+          </div>
+          <div className="border-b border-rule py-5 sm:border-b-0 sm:border-r sm:px-6">
+            <p className="text-xs font-semibold text-rust">時間の目安</p>
+            <p className="mt-2 text-sm leading-6">{lesson.duration}</p>
+          </div>
+          <div className="py-5 sm:pl-6">
+            <p className="text-xs font-semibold text-rust">終わりの合図</p>
+            <p className="mt-2 text-sm leading-6">開けた・使えた・保存できた</p>
+          </div>
+        </div>
+
+        <details className="soft-control mt-6 border border-rule bg-paper px-5 py-4 xl:hidden">
+          <summary className="cursor-pointer text-xs font-semibold">
+            この課題の10ステップを見る
+          </summary>
+          <nav
+            className="mt-4 grid gap-2 border-t border-rule pt-4 sm:grid-cols-2"
+            aria-label={`${task.id}の目次`}
+          >
+            {lessonSections.map((section, index) => (
+              <button
+                key={section.id}
+                type="button"
+                className="flex min-h-9 items-center gap-3 text-left text-xs text-quiet hover:text-rust"
+                onClick={() => goToSection(index)}
+              >
+                <span className="numeric-text text-xs text-quiet">
+                  {section.number}
+                </span>
+                {section.label}
+              </button>
+            ))}
+          </nav>
+        </details>
+      </header>
+
+      <div
+        id="lesson-body"
+        className="grid scroll-mt-20 gap-12 px-5 py-10 sm:px-10 lg:px-14 xl:grid-cols-[minmax(0,1fr)_190px] xl:gap-16"
+      >
+        <div className="min-w-0">
+          <div className="soft-control mb-8 border border-rule bg-paper-white px-5 py-4 text-xs leading-6 text-quiet shadow-[0_8px_24px_rgba(16,42,54,0.045)]">
+            <span className="font-semibold text-rust">
+              どの課題も、この順番でOK
+            </span>
+            <span className="mx-2 text-quiet">/</span>
+            材料を渡す → 一言送る → 実際に触る → 一つ直す → 残した物を開く
+          </div>
+
+          {focusIndex !== null ? (
+            <div
+              className="soft-control mb-8 flex items-center justify-between gap-4 border border-sapphire bg-sapphire-soft px-5 py-3"
+              aria-live="polite"
+            >
+              <p className="text-xs font-semibold text-sapphire">
+                集中モード：ステップ {lessonSections[focusIndex].number}「
+                {lessonSections[focusIndex].label}」だけを表示中
+              </p>
+              <button
+                type="button"
+                className="inline-flex min-h-9 items-center gap-1 text-xs font-semibold text-sapphire"
+                onClick={() => setFocusIndex(null)}
+              >
+                <X className="size-3.5" aria-hidden="true" />
+                全体を見る
+              </button>
+            </div>
+          ) : null}
+
+          <section
+            id="goal"
+            hidden={!sectionVisible[0]}
+            className="scroll-mt-24 border-t-2 border-deep-green pt-7"
+          >
+            <div className="grid gap-7 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+              <div>
+                <p className="numeric-text text-xs text-rust">01</p>
+                <h3 className="mt-3 font-mincho text-3xl">今日はこれを作る</h3>
+                <p className="mt-4 text-sm leading-7 text-quiet">
+                  最初に、今日手元に何が残れば終わりかだけ見ます。全部を覚える必要はありません。
+                </p>
+              </div>
+              <div className="soft-card soft-panel-clip soft-dark-glow relative bg-deep-green p-7 text-white sm:p-9">
+                <div
+                  className="absolute right-0 top-0 size-28 border-b border-l border-white/15"
+                  aria-hidden="true"
+                />
+                <p className="text-xs font-semibold tracking-[0.14em] text-white/55">
+                  今日できあがるもの
+                </p>
+                <FileCheck2
+                  className="mt-10 size-8 text-future-mint"
+                  aria-hidden="true"
+                />
+                <p className="mt-5 font-mincho text-2xl leading-relaxed">
+                  {lesson.deliverable}
+                </p>
+                <div className="mt-8 flex items-center gap-3 border-t border-white/15 pt-5 text-xs text-white/60">
+                  <CheckCircle2 className="size-4" aria-hidden="true" />
+                  {lesson.duration}
+                  。説明や画像だけでなく、実物を開けたら次へ進みます
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="start"
+            hidden={!sectionVisible[1]}
+            className="mt-16 scroll-mt-24 border-t border-rule pt-7"
+          >
+            <div className="grid gap-7 lg:grid-cols-[0.72fr_1.28fr]">
+              <div>
+                <p className="numeric-text text-xs text-rust">02</p>
+                <h3 className="mt-3 font-mincho text-3xl">材料をAIに渡す</h3>
+                <p className="mt-4 text-sm leading-7 text-quiet">
+                  材料の渡し方と作業画面は別です。ファイル名やパスを覚えることは課題ではありません。
+                </p>
+              </div>
+              <div>
+                <div className="soft-card border-l-4 border-rust bg-paper-white p-6 sm:p-8">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="soft-badge border border-rust/35 bg-white px-3 py-1.5 text-xs font-semibold text-rust">
+                      今回のおすすめ
+                    </span>
+                    <span className="soft-badge border border-sapphire/30 bg-sapphire-soft px-3 py-1.5 text-xs font-semibold text-sapphire">
+                      {modeLabel}
+                    </span>
+                    <span className="soft-badge border border-success/30 bg-future-mint-soft px-3 py-1.5 text-xs font-semibold text-success">
+                      {inputMethodLabel}
+                    </span>
+                  </div>
+                  <h4 className="mt-5 font-mincho text-2xl leading-relaxed">
+                    {inputGuide.title}
+                  </h4>
+                  <p className="mt-3 text-sm leading-7 text-quiet">
+                    {inputGuide.description}
+                  </p>
+                  <p className="mt-5 border-l-2 border-sapphire/35 pl-4 text-xs leading-6 text-quiet">
+                    {modeGuide}
+                  </p>
+                  <p className="mt-6 text-xs font-semibold text-rust">
+                    今回使う材料
+                  </p>
+                  <div className="mt-3 grid gap-3">
+                    {lesson.files.map((file) => (
+                      <p
+                        key={file}
+                        className="break-words text-sm font-semibold leading-7"
+                      >
+                        {humanFileName(file)}
+                      </p>
+                    ))}
+                    {lesson.carryIn ? (
+                      <p className="break-words border-l-2 border-success/40 pl-3 text-sm font-semibold leading-7">
+                        {lesson.carryIn}
+                      </p>
+                    ) : null}
+                    {lesson.files.length === 0 && !lesson.carryIn ? (
+                      <p className="text-sm leading-7 text-quiet">
+                        この課題に材料はいりません。最初の一言だけで始められます。
+                      </p>
+                    ) : null}
+                  </div>
+                  {lesson.files.length > 0 ? (
+                    <p className="mt-5 border-t border-rule pt-4 text-xs leading-6 text-quiet">
+                      ファイル名は探す場所の案内です。正確に入力できることは、完成条件に含めません。
+                    </p>
+                  ) : null}
+                  <MaterialPreview key={task.id} files={lesson.files} />
+                </div>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  {inputGuide.steps.map((item, index) => (
+                    <div
+                      key={item}
+                      className="soft-card border border-rule bg-white p-5"
+                    >
+                      <span className="numeric-text text-xs text-rust">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <p className="mt-3 text-sm font-semibold leading-6">
+                        {item}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="soft-card mt-5 border border-rule bg-paper p-5">
+                  <p className="text-xs font-semibold text-deep-green">
+                    材料の別の渡し方でもOK
+                  </p>
+                  <p className="mt-2 text-xs leading-6 text-quiet">
+                    {inputGuide.alternative}
+                  </p>
+                </div>
+                <p className="mt-5 border-l-4 border-human-coral bg-human-coral-soft p-4 text-xs leading-6 text-quiet">
+                  AIが資料を読めないと言ったら、設定で粘らなくて大丈夫です。短い文章は必要部分を貼り、PDF・Word・Excelは添付へ切り替えます。読めない内容を推測して進めさせません。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="prompt"
+            hidden={!sectionVisible[2]}
+            className="mt-16 scroll-mt-24 border-t border-rule pt-7"
+          >
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="numeric-text text-xs text-rust">03</p>
+                <h3 className="mt-3 font-mincho text-3xl">
+                  まずこう言ってみる
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-quiet">
+                  {lesson.inputMethod === 'paste'
+                    ? '先にメモの中身を貼り、その下にこの一言を続けます。'
+                    : lesson.inputMethod === 'attach'
+                      ? 'ファイル名が入力欄に表示されたのを見てから、この一言を送ります。'
+                      : lesson.inputMethod === 'mixed'
+                        ? 'メモの中身を貼り、添付した資料名が表示されたのを見てから、この一言を送ります。'
+                        : '材料はいりません。この一言をそのまま送ります。'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  copyText(lesson.firstWord, '最初の一言', setPromptCopyStatus)
+                }
+                className="soft-control inline-flex min-h-11 items-center justify-center gap-2 border border-deep-green px-4 text-xs font-semibold hover:bg-deep-green hover:text-white"
+              >
+                <Clipboard className="size-4" aria-hidden="true" />
+                この一言をコピー
+              </button>
+            </div>
+            <section aria-label="ChatGPTへ最初に送る文">
+              <pre
+                className="soft-card soft-dark-glow mt-7 overflow-x-auto border-l-4 border-future-mint bg-ink p-6 font-mono text-xs leading-7 whitespace-pre-wrap text-paper focus:outline-2 focus:outline-offset-2 focus:outline-future-mint sm:p-8"
+                tabIndex={0}
+              >
+                {lesson.firstWord}
+              </pre>
+            </section>
+            <p className="mt-3 min-h-6 text-xs text-rust" aria-live="polite">
+              {promptCopyStatus}
+            </p>
+          </section>
+
+          <section
+            id="compare"
+            hidden={!sectionVisible[3]}
+            className="mt-16 scroll-mt-24 border-t border-rule pt-7"
+          >
+            <p className="numeric-text text-xs text-rust">04</p>
+            <h3 className="mt-3 font-mincho text-3xl">
+              出てきた物を実際に触る
+            </h3>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
+              最初から完璧でなくて大丈夫です。読むだけにせず、この課題で必要な操作を自分で一度行います。
+            </p>
+            <div className="soft-panel soft-panel-clip mt-7 grid border border-rule md:grid-cols-2">
+              <div className="border-b border-rule p-6 md:border-b-0 md:border-r sm:p-8">
+                <p className="flex items-center gap-2 text-xs font-semibold text-quiet">
+                  <span className="soft-control grid size-6 place-items-center border border-rule">
+                    1
+                  </span>
+                  AIから出てくるもの
+                </p>
+                <p className="mt-6 text-base leading-8">{lesson.deliverable}</p>
+              </div>
+              <div className="bg-paper-white p-6 sm:p-8">
+                <p className="flex items-center gap-2 text-xs font-semibold text-deep-green">
+                  <Check className="size-4" aria-hidden="true" />
+                  {lesson.nextPrompts?.length
+                    ? 'まず自分で試す'
+                    : '自分で試すのは、これだけ'}
+                </p>
+                <div className="mt-6 grid gap-3">
+                  {lesson.tryActions.map((item) => (
+                    <p
+                      key={item}
+                      className="flex items-start gap-3 text-sm leading-7"
+                    >
+                      <span
+                        className="mt-2.5 size-1.5 shrink-0 bg-rust"
+                        aria-hidden="true"
+                      />
+                      {item}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {lesson.nextPrompts?.length ? (
+              <div className="soft-card mt-6 border-l-4 border-human-coral bg-human-coral-soft p-6 sm:p-8">
+                <p className="text-xs font-semibold tracking-[0.1em] text-human-coral">
+                  ここまで動いたら、次に送る一言
+                </p>
+                <p className="mt-3 text-sm leading-7 text-quiet">
+                  これは任意のコツではなく、完成まで進むための次の手順です。上から、当てはまるものだけ送ります。
+                </p>
+                <div className="mt-6 grid gap-5">
+                  {lesson.nextPrompts.map((item, index) => (
+                    <div
+                      key={`${item.when}-${index}`}
+                      className="border-t border-human-coral/25 pt-5 first:border-t-0 first:pt-0"
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-human-coral">
+                            {item.when}
+                          </p>
+                          <p className="mt-3 font-mono text-xs leading-7">
+                            {item.say}
+                          </p>
+                          {item.afterActions?.length ? (
+                            <div className="mt-4 border-l-2 border-human-coral/35 pl-4">
+                              <p className="text-xs font-semibold text-human-coral">
+                                この一言を送った後に試す
+                              </p>
+                              <div className="mt-2 grid gap-2">
+                                {item.afterActions.map((action) => (
+                                  <p
+                                    key={action}
+                                    className="flex gap-2 text-xs leading-6 text-quiet"
+                                  >
+                                    <span aria-hidden="true">・</span>
+                                    {action}
+                                  </p>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            copyText(
+                              item.say,
+                              '次の一言',
+                              setNextPromptCopyStatus,
+                            )
+                          }
+                          className="soft-control inline-flex min-h-10 shrink-0 items-center justify-center gap-2 border border-human-coral px-4 text-xs font-semibold text-human-coral hover:bg-human-coral hover:text-white"
+                        >
+                          <Clipboard className="size-4" aria-hidden="true" />
+                          この一言をコピー
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p
+                  className="mt-4 min-h-5 text-xs text-human-coral"
+                  aria-live="polite"
+                >
+                  {nextPromptCopyStatus}
+                </p>
+              </div>
+            ) : null}
+          </section>
+
+          <section
+            id="improve"
+            hidden={!sectionVisible[4]}
+            className="mt-16 scroll-mt-24 border-t border-rule pt-7"
+          >
+            <p className="numeric-text text-xs text-rust">05</p>
+            <h3 className="mt-3 font-mincho text-3xl">出力を上げるコツ</h3>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
+              全部試さなくて大丈夫です。気になるものを一つだけ選び、短く伝えます。
+            </p>
+            <div className="mt-7 grid gap-4 md:grid-cols-3">
+              {lesson.improvementTips.map((item) => (
+                <article
+                  key={item.title}
+                  className="soft-card soft-interactive border-t-2 border-rust bg-white p-5"
+                >
+                  <Lightbulb className="size-5 text-rust" aria-hidden="true" />
+                  <h4 className="mt-4 text-sm font-semibold">{item.title}</h4>
+                  <p className="mt-3 text-xs leading-6 text-quiet">
+                    「{item.say}」
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section
+            id="check"
+            hidden={!sectionVisible[5]}
+            className="mt-16 scroll-mt-24 border-t border-rule pt-7"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="numeric-text text-xs text-rust">06</p>
+                <h3 className="mt-3 font-mincho text-3xl">やりがちなミス</h3>
+              </div>
+              <p className="text-xs text-quiet">
+                見つけた数：{checks.filter(Boolean).length} /{' '}
+                {taskMistakes.length}
+              </p>
+            </div>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
+              当てはまったらチェックします。見つけられたら大成功。上の短い言い方を一つ送って直し、直ったらチェックを外します。
+            </p>
+            <div className="soft-panel soft-panel-clip mt-7 border border-rule bg-paper-white">
+              {taskMistakes.map((item, index) => (
+                <label
+                  key={item}
+                  className="flex cursor-pointer items-start gap-4 border-b border-rule px-5 py-5 last:border-b-0 hover:bg-white sm:px-6"
+                >
+                  <input
+                    className="mt-1 size-4 accent-sapphire"
+                    type="checkbox"
+                    checked={checks[index] ?? false}
+                    onChange={() =>
+                      updateChecks(
+                        checks.map((value, checkIndex) =>
+                          checkIndex === index ? !value : value,
+                        ),
+                      )
+                    }
+                  />
+                  <span className="text-sm leading-7">{item}</span>
+                </label>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+              <p className="text-xs leading-6 text-quiet">
+                これは合格・不合格を決めるものではありません。
+                {checksStorageStatus === 'checking'
+                  ? '保存状態を確認しています。'
+                  : checksStorageStatus === 'saved'
+                    ? 'チェックはこの端末のブラウザだけに保存されています。'
+                    : checksStorageStatus === 'not-saved'
+                      ? 'まだチェックは保存されていません。チェックするとこの端末のブラウザに保存します。'
+                      : 'この環境では保存できないため、チェックはページを閉じると消えます。'}
+              </p>
+              <button
+                type="button"
+                onClick={() => updateChecks(taskMistakes.map(() => false))}
+                className="inline-flex items-center gap-2 text-xs font-semibold text-rust"
+              >
+                <RotateCcw className="size-3.5" aria-hidden="true" />
+                チェックを外す
+              </button>
+            </div>
+          </section>
+
+          <section
+            id="complete"
+            hidden={!sectionVisible[6]}
+            className="mt-16 scroll-mt-24 border-t border-rule pt-7"
+          >
+            <p className="numeric-text text-xs text-rust">07</p>
+            <h3 className="mt-3 font-mincho text-3xl">ここまでできたら完成</h3>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
+              AIの「できました」で終わらせません。実物を開いて使い、この課題の完成条件を確かめます。
+            </p>
+            <div className="soft-panel soft-panel-clip mt-7 border border-rule bg-paper-white">
+              {completionGroups.map((group, groupIndex) => (
+                <div
+                  key={group.title ?? 'completion'}
+                  className={
+                    groupIndex > 0 ? 'border-t-2 border-deep-green' : ''
+                  }
+                >
+                  {group.title ? (
+                    <h4 className="bg-paper px-5 py-4 text-sm font-semibold text-deep-green sm:px-6">
+                      {group.title}
+                    </h4>
+                  ) : null}
+                  {group.items.map((item, index) => (
+                    <div
+                      key={item}
+                      className="flex items-start gap-4 border-t border-rule px-5 py-5 first:border-t-0 sm:px-6"
+                    >
+                      <span className="soft-control numeric-text grid size-7 shrink-0 place-items-center border border-success bg-future-mint-soft text-xs font-semibold text-success">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <p className="text-sm leading-7">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 grid gap-5">
+              {lesson.recommendedMode === 'chat' ? (
+                <>
+                  {manualSaveCard}
+                  {workSaveCard}
+                </>
+              ) : (
+                <>
+                  {workSaveCard}
+                  {manualSaveCard}
+                </>
+              )}
+            </div>
+            <div className="soft-panel mt-5 flex flex-col gap-4 border border-future-mint bg-future-mint-soft p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold">できた証拠を残す</p>
+                <p className="mt-1 text-xs leading-6 text-quiet">
+                  マイページで「{task.id}
+                  」を選び、作ったものと確認できたことをAI実学パスポートへ記録できます。
+                </p>
+              </div>
+              <Link
+                className="soft-button inline-flex min-h-11 shrink-0 items-center justify-center gap-2 bg-brand-dark px-5 text-xs font-semibold text-white"
+                href="/mypage#skills"
+              >
+                <FileCheck2 className="size-4" aria-hidden="true" />
+                実践記録へ残す
+              </Link>
+            </div>
+          </section>
+
+          <section
+            id="application"
+            hidden={!sectionVisible[7]}
+            className="mt-16 scroll-mt-24 border-t border-rule pt-7"
+          >
+            <p className="numeric-text text-xs text-rust">08</p>
+            <h3 className="mt-3 font-mincho text-3xl">自分の仕事なら</h3>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
+              今つくった形を、明日の仕事で一つだけ使える形へ変えます。
+            </p>
+            <div className="soft-card soft-panel-clip mt-7 border border-rule bg-paper p-6 sm:p-8">
+              <Sparkles className="size-6 text-rust" aria-hidden="true" />
+              <p className="mt-5 font-mincho text-2xl leading-relaxed">
+                {lesson.application}
+              </p>
+              <p className="mt-6 border-t border-rule pt-5 text-xs leading-6 text-quiet">
+                本物の顧客名、個人情報、社外秘の資料へ置き換える前に、会社のルールと閲覧権限を確かめます。
+              </p>
+            </div>
+          </section>
+
+          <section
+            id="ask"
+            hidden={!sectionVisible[8]}
+            className="mt-16 scroll-mt-24 border-t-2 border-deep-green pt-7"
+          >
+            <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
+              <div>
+                <p className="numeric-text text-xs text-rust">09</p>
+                <h3 className="mt-3 font-mincho text-3xl">
+                  困ったら藤本に聞く
+                </h3>
+                <p className="mt-4 text-sm leading-7 text-quiet">
+                  うまく説明できなくても大丈夫です。止まった画面のスクショと、一言だけ送ってください。
+                </p>
+              </div>
+              <div className="soft-card soft-dark-glow bg-deep-green p-6 text-white sm:p-8">
+                <div className="flex items-center gap-3">
+                  <MessageCircleQuestion
+                    className="size-5 text-human-coral-bright"
+                    aria-hidden="true"
+                  />
+                  <h4 className="font-mincho text-2xl">藤本に見せる内容</h4>
+                </div>
+                <label className="mt-6 block">
+                  <span className="text-xs text-white/65">
+                    どこで止まった？
+                  </span>
+                  <textarea
+                    className="mt-2 min-h-28 w-full resize-y border border-white/25 bg-white/5 p-4 text-sm leading-7 text-white outline-none placeholder:text-white/60 focus:border-human-coral-bright"
+                    value={question}
+                    onChange={(event) => setQuestion(event.target.value)}
+                    placeholder="例：元のメモにない日付が増えた"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyText(
+                      questionMemo,
+                      '藤本に見せる文',
+                      setQuestionCopyStatus,
+                    )
+                  }
+                  className="soft-button mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 bg-white px-5 text-xs font-semibold text-deep-green hover:bg-sapphire-soft"
+                >
+                  <PenLine className="size-4" aria-hidden="true" />
+                  藤本に見せる文をコピー
+                </button>
+                <p className="mt-3 text-xs leading-5 text-white/55">
+                  ここからは送信されません。コピーした文と画面のスクショを、相談する時に見せてください。
+                </p>
+                <p
+                  className="mt-2 min-h-5 text-xs text-human-coral-bright"
+                  aria-live="polite"
+                >
+                  {questionCopyStatus}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="stepup"
+            hidden={!sectionVisible[9]}
+            className="mt-16 scroll-mt-24 border-t-2 border-sapphire pt-7"
+          >
+            <p className="numeric-text text-xs text-sapphire">10</p>
+            <h3 className="mt-3 font-mincho text-3xl">ステップアップ</h3>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
+              ここまでで終わっても大丈夫です。まだやってみたい人は、最初から作り直さず、今できた物へ便利を一つだけ足します。
+            </p>
+            <div className="soft-card soft-panel-clip mt-7 overflow-hidden border border-sapphire bg-sapphire-soft">
+              <div className="grid lg:grid-cols-[0.86fr_1.14fr]">
+                <div className="border-b border-sapphire/25 p-6 lg:border-r lg:border-b-0 sm:p-8">
+                  <span className="soft-badge numeric-text inline-flex border border-sapphire bg-white px-3 py-1.5 text-xs font-semibold text-sapphire">
+                    {lesson.stepUp.kind === 'task'
+                      ? `次におすすめ ${lesson.stepUp.targetTaskId}`
+                      : 'コースの総仕上げ'}
+                  </span>
+                  <h4 className="mt-5 font-mincho text-2xl leading-relaxed">
+                    {lesson.stepUp.title}
+                  </h4>
+                  {stepUpTargetTask ? (
+                    <div className="mt-5 border-l-2 border-sapphire/35 pl-4">
+                      <p className="text-xs font-semibold text-sapphire">
+                        課題カタログの行き先
+                      </p>
+                      <p className="mt-2 text-xs leading-6 text-quiet">
+                        {stepUpTargetTask.id}「{stepUpTargetTask.title}」
+                      </p>
+                    </div>
+                  ) : null}
+                  <div className="mt-6 border-t border-sapphire/25 pt-5">
+                    <p className="text-xs font-semibold text-sapphire">
+                      今回できた物を、そのまま使う
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-quiet">
+                      {lesson.stepUp.carryOver}
+                    </p>
+                  </div>
+                  <div className="mt-5 border-t border-sapphire/25 pt-5">
+                    <p className="text-xs font-semibold text-sapphire">
+                      次に増えること
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-quiet">
+                      {lesson.stepUp.adds}
+                    </p>
+                  </div>
+                  {formalNextTask ? (
+                    <div className="mt-5 border-t border-sapphire/25 pt-5">
+                      <p className="text-xs font-semibold text-sapphire">
+                        番号順の正式な次課題
+                      </p>
+                      <p className="mt-2 text-sm leading-7 text-quiet">
+                        {formalNextTask.id}「{formalNextTask.title}」
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+                <div className="bg-paper-white p-6 sm:p-8">
+                  <div className="flex items-center gap-3 text-sapphire">
+                    <Compass className="size-5" aria-hidden="true" />
+                    <p className="text-xs font-semibold">
+                      今いるChatまたはWorkの続きで、こう言う
+                    </p>
+                  </div>
+                  <p className="mt-5 font-mono text-xs leading-7">
+                    {lesson.stepUp.say}
+                  </p>
+                  {lesson.stepUp.kind === 'task' ? (
+                    <p className="mt-4 border-l-2 border-warning pl-4 text-xs leading-6 text-quiet">
+                      これは今の完成品へ小さな便利を足す任意の発展です。
+                      {lesson.stepUp.targetTaskId}
+                      を正式に終えた扱いにはなりません。
+                    </p>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      copyText(
+                        lesson.stepUp.say,
+                        'ステップアップの一言',
+                        setStepUpCopyStatus,
+                      )
+                    }
+                    className="soft-button mt-6 inline-flex min-h-11 items-center justify-center gap-2 bg-sapphire px-5 text-xs font-semibold text-white"
+                  >
+                    <Clipboard className="size-4" aria-hidden="true" />
+                    この一言をコピー
+                  </button>
+                  <p
+                    className="mt-3 min-h-5 text-xs text-sapphire"
+                    aria-live="polite"
+                  >
+                    {stepUpCopyStatus}
+                  </p>
+                  {stepUpTargetTask ? (
+                    <button
+                      type="button"
+                      className="soft-control mt-2 inline-flex min-h-11 items-center gap-2 border border-sapphire px-4 text-xs font-semibold text-sapphire hover:bg-sapphire hover:text-white"
+                      onClick={() => onSelectTask(stepUpTargetTask.id)}
+                    >
+                      詳しい手順を開く
+                      <ArrowRight className="size-3.5" aria-hidden="true" />
+                    </button>
+                  ) : null}
+                  <a
+                    className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-quiet hover:text-sapphire"
+                    href="#ask"
+                  >
+                    止まったら、藤本に見せる文へ戻る
+                    <ArrowRight className="size-3.5" aria-hidden="true" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div className="mt-16 grid gap-3 border-t border-rule pt-7 sm:grid-cols-2">
+            {previousTask ? (
+              <button
+                type="button"
+                className="soft-control flex min-h-14 min-w-0 items-center justify-between gap-3 overflow-hidden border border-rule bg-paper-white px-5 py-3 text-left hover:border-sapphire"
+                onClick={() => onSelectTask(previousTask.id)}
+              >
+                <span className="flex shrink-0 items-center gap-2 text-xs text-quiet">
+                  <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
+                  前の課題
+                </span>
+                <span className="min-w-0 truncate text-xs font-semibold">
+                  {previousTask.id} {previousTask.title}
+                </span>
+              </button>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+            {formalNextTask ? (
+              <button
+                type="button"
+                className="soft-control flex min-h-14 min-w-0 items-center justify-between gap-3 overflow-hidden border border-deep-green bg-paper-white px-5 py-3 text-left hover:bg-deep-green hover:text-white"
+                onClick={() => onSelectTask(formalNextTask.id)}
+              >
+                <span className="min-w-0 truncate text-xs font-semibold">
+                  {formalNextTask.id} {formalNextTask.title}
+                </span>
+                <span className="flex shrink-0 items-center gap-2 text-xs">
+                  次の課題
+                  <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+                </span>
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <aside className="hidden xl:block">
+          <div className="sticky top-5 border-l border-rule pl-6">
+            <p className="text-xs font-semibold tracking-[0.14em] text-rust">
+              今日の進め方
+            </p>
+            <nav className="mt-5 grid gap-1" aria-label={`${task.id}の目次`}>
+              {lessonSections.map((section, index) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  className={`group flex min-h-9 items-center gap-3 text-left text-xs hover:text-rust ${
+                    currentSection === index
+                      ? 'font-semibold text-rust'
+                      : 'text-quiet'
+                  }`}
+                  onClick={() => goToSection(index)}
+                  aria-current={currentSection === index ? 'true' : undefined}
+                >
+                  <span className="numeric-text text-xs text-quiet group-hover:text-rust">
+                    {section.number}
+                  </span>
+                  {section.label}
+                </button>
+              ))}
+            </nav>
+            <div className="mt-8 border-t border-rule pt-5">
+              <p className="text-xs font-semibold">止まっても大丈夫</p>
+              <p className="mt-2 text-xs leading-6 text-quiet">
+                画面のスクショと、止まった所を藤本へ見せればOKです。
+              </p>
+              <a
+                className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-rust"
+                href="#ask"
+              >
+                藤本に見せる文を作る
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* スマホ用: 本文を読んでいる間だけ、現在位置と次の一手を表示 */}
+      {mobileNavVisible ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-paper-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+          {tocOpen ? (
+            <nav
+              className="max-h-[50vh] overflow-y-auto border-b border-rule"
+              aria-label="課題内の移動"
+            >
+              {lessonSections.map((section, index) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  className={`flex min-h-11 w-full items-center gap-3 border-b border-rule px-5 text-left text-xs last:border-b-0 ${
+                    currentSection === index
+                      ? 'bg-sapphire-soft font-semibold text-sapphire'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setTocOpen(false);
+                    goToSection(index);
+                  }}
+                >
+                  <span className="numeric-text text-xs text-quiet">
+                    {section.number}
+                  </span>
+                  {section.label}
+                </button>
+              ))}
+              <a
+                className="flex min-h-11 w-full items-center gap-3 px-5 text-xs font-semibold text-deep-green"
+                href="#task-explorer"
+                onClick={() => setTocOpen(false)}
+              >
+                <ListOrdered className="size-4" aria-hidden="true" />
+                他の課題を選ぶ（課題一覧へ）
+              </a>
+            </nav>
+          ) : null}
+          <div className="mx-auto flex min-h-14 w-full max-w-[720px] items-stretch justify-between px-1">
+            <button
+              type="button"
+              className="inline-flex min-w-11 flex-col items-center justify-center gap-1 px-1.5 text-xs font-semibold text-quiet"
+              aria-expanded={tocOpen}
+              onClick={() => setTocOpen((open) => !open)}
+            >
+              <ListOrdered className="size-4" aria-hidden="true" />
+              目次
+            </button>
+            <button
+              type="button"
+              className="inline-flex min-w-11 items-center justify-center px-1.5 text-xs font-semibold text-quiet disabled:opacity-35"
+              disabled={currentSection === 0}
+              onClick={() => goToSection(currentSection - 1)}
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+              前へ
+            </button>
+            <p
+              className="flex min-w-0 flex-col items-center justify-center px-1 text-center"
+              aria-live="polite"
+            >
+              <span className="numeric-text text-xs text-quiet">
+                {currentSection + 1} / {lessonSections.length}
+              </span>
+              <span className="max-w-24 truncate text-xs font-semibold">
+                {lessonSections[currentSection].label}
+              </span>
+            </p>
+            <button
+              type="button"
+              className="inline-flex min-w-11 items-center justify-center px-1.5 text-xs font-semibold text-quiet disabled:opacity-35"
+              disabled={currentSection === lessonSections.length - 1}
+              onClick={() => goToSection(currentSection + 1)}
+            >
+              次へ
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={`inline-flex min-w-11 flex-col items-center justify-center gap-1 px-1.5 text-xs font-semibold ${
+                focusIndex !== null ? 'text-sapphire' : 'text-quiet'
+              }`}
+              aria-pressed={focusIndex !== null}
+              onClick={() =>
+                focusIndex !== null
+                  ? setFocusIndex(null)
+                  : setFocusIndex(currentSection)
+              }
+            >
+              <Sparkles className="size-4" aria-hidden="true" />
+              {focusIndex !== null ? '全体' : '集中'}
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </article>
+  );
+}
