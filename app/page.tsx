@@ -364,10 +364,19 @@ export default function Home() {
 
             <div className="soft-panel soft-panel-clip mt-6 grid border border-white/20 bg-white/[0.025] sm:grid-cols-2 lg:grid-cols-4">
               {[
-                ['技術が足りない', 'AIを使う技術へ'],
-                ['仕事の判断が足りない', '担当業務の実践へ'],
-                ['業界の条件が足りない', '業界ごとの実践へ'],
-                ['表現の質を上げたい', '作品づくりへ'],
+                ['AIに頼んでも、思いどおりにならない', '使い方と技術から探す'],
+                [
+                  '自分の仕事で、AIをどこに使えるか分からない',
+                  '担当業務の実例から探す',
+                ],
+                [
+                  '自分の業界に合う使い方が見つからない',
+                  '業界ごとの実例から探す',
+                ],
+                [
+                  '文章・資料・画像を、もっと伝わる形にしたい',
+                  'つくりたい作品から探す',
+                ],
               ].map(([question, answer]) => (
                 <div
                   key={question}
