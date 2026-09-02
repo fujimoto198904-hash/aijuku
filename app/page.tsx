@@ -932,7 +932,7 @@ export default function Home() {
                 href={textbookGuidePath}
                 className="button-glow group inline-flex min-h-14 items-center justify-between px-6 text-sm font-semibold text-white"
               >
-                0円で教科書を始める
+                WEB教科書で学ぶ（無料）
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-1"
                   aria-hidden="true"
