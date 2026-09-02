@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { getTextbookMaterialGuide } from '../lib/textbook-material-guide';
+import { getTextbookPromptExplanation } from '../lib/textbook-prompt-explanation';
 import { getTaskDemoDownloadPlan } from '../lib/textbook-demo-download-plan';
 import { allChapters } from '../lib/textbook-lessons/all';
 import { chapterLoaderKeys } from '../lib/textbook-lessons/loader';
@@ -253,17 +254,26 @@ const allLessonEntries: [string, TextbookLesson][] = allChapters.flatMap(
 const allLessonIds = new Set(allLessonEntries.map(([lessonId]) => lessonId));
 
 for (const [lessonId, lesson] of targetLessons) {
+  const promptExplanation = getTextbookPromptExplanation(lesson);
   const requiredTexts: [string, string][] = [
     ['最初の完成までの目安', lesson.duration],
     ['今回手元に残る物', lesson.deliverable],
     ['最初の一言', lesson.firstWord],
     ['保存の一言', lesson.savePrompt],
     ['自分の仕事なら', lesson.application],
+    ['プロンプトのねらい', promptExplanation.reason],
+    ['プロンプトのワンポイント', promptExplanation.advice],
   ];
   for (const [label, value] of requiredTexts) {
     if (!value || value.trim().length === 0) {
       fail(`${lessonId}: ${label}が空です`);
     }
+  }
+  if (promptExplanation.reason.length > 90) {
+    fail(`${lessonId}: プロンプトのねらいが長すぎます`);
+  }
+  if (promptExplanation.advice.length > 100) {
+    fail(`${lessonId}: プロンプトのワンポイントが長すぎます`);
   }
   if (lesson.tryActions.length === 0) {
     fail(`${lessonId}: 実際に触る操作がありません`);
@@ -428,6 +438,40 @@ for (const [lessonId, lesson] of targetLessons) {
   ];
   if (rawValues.some((value) => value.includes('```'))) {
     fail(`${lessonId}: 一言の中にMarkdownコード柵が入っています`);
+  }
+}
+
+const promptExplanationRegressions = [
+  ['Lv.49', '足りない情報を先に質問'],
+  ['Lv.140', '足りない情報を先に質問'],
+  ['Lv.147', '足りない情報を先に質問'],
+  ['Lv.165', '足りない情報を先に質問'],
+  ['SLS-02', '足りない情報を先に質問'],
+  ['CS-02', '足りない情報を先に質問'],
+  ['EDU-05', '足りない情報を先に質問'],
+  ['SVD-08', '足りない情報を先に質問'],
+  ['WEB-01', '足りない情報を先に質問'],
+  ['Lv.134', '候補を同じ条件で出して比べ'],
+  ['PRF-06', '候補を同じ条件で出して比べ'],
+  ['TRV-09', '返してほしい形も伝える'],
+  ['REA-09', '返してほしい形も伝える'],
+  ['MUS-09', '返してほしい形も伝える'],
+  ['PD-03', 'もっともらしい作り話を防ぎ'],
+  ['IMG-04', 'もっともらしい作り話を防ぎ'],
+] as const;
+
+const promptExplanationLessonsById = new Map(allLessonEntries);
+for (const [lessonId, forbiddenText] of promptExplanationRegressions) {
+  const lesson = promptExplanationLessonsById.get(lessonId);
+  if (!lesson) {
+    fail(`${lessonId}: プロンプト解説の回帰検査対象が見つかりません`);
+    continue;
+  }
+  const explanation = getTextbookPromptExplanation(lesson);
+  if (explanation.reason.includes(forbiddenText)) {
+    fail(
+      `${lessonId}: プロンプト解説が「${forbiddenText}」へ誤分類されています`,
+    );
   }
 }
 

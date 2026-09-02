@@ -25,12 +25,14 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Link from '@/components/site-link';
+import { PromptExplanation } from '@/components/prompt-explanation';
 import { TextbookAccessBadges } from '@/components/textbook/access-badges';
 import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
 import type { TextbookLesson } from '@/lib/textbook-lessons/types';
 import { getTextbookAccessProfile } from '@/lib/textbook-access';
 import type { TaskDemoDownloadPlan } from '@/lib/textbook-demo-industry';
 import { getTextbookMaterialGuide } from '@/lib/textbook-material-guide';
+import { getTextbookPromptExplanation } from '@/lib/textbook-prompt-explanation';
 import {
   textbookExplorePath,
   textbookLessonPath,
@@ -200,6 +202,7 @@ export function LessonReader({
   }
 
   const materialGuide = getTextbookMaterialGuide(lesson);
+  const promptExplanation = getTextbookPromptExplanation(lesson);
   const accessProfile = getTextbookAccessProfile(task);
   const modeLabel =
     lesson.recommendedMode === 'chat' ? '作業画面：Chat' : '作業画面：Work';
@@ -578,6 +581,10 @@ export function LessonReader({
             <p className="mt-3 min-h-6 text-xs text-rust" aria-live="polite">
               {promptCopyStatus}
             </p>
+            <PromptExplanation
+              reason={promptExplanation.reason}
+              advice={promptExplanation.advice}
+            />
           </section>
 
           <section

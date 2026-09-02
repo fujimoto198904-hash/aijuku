@@ -2,6 +2,7 @@ import { ArrowRight, ClipboardList, ShieldCheck } from 'lucide-react';
 
 import Link from '@/components/site-link';
 import { PromptCopyButton } from '@/components/home/prompt-copy-button';
+import { PromptExplanation } from '@/components/prompt-explanation';
 import { textbookLessonPath } from '@/lib/textbook-routes';
 
 const prompt = `下の「届いたメール」を読んで、返信文の草案を作って。
@@ -23,6 +24,13 @@ const prompt = `下の「届いたメール」を読んで、返信文の草案�
 可能であれば、今週金曜日までにご返信いただけると助かります。
 
 ひだまり美容室　佐藤`;
+
+const promptExplanation = {
+  reason:
+    '「何を作るか」「メールにない事実を足さない」「まだ送らない」を先に決めています。返信案はAIへ任せても、事実確認と送信の判断は人に残すためです。',
+  advice:
+    '自分のメールで試す時は、下の「届いたメール」の部分だけを、実際に届いた本文へ置き換えれば使えます。',
+};
 
 export function QuickStartSection() {
   return (
@@ -79,6 +87,11 @@ export function QuickStartSection() {
           <pre className="soft-control mt-6 overflow-x-auto whitespace-pre-wrap border border-sapphire/20 bg-sapphire-soft/45 p-5 font-sans text-sm leading-7 text-brand-dark sm:p-6">
             {prompt}
           </pre>
+
+          <PromptExplanation
+            reason={promptExplanation.reason}
+            advice={promptExplanation.advice}
+          />
 
           <ol className="mt-6 grid gap-3 text-sm sm:grid-cols-3">
             {[
