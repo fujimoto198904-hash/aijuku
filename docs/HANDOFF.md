@@ -12,17 +12,17 @@
 | Vercel子アプリ（公開中） | https://aijuku.vercel.app/aijuku                                                  |
 | GitHub                   | https://github.com/fujimoto198904-hash/aijuku                                     |
 | 正式ブランチ             | `main`                                                                            |
-| 今回の追加作業           | 無料会員の課題ブックマーク・本人完了記録・訴求導線をローカル実装。公開前検証中   |
+| 今回の追加作業           | 無料会員の課題保存・本人完了記録、教材改善、必要素材の直接配信を本番公開済み      |
 | 教材実数                 | 全730本文、73/73章、`lessonDrafts: 730 / outlines: 0`                             |
-| ローカル検証             | `build:catalog`、`build:lessons`、`npm run verify` 成功                           |
-| 未実施                   | 新会員・管理機能のSites公開、本番D1移行、受講者端末でのChatGPT実践QA              |
+| 検証                     | `npm run verify`、Sites本番、Vercel READY、正式URL、185配信素材の確認に成功       |
+| 未実施                   | 実アカウントによる会員・講師・管理者の全操作、受講者端末でのChatGPT実践QA         |
 | 公開先                   | MON-Ai配下の公開面、OpenAI Sitesの会員面、Vercel子アプリ                          |
 | 技術構成                 | Vinext、React、TypeScript、Tailwind CSS、Sites用Workerビルド、Vercel用Nitroビルド |
 | 対応Node.js              | 22.13以上（`.nvmrc`は22.13.0）                                                    |
 
 GitHubの`main`をソースコードの正本とします。Vercel子アプリはGit連携で自動公開されますが、Sitesへの公開と本番D1移行は別作業です。
 
-全730本文を含む完成版は`main`の`ae4fd36`へ保存し、Vercel子アプリと親MON-Ai rewriteを本番公開しました。正式URLのトップ、SLS-05教科書、favicon、デモデータカタログはHTTP 200、実ブラウザの警告・エラーは0件です。会員登録・マイページ・管理・D1の新実装はSitesへ未公開で、正式URLの`/join`は転送先Sitesが旧版のため404です。
+機能本体の本番版は`main`の`6ea1c7c`までです。既存SitesプロジェクトとVercel子を本番公開し、親MON-Aiの既存rewriteを通じて正式URLへ反映しました。正式URLのトップ、Web教科書、検索、Lv.24、`/join`は表示に成功し、主要5ページのブラウザconsole errorは0件です。`/join`はSitesの現行ドメインへ307転送します。本番D1に課題保存用の追加テーブルがあることも確認済みです。
 
 屋号は2026年9月1日に「豊田Ai塾」から「藤本実学塾」へ変更しました。公開HPとWeb教科書は`mon-ai.jp/aijuku`へ移し、無料会員登録、マイページ、申込、本人記録、講師確認、URL共有プロフィール、管理、D1は既存Sitesへ残します。第三者評価は提供しません。npmの内部パッケージ名と配布PDFのファイルパスには`toyota-ai-school`を互換用の技術名として残します。
 
@@ -103,87 +103,87 @@ npm run dev
 
 ## 3. 現在のフォルダ構成
 
-| 場所                                               | 役割・主な編集内容                                                                 |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `app/page.tsx`                                     | トップページの構成・大きな見出し                                                   |
-| `app/join/page.tsx`                                | Sign in with ChatGPTを使う無料会員登録の入口                                       |
-| `app/mypage/onboarding/page.tsx`                   | 初回プロフィールと規約・プライバシー同意                                           |
-| `app/reserve/page.tsx`                             | ログイン会員向けの3方式の受講申込                                                  |
-| `app/textbook/page.tsx`                            | Web教科書の使い方、練習データ、旧`?task=ID`の互換リダイレクト                      |
-| `app/textbook/setup/page.tsx`                      | ChatGPTの設定、無料・有料、Chat・Work・Codexの入門                                 |
-| `app/textbook/explore/page.tsx`                    | 目的・時間・作業画面・材料・コースから教材を探すページ                             |
-| `app/textbook/lesson/[taskId]/page.tsx`            | 1課題の本文と前後・ステップアップ先を表示する動的ページ                            |
-| `app/mypage/page.tsx`                              | 課題のブックマーク・完了、本人の申込、AI実学パスポートを表示するマイページ          |
-| `app/admin/page.tsx`                               | オーナー・講師の役割別運営キュー                                                   |
-| `app/skills/[slug]/page.tsx`                       | 本人が有効化する`noindex`の応募用URL共有プロフィール                               |
-| `app/api/`                                         | 会員登録・受講申込・課題進捗・学習記録・講師確認の認証済みAPI                      |
-| `app/chatgpt-auth.ts`                              | Sites Sign in with ChatGPTのサーバー認証補助                                       |
-| `app/terms/`・`app/privacy/`                       | 無料会員向けの利用規約・プライバシー草案                                           |
-| `app/level-test/page.tsx`                          | テストページの説明                                                                 |
+| 場所                                               | 役割・主な編集内容                                                                           |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `app/page.tsx`                                     | トップページの構成・大きな見出し                                                             |
+| `app/join/page.tsx`                                | Sign in with ChatGPTを使う無料会員登録の入口                                                 |
+| `app/mypage/onboarding/page.tsx`                   | 初回プロフィールと規約・プライバシー同意                                                     |
+| `app/reserve/page.tsx`                             | ログイン会員向けの3方式の受講申込                                                            |
+| `app/textbook/page.tsx`                            | Web教科書の使い方、練習データ、旧`?task=ID`の互換リダイレクト                                |
+| `app/textbook/setup/page.tsx`                      | ChatGPTの設定、無料・有料、Chat・Work・Codexの入門                                           |
+| `app/textbook/explore/page.tsx`                    | 目的・時間・作業画面・材料・コースから教材を探すページ                                       |
+| `app/textbook/lesson/[taskId]/page.tsx`            | 1課題の本文と前後・任意の追加挑戦先を表示する動的ページ                                      |
+| `app/mypage/page.tsx`                              | 課題のブックマーク・完了、本人の申込、AI実学パスポートを表示するマイページ                   |
+| `app/admin/page.tsx`                               | オーナー・講師の役割別運営キュー                                                             |
+| `app/skills/[slug]/page.tsx`                       | 本人が有効化する`noindex`の応募用URL共有プロフィール                                         |
+| `app/api/`                                         | 会員登録・受講申込・課題進捗・学習記録・講師確認の認証済みAPI                                |
+| `app/chatgpt-auth.ts`                              | Sites Sign in with ChatGPTのサーバー認証補助                                                 |
+| `app/terms/`・`app/privacy/`                       | 無料会員向けの利用規約・プライバシー草案                                                     |
+| `app/level-test/page.tsx`                          | テストページの説明                                                                           |
 | `components/textbook/`                             | 使い方ナビ、課題検索、1課題の本文リーダー、材料の直接取得・TXTコピー。本文は対象の章だけ読込 |
-| `components/member-learning-progress.tsx`          | 無料会員本人の「あとでやる」と完了課題の検索・一覧・切替                           |
-| `components/demo-data-library.tsx`                 | 課題ページの直接取得を案内し、3社ZIPはまとめて練習する人向けの任意導線として折りたたみ表示 |
-| `components/skill-passport.tsx`                    | 本人記録、スキル可視化、講師確認、共有設定                                         |
-| `components/member-application-actions.tsx`        | 会員による未確定申込の取消                                                         |
-| `components/member-profile-settings.tsx`           | 公開プロフィールにも使う表示名の変更                                               |
-| `components/admin-application-queue.tsx`           | 申込状態、担当講師、日時、実施案内、内部メモの運営キュー                           |
-| `components/admin-skill-review.tsx`                | 講師が成果物の確認範囲と修正点を記録する画面                                       |
-| `components/level-test.tsx`                        | 基礎理解チェックの問題、正解、確認目安                                             |
-| `components/site-header.tsx`                       | ヘッダーとナビゲーション                                                           |
-| `components/site-footer.tsx`                       | フッター                                                                           |
-| `lib/site-content.ts`                              | 教材例、学び方、FAQなどの主要データ                                                |
-| `lib/textbook-catalog.generated.json`              | 4冊の原稿から決定的に生成した730課題カタログ                                       |
-| `lib/textbook-catalog.ts`                          | 教材カタログの型、集計、検索補助                                                   |
-| `lib/textbook-lessons/`                            | 73章・全730課題の固有本文正本。4系統へ章単位で分割                                 |
-| `lib/textbook-lessons/types.ts`                    | 本文、完成条件、材料、章旗艦作品の型                                               |
-| `lib/textbook-lessons/registry.ts`                 | 全73章、課題ID、正本ファイル、正式次課題の対応                                     |
-| `lib/textbook-lessons/loader.ts`                   | 選択課題の章だけを遅延読込みするクライアント用ローダー                             |
-| `lib/textbook-lessons/all.ts`                      | 検査・生成・サーバー用の全73章静的集約。クライアントから直接importしない           |
-| `lib/textbook-access.ts`                           | 全730課題の料金目安とCodex向き範囲の決定ルール                                     |
-| `lib/textbook-lesson-meta.generated.json`          | 時間・作業画面・材料の絞り込み用730件メタ。手編集しない                            |
-| `lib/textbook-demo-industry.ts`                    | 課題の内容から1社の練習データを決める固定ルール                                       |
-| `lib/textbook-demo-download-plan.ts`               | 生成済みの課題別計画から1課題分を取り出すlookup                                             |
-| `lib/demo-task-download-plan.generated.json`       | 730課題・延べ805参照の業種、元パス、ASCII公開URL。手編集しない                         |
-| `lib/textbook-catalog-client.ts`                   | 管理用項目を除いてブラウザへ渡す軽量カタログ型                                     |
-| `lib/textbook-chapter-summaries.ts`                | 73章の概要・旗艦作品を構築するサーバー用補助                                       |
-| `lib/demo-data-catalog.ts`                         | 配布用デモデータの件数、URL、版、SHA-256を読み込む                                 |
-| `lib/demo-data-catalog.generated.json`             | 公開用`catalog.json`と同時生成し、完全一致を検査するアプリ読込用コピー             |
-| `lib/member-service-plans.ts`                      | 3方式の申込種別・共通料金・表示条件の正本                                          |
-| `lib/skill-taxonomy.ts`                            | 730課題を人の順位ではない10の職能分類へ対応づける規則                              |
-| `lib/skill-passport.ts`                            | 本人記録、講師確認、共有プロフィールの共通定義                                     |
-| `db/`                                              | D1の会員・申込・課題進捗・学習記録・確認・共有スキーマとサーバー処理               |
-| `drizzle/`                                         | D1用SQLマイグレーション                                                            |
-| `app/globals.css`                                  | 色、余白、共通デザイン                                                             |
-| `public/`                                          | OG画像、favicon、配布ファイル                                                      |
-| `public/brand/`                                    | 学蝶紋の正式SVGと画像生成による方向検討用PNG                                       |
-| `public/downloads/demo-data/`                      | 3業種の配布用ZIP、課題別の直接配信185素材、マニフェスト、SHA-256                       |
-| `sozai/`                                           | トップページで使うイメージ写真と塾長本人のプロフィール写真                         |
-| `scripts/doctor.mjs`                               | 別Mac移行・公開前の環境確認                                                        |
-| `scripts/build_textbook_catalog.mjs`               | 4冊の原稿を検査し、Web用730課題カタログを生成                                      |
-| `scripts/check_textbook_lessons.ts`                | 全730本文の項目、素材、次課題、章末、重複、生成物同期を検査し品質見本10件を生成    |
-| `scripts/check_textbook_access.ts`                 | 料金・Codexマークの全730課題網羅、件数、代替経路を検査                             |
-| `scripts/build_lesson_meta.ts`                     | 全730本文からブラウザ絞り込み用の軽量メタを生成・同期確認                          |
-| `scripts/check_docs.mjs`                           | Markdownの相対リンク切れとコードフェンス開閉を検査                                 |
-| `scripts/check_demo_data.mjs`                      | 3業種ZIP、公開用目録、SHA-256、実シート数・データ行をnpm標準検査で照合             |
-| `scripts/build_demo_task_download_plan.ts`         | 全730課題を1課題1業種へ固定し、必要素材とASCII公開URLを生成                         |
-| `scripts/extract_demo_direct_files.py`             | 課題が使う185素材だけをZIPから抽出し、元データと容量・SHA-256を照合                    |
-| `scripts/build_start_guide.py`                     | スタートガイドPDFの生成                                                            |
-| `scripts/build_demo_data.mjs`                      | 架空の会社データとExcel 10冊×3業種の生成元                                         |
-| `scripts/build_demo_documents.py`                  | Word、PDF、目録、SHA-256、ZIP、配布カタログの生成元                                |
-| `scripts/verify_demo_packages.py`                  | 原本とZIPの全SHA-256、Office内容、逐次Word変換、全ページ描画の重い検査             |
-| `docs/TEXTBOOK_PROBLEM_BANK_200_DRAFT.md`          | 共通200。技術と運用範囲の難易度順に選べるカリキュラム本文                          |
-| `docs/TEXTBOOK_DEPARTMENT_TRACKS_200_DRAFT.md`     | 20部門×10の担当業務別カリキュラム本文                                              |
-| `docs/TEXTBOOK_INDUSTRY_TRACKS_100_DRAFT.md`       | 10業種×10の業種別カリキュラム本文                                                  |
-| `docs/TEXTBOOK_GENERATION_TRACKS_200_DRAFT.md`     | 23タイプ×10の生成特化カリキュラム本文。旧リンク互換のためファイル名の200は維持     |
-| `docs/TEXTBOOK_LEARNING_STRUCTURE_DRAFT.md`        | 材料は貼付・添付、作業画面はChat・Workと分けて選ぶ初心者向けの進め方と完成基準     |
-| `docs/TEXTBOOK_ADVANCED_OPERATION_GUIDE.md`        | Lv.61以降と講師向けの版、証拠、費用、教材間・講師間の引き継ぎ                      |
-| `docs/TEXTBOOK_TEACHING_METHOD.md`                 | 生徒と講師レビュー後の指導法、10ステップの授業型、本文編集時の合否基準             |
-| `docs/TEXTBOOK_CURRICULUM_MASTER_MAP.md`           | 5教材の役割、重複、主教材、受講ルートを統合した全体の正本                          |
-| `docs/TEXTBOOK_LESSON_CONTENT_SAMPLES_10_DRAFT.md` | 章別正本から自動生成する、人がまとめて比較するための品質見本10件。本文正本ではない |
-| `docs/DEMO_DATA_PACKAGES.md`                       | 3業種の練習データ、受講時の始め方、収録内容、更新・確認手順                        |
-| `docs/BRAND_LOGO.md`                               | 学蝶紋の意味、正式色、背景別の使い方、禁止事項                                     |
-| `AGENTS.md`                                        | 別MacでCodexが自動参照する運用ルール                                               |
-| `.openai/hosting.json`                             | 現在のSites公開先                                                                  |
+| `components/member-learning-progress.tsx`          | 無料会員本人の「あとでやる」と完了課題の検索・一覧・切替                                     |
+| `components/demo-data-library.tsx`                 | 課題ページの直接取得を案内し、3社ZIPはまとめて練習する人向けの任意導線として折りたたみ表示   |
+| `components/skill-passport.tsx`                    | 本人記録、スキル可視化、講師確認、共有設定                                                   |
+| `components/member-application-actions.tsx`        | 会員による未確定申込の取消                                                                   |
+| `components/member-profile-settings.tsx`           | 公開プロフィールにも使う表示名の変更                                                         |
+| `components/admin-application-queue.tsx`           | 申込状態、担当講師、日時、実施案内、内部メモの運営キュー                                     |
+| `components/admin-skill-review.tsx`                | 講師が成果物の確認範囲と修正点を記録する画面                                                 |
+| `components/level-test.tsx`                        | 基礎理解チェックの問題、正解、確認目安                                                       |
+| `components/site-header.tsx`                       | ヘッダーとナビゲーション                                                                     |
+| `components/site-footer.tsx`                       | フッター                                                                                     |
+| `lib/site-content.ts`                              | 教材例、学び方、FAQなどの主要データ                                                          |
+| `lib/textbook-catalog.generated.json`              | 4冊の原稿から決定的に生成した730課題カタログ                                                 |
+| `lib/textbook-catalog.ts`                          | 教材カタログの型、集計、検索補助                                                             |
+| `lib/textbook-lessons/`                            | 73章・全730課題の固有本文正本。4系統へ章単位で分割                                           |
+| `lib/textbook-lessons/types.ts`                    | 本文、完成条件、材料、章旗艦作品の型                                                         |
+| `lib/textbook-lessons/registry.ts`                 | 全73章、課題ID、正本ファイル、正式次課題の対応                                               |
+| `lib/textbook-lessons/loader.ts`                   | 選択課題の章だけを遅延読込みするクライアント用ローダー                                       |
+| `lib/textbook-lessons/all.ts`                      | 検査・生成・サーバー用の全73章静的集約。クライアントから直接importしない                     |
+| `lib/textbook-access.ts`                           | 全730課題の料金目安とCodex向き範囲の決定ルール                                               |
+| `lib/textbook-lesson-meta.generated.json`          | 時間・作業画面・材料の絞り込み用730件メタ。手編集しない                                      |
+| `lib/textbook-demo-industry.ts`                    | 課題の内容から1社の練習データを決める固定ルール                                              |
+| `lib/textbook-demo-download-plan.ts`               | 生成済みの課題別計画から1課題分を取り出すlookup                                              |
+| `lib/demo-task-download-plan.generated.json`       | 730課題・延べ805参照の業種、元パス、ASCII公開URL。手編集しない                               |
+| `lib/textbook-catalog-client.ts`                   | 管理用項目を除いてブラウザへ渡す軽量カタログ型                                               |
+| `lib/textbook-chapter-summaries.ts`                | 73章の概要・旗艦作品を構築するサーバー用補助                                                 |
+| `lib/demo-data-catalog.ts`                         | 配布用デモデータの件数、URL、版、SHA-256を読み込む                                           |
+| `lib/demo-data-catalog.generated.json`             | 公開用`catalog.json`と同時生成し、完全一致を検査するアプリ読込用コピー                       |
+| `lib/member-service-plans.ts`                      | 3方式の申込種別・共通料金・表示条件の正本                                                    |
+| `lib/skill-taxonomy.ts`                            | 730課題を人の順位ではない10の職能分類へ対応づける規則                                        |
+| `lib/skill-passport.ts`                            | 本人記録、講師確認、共有プロフィールの共通定義                                               |
+| `db/`                                              | D1の会員・申込・課題進捗・学習記録・確認・共有スキーマとサーバー処理                         |
+| `drizzle/`                                         | D1用SQLマイグレーション                                                                      |
+| `app/globals.css`                                  | 色、余白、共通デザイン                                                                       |
+| `public/`                                          | OG画像、favicon、配布ファイル                                                                |
+| `public/brand/`                                    | 学蝶紋の正式SVGと画像生成による方向検討用PNG                                                 |
+| `public/downloads/demo-data/`                      | 3業種の配布用ZIP、課題別の直接配信185素材、マニフェスト、SHA-256                             |
+| `sozai/`                                           | トップページで使うイメージ写真と塾長本人のプロフィール写真                                   |
+| `scripts/doctor.mjs`                               | 別Mac移行・公開前の環境確認                                                                  |
+| `scripts/build_textbook_catalog.mjs`               | 4冊の原稿を検査し、Web用730課題カタログを生成                                                |
+| `scripts/check_textbook_lessons.ts`                | 全730本文の項目、素材、次課題、章末、重複、生成物同期を検査し品質見本10件を生成              |
+| `scripts/check_textbook_access.ts`                 | 料金・Codexマークの全730課題網羅、件数、代替経路を検査                                       |
+| `scripts/build_lesson_meta.ts`                     | 全730本文からブラウザ絞り込み用の軽量メタを生成・同期確認                                    |
+| `scripts/check_docs.mjs`                           | Markdownの相対リンク切れとコードフェンス開閉を検査                                           |
+| `scripts/check_demo_data.mjs`                      | 3業種ZIP、公開用目録、SHA-256、実シート数・データ行をnpm標準検査で照合                       |
+| `scripts/build_demo_task_download_plan.ts`         | 全730課題を1課題1業種へ固定し、必要素材とASCII公開URLを生成                                  |
+| `scripts/extract_demo_direct_files.py`             | 課題が使う185素材だけをZIPから抽出し、元データと容量・SHA-256を照合                          |
+| `scripts/build_start_guide.py`                     | スタートガイドPDFの生成                                                                      |
+| `scripts/build_demo_data.mjs`                      | 架空の会社データとExcel 10冊×3業種の生成元                                                   |
+| `scripts/build_demo_documents.py`                  | Word、PDF、目録、SHA-256、ZIP、配布カタログの生成元                                          |
+| `scripts/verify_demo_packages.py`                  | 原本とZIPの全SHA-256、Office内容、逐次Word変換、全ページ描画の重い検査                       |
+| `docs/TEXTBOOK_PROBLEM_BANK_200_DRAFT.md`          | 共通200。技術と運用範囲の難易度順に選べるカリキュラム本文                                    |
+| `docs/TEXTBOOK_DEPARTMENT_TRACKS_200_DRAFT.md`     | 20部門×10の担当業務別カリキュラム本文                                                        |
+| `docs/TEXTBOOK_INDUSTRY_TRACKS_100_DRAFT.md`       | 10業種×10の業種別カリキュラム本文                                                            |
+| `docs/TEXTBOOK_GENERATION_TRACKS_200_DRAFT.md`     | 23タイプ×10の生成特化カリキュラム本文。旧リンク互換のためファイル名の200は維持               |
+| `docs/TEXTBOOK_LEARNING_STRUCTURE_DRAFT.md`        | 材料は貼付・添付、作業画面はChat・Workと分けて選ぶ初心者向けの進め方と完成基準               |
+| `docs/TEXTBOOK_ADVANCED_OPERATION_GUIDE.md`        | Lv.61以降と講師向けの版、証拠、費用、教材間・講師間の引き継ぎ                                |
+| `docs/TEXTBOOK_TEACHING_METHOD.md`                 | 生徒と講師レビュー後の指導法、10ステップの授業型、本文編集時の合否基準                       |
+| `docs/TEXTBOOK_CURRICULUM_MASTER_MAP.md`           | 5教材の役割、重複、主教材、受講ルートを統合した全体の正本                                    |
+| `docs/TEXTBOOK_LESSON_CONTENT_SAMPLES_10_DRAFT.md` | 章別正本から自動生成する、人がまとめて比較するための品質見本10件。本文正本ではない           |
+| `docs/DEMO_DATA_PACKAGES.md`                       | 3業種の練習データ、受講時の始め方、収録内容、更新・確認手順                                  |
+| `docs/BRAND_LOGO.md`                               | 学蝶紋の意味、正式色、背景別の使い方、禁止事項                                               |
+| `AGENTS.md`                                        | 別MacでCodexが自動参照する運用ルール                                                         |
+| `.openai/hosting.json`                             | 現在のSites公開先                                                                            |
 
 次のフォルダは自動生成物なので、編集・共有・Git追加をしません。
 
@@ -199,29 +199,29 @@ npm run dev
 
 ## 4. 現在できていること
 
-| 機能                              | 状態                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 既存公開サイト                    | Vercel子と親MON-Ai rewriteを公開済み。正式URLで新HP・全730本文・新Web教科書を確認済み。Sitesは旧版のまま                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| PC・スマートフォン表示            | レスポンシブ実装とローカルブラウザ確認あり。受講者のWindows・Mac・スマートフォン実機でChatGPTまで通すQAは未実施                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 新しい屋号・開講条件の案内        | 「藤本実学塾」と最新の3方式・料金を正式URLで公開済み                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| すべての授業で使う教材            | 家庭教師型の対面、Google Meetでのオンライン、対面・教科書自習式のすべてを、公開中のWeb教科書に沿って進める。講師は受講者と同じ教材を開き、つまずいた所の確認と成果物の仕上げを支援する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| 「ひらける実学」の新デザイン      | 塾の思想と学んだ先を主役に、白磁・墨紺・サファイア・ミント・人を表すコーラルへ刷新。操作部・カード・大きな面の3段階の角丸、青とミントの静かな光、見出しの強調線、主要カードの穏やかなリフトを全画面へ展開。学んだ後の未来は「朝・仕事・周りの人へ」の3場面を写真と教科書の完成物で描写。独立した講師紹介セクションは置かない。正式URLで公開・実ブラウザ確認済み                                                                                                                                                                                                                                                                                                                              |
-| 初心者向けの入口と選べる目標      | 「はじめて・暮らし・仕事・チーム」で表示。公開面では数値レベルを使用しない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| カリキュラム全体図                | 技術・担当業務・業種・表現の4つの入口から、主プロジェクト一つに必要な教材を選ぶ体系として表示。AIが初めてなら最初から一段ずつ、目的や経験がある人は自分に合う段階から、特化領域だけでも開始可能と案内。公開面では内部の教材総数を訴求しない                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Web教科書（ルート分離実装）       | `/textbook`は使い方、`/textbook/explore`は検索・目的・時間・作業画面・材料・コースから探すページ、`/textbook/lesson/[taskId]`は1課題の本文ページとして分離。検索結果と完成物のリンクは本文を新規タブで開き、旧`/textbook?task=ID`は対応する本文へ互換リダイレクトする。全課題に固有本文があり、完成物、材料と渡し方、雑な一言、実操作、改善のコツ、ミス、完成条件、保存、応用、任意のステップアップを表示する。カタログは`lessonDrafts: 730 / outlines: 0`。ローカルのデスクトップ幅・390pxスマートフォン幅で表示、検索、新規タブ指定、本文操作、旧URL互換、404を確認済み。子Vercelと正式URLでも3画面のHTTP 200、不正IDの404、旧URLの互換リダイレクト、新規タブ指定、固有canonicalを確認済み |
-| 練習用デモデータ3社               | 美容室・建設業・不動産会社のZIPを生成済み。各156ファイルで、`課題`内の入力用14ファイル、Excel 10冊、Word 30、PDF 100、`完成`フォルダを収録。選択・ダウンロード画面とカタログを正式URLで公開しHTTP 200を確認済み                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 教室と日常を往復する学習循環      | 塾で一つ作る→成果物を持ち帰る→自宅・仕事で教科書を見て自習する→結果を次回の講師へ持ち寄る→前回の続きから直して一段育てる、という6段の循環を表示。レベルアップは人の序列ではなく、成果物にできることが一つ増える意味で案内                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| トップの完成物ショーケース        | 全730本文から完成物の幅を伝える課題をコードなしで紹介し、該当本文を新規タブで開く。表示件数は本文完成数を意味しない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| よくある質問                      | 汎用カード型ではなく、相談前に読む小冊子の見開きを意識した2カラム構成。質問は`Q.01`〜`Q.08`、回答は`A.`とミントの細線で示し、最初の質問を開いた状態で案内                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| PDF・チェックリストのダウンロード | 対応済み。PDFは現行スクリプトで再生成し、全2ページの描画と文字を確認済み                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 無料会員登録・受講申込            | SitesのSign in with ChatGPTで本人確認し、初回同意後に3方式の希望申込をD1へ保存。本人は自分の申込だけを閲覧。ローカル実装・未公開。申込は予約・契約・決済の確定ではない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| 課題のブックマーク・本人完了記録  | 気になる課題を「あとでやる」へ保存し、本人が完了・未完了を切り替え、マイページで一覧化。D1へ本人ID単位で保存し、APIは任意の会員IDを受け取らない。完了は本人用メモで、出席、講師確認、修了認定とは別。ローカル実装・未公開                                                                                                                                                                                                                                                                                                                                                                                                      |
-| AI実学パスポート                  | 教科書課題または既存の実務・自主制作を成果物としてD1へ保存し、10の職能分類で可視化。本人記録と講師が実際に確認した範囲を分け、点数や人のレベル順位にはしない。ローカル実装・未公開                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| 講師確認                          | `INSTRUCTOR_EMAILS`の講師が、本人の成果物について実際に確認した範囲または修正点を記録。自分の成果物を講師確認する操作はサーバー側で拒否し、比較更新と追記型履歴で同時操作の衝突を防ぐ。ローカル実装・未公開                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 応募用URL共有プロフィール         | 本人がプロフィール全体と成果物ごとに共有を選択。ランダムURL、`noindex`、講師確認済み成果物のみ表示し、メールとChatGPT利用者IDは非表示。URLを知る人は閲覧可能で、共有停止後に再開するとURLを交換する。公的資格・公式認定・採用保証ではないことを明記。ローカル実装・未公開                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 基礎理解チェック                  | `/level-test`のURL互換を保った4択10問の画面デモ。正式な到達判定ではなく、`noindex, nofollow`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| マイページ                        | 認証済み会員の表示名・メール、表示名変更、課題の「あとでやる」・本人完了、3方式の申込、本人の申込履歴、未確定申込の取消、AI実学パスポート、本人記録、講師確認、共有設定を表示。空き枠、決済、読了位置の自動保存、確定後の予約変更・取消は未接続。ローカル実装・未公開                                                                                                                                                                                                                                                                                                                                                              |
-| 管理ページ                        | `ADMIN_EMAILS`のオーナーだけが申込者情報を閲覧し、状態、会員向け案内、担当講師、JST実施日時、会場またはGoogle Meet、内部メモを更新可能。オーナー専用の最近の申込操作履歴では、内部メモや会場・Meet案内本文を取得せず、状態、会員、サービス、操作者、日本時間だけを表示する。講師は申込者メールを取得せず、成果物の確認キューだけ操作する。比較更新と申込・講師確認の追記型履歴を実装。空き枠との自動連動、決済、通知は未接続。ローカル実装・未公開                                                                                                                                                                                                                                           |
+| 機能                              | 状態                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 既存公開サイト                    | Vercel子、親MON-Ai rewrite、既存Sitesプロジェクトの最新保存版を公開済み。正式URLで新HP・全730本文・Web教科書・無料会員入口を確認済み                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| PC・スマートフォン表示            | レスポンシブ実装とローカルブラウザ確認あり。受講者のWindows・Mac・スマートフォン実機でChatGPTまで通すQAは未実施                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 新しい屋号・開講条件の案内        | 「藤本実学塾」と最新の3方式・料金を正式URLで公開済み                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| すべての授業で使う教材            | 家庭教師型の対面、Google Meetでのオンライン、対面・教科書自習式のすべてを、公開中のWeb教科書に沿って進める。講師は受講者と同じ教材を開き、つまずいた所の確認と成果物の仕上げを支援する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 「ひらける実学」の新デザイン      | 塾の思想と学んだ先を主役に、白磁・墨紺・サファイア・ミント・人を表すコーラルへ刷新。操作部・カード・大きな面の3段階の角丸、青とミントの静かな光、見出しの強調線、主要カードの穏やかなリフトを全画面へ展開。学んだ後の未来は「朝・仕事・周りの人へ」の3場面を写真と教科書の完成物で描写。独立した講師紹介セクションは置かない。正式URLで公開・実ブラウザ確認済み                                                                                                                                                                                                                                                                                                                                        |
+| 初心者向けの入口と選べる目標      | 「はじめて・暮らし・仕事・チーム」で表示。公開面では数値レベルを使用しない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| カリキュラム全体図                | 技術・担当業務・業種・表現の4つの入口から、主プロジェクト一つに必要な教材を選ぶ体系として表示。AIが初めてなら最初から一段ずつ、目的や経験がある人は自分に合う段階から、特化領域だけでも開始可能と案内。公開面では内部の教材総数を訴求しない                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Web教科書（ルート分離実装）       | `/textbook`は使い方、`/textbook/explore`は検索・目的・時間・作業画面・材料・コースから探すページ、`/textbook/lesson/[taskId]`は1課題の本文ページとして分離。検索結果と完成物のリンクは本文を新規タブで開き、旧`/textbook?task=ID`は対応する本文へ互換リダイレクトする。全課題に固有本文があり、完成物、材料と渡し方、雑な一言、実操作、改善のコツ、ミス、完成条件、保存、応用、「もう一つできること（任意）」を表示する。カタログは`lessonDrafts: 730 / outlines: 0`。ローカルのデスクトップ幅・390pxスマートフォン幅で表示、検索、新規タブ指定、本文操作、旧URL互換、404を確認済み。子Vercelと正式URLでも3画面のHTTP 200、不正IDの404、旧URLの互換リダイレクト、新規タブ指定、固有canonicalを確認済み |
+| 練習用デモデータ3社               | 美容室・建設業・不動産会社のZIPを生成済み。各156ファイルで、`課題`内の入力用14ファイル、Excel 10冊、Word 30、PDF 100、`完成`フォルダを収録。選択・ダウンロード画面とカタログを正式URLで公開しHTTP 200を確認済み                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 教室と日常を往復する学習循環      | 塾で一つ作る→成果物を持ち帰る→自宅・仕事で教科書を見て自習する→結果を次回の講師へ持ち寄る→前回の続きから直して一段育てる、という6段の循環を表示。レベルアップは人の序列ではなく、成果物にできることが一つ増える意味で案内                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| トップの完成物ショーケース        | 全730本文から完成物の幅を伝える課題をコードなしで紹介し、該当本文を新規タブで開く。表示件数は本文完成数を意味しない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| よくある質問                      | 汎用カード型ではなく、相談前に読む小冊子の見開きを意識した2カラム構成。質問は`Q.01`〜`Q.08`、回答は`A.`とミントの細線で示し、最初の質問を開いた状態で案内                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| PDF・チェックリストのダウンロード | 対応済み。PDFは現行スクリプトで再生成し、全2ページの描画と文字を確認済み                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 無料会員登録・受講申込            | SitesのSign in with ChatGPTで本人確認し、初回同意後に3方式の希望申込をD1へ保存。本人は自分の申込だけを閲覧。Sites本番へ公開済み。申込は予約・契約・決済の確定ではない。実アカウントでの通しQAは未実施                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 課題のブックマーク・本人完了記録  | 気になる課題を「あとでやる」へ保存し、本人が完了・未完了を切り替え、マイページで一覧化。D1へ本人ID単位で保存し、APIは任意の会員IDを受け取らない。完了は本人用メモで、出席、講師確認、修了認定とは別。Sites本番へ公開し、追加D1テーブルを確認済み                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| AI実学パスポート                  | 教科書課題または既存の実務・自主制作を成果物としてD1へ保存し、10の職能分類で可視化。本人記録と講師が実際に確認した範囲を分け、点数や人のレベル順位にはしない。Sites本番へ公開済み。実アカウントでの通しQAは未実施                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 講師確認                          | `INSTRUCTOR_EMAILS`の講師が、本人の成果物について実際に確認した範囲または修正点を記録。自分の成果物を講師確認する操作はサーバー側で拒否し、比較更新と追記型履歴で同時操作の衝突を防ぐ。Sites本番へ公開済み。実アカウントでの通しQAは未実施                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 応募用URL共有プロフィール         | 本人がプロフィール全体と成果物ごとに共有を選択。ランダムURL、`noindex`、講師確認済み成果物のみ表示し、メールとChatGPT利用者IDは非表示。URLを知る人は閲覧可能で、共有停止後に再開するとURLを交換する。公的資格・公式認定・採用保証ではないことを明記。Sites本番へ公開済み。実アカウントでの通しQAは未実施                                                                                                                                                                                                                                                                                                                                                                                               |
+| 基礎理解チェック                  | `/level-test`のURL互換を保った4択10問の画面デモ。正式な到達判定ではなく、`noindex, nofollow`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| マイページ                        | 認証済み会員の表示名・メール、表示名変更、課題の「あとでやる」・本人完了、3方式の申込、本人の申込履歴、未確定申込の取消、AI実学パスポート、本人記録、講師確認、共有設定を表示。空き枠、決済、読了位置の自動保存、確定後の予約変更・取消は未接続。Sites本番へ公開済み。実アカウントでの通しQAは未実施                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 管理ページ                        | `ADMIN_EMAILS`のオーナーだけが申込者情報を閲覧し、状態、会員向け案内、担当講師、JST実施日時、会場またはGoogle Meet、内部メモを更新可能。オーナー専用の最近の申込操作履歴では、内部メモや会場・Meet案内本文を取得せず、状態、会員、サービス、操作者、日本時間だけを表示する。講師は申込者メールを取得せず、成果物の確認キューだけ操作する。比較更新と申込・講師確認の追記型履歴を実装。空き枠との自動連動、決済、通知は未接続。Sites本番へ公開し、現在のSites所有者だけを管理者・講師として設定済み。実アカウントでの通しQAは未実施                                                                                                                                                                     |
 
 ### ChatGPTプラン・作業環境マーク（2026年9月3日）
 
@@ -250,7 +250,7 @@ npm run dev
 - 利用規約・プライバシーポリシー草案の事業・法務確認、特定商取引法表記
 - サイト内決済前に、税込総額、支払・提供時期、変更・取消・返金・月額解約条件、正式な事業者名、代表者または責任者、活動住所、確実に連絡できる電話番号を事業・法務確認する。[消費者庁の通信販売広告ガイド](https://www.no-trouble.caa.go.jp/what/mailorder/advertising.html)に照らし、現在の「電話受付不可」方針のままライブ決済を有効化しない
 
-ローカル作業ツリーでは無料会員、課題ブックマーク・本人完了記録、申込希望、申込運用項目、AI実学パスポートの本人記録・講師確認・共有設定、各操作履歴をD1へ保存しますが、まだSitesへ公開していません。新しいMacまたは空の`.wrangler/`では、開発サーバーより先に`npm run db:migrate:local`を実行します。`wrangler.local.jsonc`はローカル専用D1だけを対象にし、本番D1へ接続しません。旧実装が履歴なしで作ったローカルD1を検出した場合は自動変更せず停止するため、必要な試用データを保ったまま`.wrangler/state`を別名へ退避し、空の状態で再実行します。Sitesは保存済みバージョンを公開するとき、未適用の`drizzle/*.sql`だけを新Workerより先に適用・記録します。既存本番へ`0000`からSQLを手動再実行せず、公開前に新規`0007`のSQLを確認してください。空DBへの初回公開時だけ全履歴が順に適用されます。`ADMIN_EMAILS`、`INSTRUCTOR_EMAILS`、規約類を確認して、本人・別会員・非管理者・オーナー・講師で権限制御を検証してください。`0005`は成果物送信の再試行を同一会員内で重複登録しないための`client_request_id`列と一意索引、`0006`はオーナー用の最近の申込操作履歴の索引、`0007`は本人別の`member_lesson_progress`と書込回数制限の`member_lesson_rate_limits`を追加します。利用規約は`2026-09-03-portal-v5`、プライバシーは`2026-09-03-portal-v4`へ更新したため、旧版同意の既存会員はマイページ前に再同意画面へ返します。電話受付は行いません。申込後も空き枠確保、通知、決済、読んだ位置の自動保存、正式な修了判定は行わないため、予約確定や契約成立とは案内しません。
+無料会員、課題ブックマーク・本人完了記録、申込希望、申込運用項目、AI実学パスポートの本人記録・講師確認・共有設定、各操作履歴はSites本番のD1へ公開済みです。新しいMacまたは空の`.wrangler/`では、開発サーバーより先に`npm run db:migrate:local`を実行します。`wrangler.local.jsonc`はローカル専用D1だけを対象にし、本番D1へ接続しません。旧実装が履歴なしで作ったローカルD1を検出した場合は自動変更せず停止するため、必要な試用データを保ったまま`.wrangler/state`を別名へ退避し、空の状態で再実行します。Sitesは保存済みバージョンを公開するとき、未適用の`drizzle/*.sql`だけを新Workerより先に適用・記録します。既存本番へ`0000`からSQLを手動再実行しません。`0007`は今回の公開時に適用済みで、以後マイグレーションを追加する時は新規SQLを確認します。空DBへの初回公開時だけ全履歴が順に適用されます。`ADMIN_EMAILS`、`INSTRUCTOR_EMAILS`、規約類を確認して、本人・別会員・非管理者・オーナー・講師で権限制御を検証してください。`0005`は成果物送信の再試行を同一会員内で重複登録しないための`client_request_id`列と一意索引、`0006`はオーナー用の最近の申込操作履歴の索引、`0007`は本人別の`member_lesson_progress`と書込回数制限の`member_lesson_rate_limits`を追加します。利用規約は`2026-09-03-portal-v5`、プライバシーは`2026-09-03-portal-v4`へ更新したため、旧版同意の既存会員はマイページ前に再同意画面へ返します。電話受付は行いません。申込後も空き枠確保、通知、決済、読んだ位置の自動保存、正式な修了判定は行わないため、予約確定や契約成立とは案内しません。
 
 `db/schema.ts`と`drizzle/0001`〜`0003`には、取りやめた第三者評価のテーブル定義が過去の適用履歴として残っています。既存DBのマイグレーション順序と互換性を守るため、過去のSQLは削除・書き換えしません。現行の画面とAPIは、これらのテーブルへ評価データを作成・読取・表示せず、第三者評価を提供済み・提供予定と案内しません。旧リンクには非提供の案内を表示し、旧評価APIはHTTP 410を返します。
 
@@ -258,9 +258,9 @@ npm run dev
 
 作業ツリーでは、共通200、部署別200、業種別100、生成特化230の全730課題に受講者向け固有本文があり、全73章が完成しています。本文正本は`lib/textbook-lessons/`の章単位ファイルです。
 
-全730本文には、手元に残る物、材料と渡し方、最初の一言、実操作、出力を上げるコツ、やりがちなミス、完成条件、保存、仕事への応用、任意のステップアップがあります。各章は10課題で一つの作品を育て、章末には旗艦作品プレビューがあります。初期の代表10件は現在も`docs/TEXTBOOK_LESSON_CONTENT_SAMPLES_10_DRAFT.md`へ品質見本として自動生成しますが、本文がその10件だけという意味ではありません。
+全730本文には、手元に残る物、材料と渡し方、最初の一言、実操作、出力を上げるコツ、やりがちなミス、完成条件、保存、仕事への応用、「もう一つできること（任意）」があります。各章は10課題で一つの作品を育て、章末には旗艦作品プレビューがあります。初期の代表10件は現在も`docs/TEXTBOOK_LESSON_CONTENT_SAMPLES_10_DRAFT.md`へ品質見本として自動生成しますが、本文がその10件だけという意味ではありません。
 
-`npm run build:catalog`と`npm run build:lessons`で生成物を同期後、カタログは`lessonDrafts: 730`、`outlines: 0`です。`npm run verify`は`doctor`、730カタログ、全730本文、文書リンク、デモデータ、本番ビルドを検査してexit 0でした。完成版は`ae4fd36`へcommitし、GitHub `main`へのpushとVercel本番公開まで完了しています。これは受講者端末QAや、Sitesの新しい会員・管理機能の公開完了を意味しません。
+`npm run build:catalog`と`npm run build:lessons`で生成物を同期後、カタログは`lessonDrafts: 730`、`outlines: 0`です。`npm run verify`は`doctor`、730カタログ、全730本文、文書リンク、デモデータ、本番ビルドを検査してexit 0でした。教材改善と会員機能の公開版は`6ea1c7c`までをSitesとGitHub `main`へ送り、Vercel本番と正式URLへ反映済みです。これは受講者端末QAや、実アカウントでの会員・講師・管理者の全操作確認まで完了した意味ではありません。
 
 3社の架空データパックは全730課題で使える練習材料です。ただし、各課題をChatGPTで実行して得た完成見本一式ではありません。今回のローカルブラウザでは主要導線と複数課題を確認していますが、本文貼り付け、書式付き資料の添付、Chat・Workの切替、保存、再表示までを受講者のWindows・Mac・スマートフォンと実際のChatGPTで通すQAは未実施です。
 
@@ -278,9 +278,9 @@ npm run dev
 
 改稿後は、初心者の小規模会社社長、中級ビジネスパーソン、AI推進担当を目指す人の3視点で課題を再読しました。指摘を基に、`LP`・`BCP`・`BOM`・`CTA`・`OG画像`等をタイトルでは日常語へ置き換え、似た課題は次段階で増える機能を明示し、教材モックを「配信済み・公開済み・運用済み」と誤認させる表現を修正しました。Excel追加後の機械監査では730件、全ID・連番、全タイトル一意、73章、旧ラベル0、正規化重複0、ローカルリンク欠落0を確認しています。`XLS-01〜10`の既存ID衝突もありません。同変更後の`npm run verify`も成功しています。
 
-同日、730問を量産する前の本文設計を精査するため、`Lv.05`、`Lv.24`、`IMG-03`、`XLS-03`、`SLD-03`、`Lv.80`、`SLS-05`、`Lv.28`、`APP-04`、`Lv.180`の代表10本を本文化しました。10本は履修順ではなく、文章・検索・画像・Office・会社Web・営業・定期実行・アプリ・安全運用でも共通フォーマットが成立するかを見るサンプルです。生徒役と、初心者指導・成人学習設計・企業AI研修の3つの講師視点で再評価しました。最終の授業型は「今日の具体的な完成品→使う材料と今回の渡し方→雑な一言→実物を触る→出力を上げるコツを一つだけ試す→やりがちなミスを直す→開く・使う・保存の完成条件→自分の仕事へ置き換える→藤本へ聞く→今の完成品へ便利を一つ足すステップアップ」の10ステップです。ステップアップは任意で、次の課題ID、引き継ぐ完成品、一つだけ増えること、続けて送る一言を示します。AIの「完成しました」や画面上の説明を完成証拠にせず、生徒自身が実物を開き、指定操作を行い、保存先から再度開けた時を完成とします。
+同日、730問を量産する前の本文設計を精査するため、`Lv.05`、`Lv.24`、`IMG-03`、`XLS-03`、`SLD-03`、`Lv.80`、`SLS-05`、`Lv.28`、`APP-04`、`Lv.180`の代表10本を本文化しました。10本は履修順ではなく、文章・検索・画像・Office・会社Web・営業・定期実行・アプリ・安全運用でも共通フォーマットが成立するかを見るサンプルです。生徒役と、初心者指導・成人学習設計・企業AI研修の3つの講師視点で再評価しました。現行の授業型は「今日の具体的な完成品→使う材料と今回の渡し方→雑な一言→実物を触る→出力を上げるコツを一つだけ試す→やりがちなミスを直す→開く・使う・保存の完成条件→自分の仕事へ置き換える→藤本へ聞く→もう一つできること（任意）」の10ステップです。最後の追加挑戦は任意で、ここまでで今の課題は完成とします。続けたい人にだけ、今作った物、できるようになること、次に送る文、必要時の行き先を示します。AIの「完成しました」や画面上の説明を完成証拠にせず、生徒自身が実物を開き、指定操作を行い、保存先から再度開けた時を完成とします。
 
-現在は代表10課題で確立した授業型を全730本文へ反映済みです。`lib/textbook-lessons/`を正本とし、レビュー用Markdownの10件はそこから決定的に生成・照合します。任意のステップアップ先と順番どおりの正式な次課題は別項目で検査し、任意課題だけで途中の課題を修了扱いにしません。`Lv.28`は毎朝版と自分で出す版の完成条件を分け、自動実行が使えない画面で「毎朝完成」としないようにしました。`npm run verify`は環境、730課題カタログ、全730本文、文書リンク、配布ZIP、730課題の単一業種割当、直接配信185素材の容量・SHA-256、本番ビルドをまとめて検査します。公開の根拠はこのローカル検査だけではなく、GitHub/VercelのREADY状態と正式URLのHTTP・実ブラウザ確認を別に記録しています。受講者端末QAは未実施です。
+現在は代表10課題で確立した授業型を全730本文へ反映済みです。`lib/textbook-lessons/`を正本とし、レビュー用Markdownの10件はそこから決定的に生成・照合します。任意の追加挑戦先と番号順の次課題は別項目で検査し、両者が同じ時は行き先を1回だけ、異なる時は「今の作品を育てる」と「番号順に学ぶ」を分けて表示します。任意課題だけで途中の課題を修了扱いにしません。`Lv.28`は毎朝版と自分で出す版の完成条件を分け、自動実行が使えない画面で「毎朝完成」としないようにしました。`npm run verify`は環境、730課題カタログ、全730本文、文書リンク、配布ZIP、730課題の単一業種割当、直接配信185素材の容量・SHA-256、本番ビルドをまとめて検査します。公開の根拠はこのローカル検査だけではなく、GitHub/VercelのREADY状態と正式URLのHTTP・実ブラウザ確認を別に記録しています。受講者端末QAは未実施です。
 
 全730課題の開始素材として、美容室、建設業、不動産会社の架空データパックを生成元として持っています。各課題は内容に合う1社に固定し、全730課題の延べ805参照から重複を除いた185素材だけを直接配信します。受講者は業種を選ばず、課題ページでTXTをコピー、PDF・Word・Excel・CSV・Markdownを1件ずつ取得できます。美容・建設・不動産以外の業種コース70課題は、同業種の専用データではなく、仕事の流れが近い代替データであることをUIで示します。入力方法や作業画面は採点しません。Chatの成果物は本人がコピーまたはダウンロードして保存し、WorkはAIへ保存を頼んだ後に本人が開きます。3社ZIPは既存URL互換とまとめ練習用の任意導線です。開始素材と大量の会社データはありますが、各課題を実際にChatGPTで行って作った完成見本画像、`.xlsx`、`.pptx`、サイト、アプリの一式は未整備です。
 
@@ -299,7 +299,7 @@ npm run dev
 
 730は全員が順番に解く段階数ではありません。現在の主プロジェクトを常に一つにし、足りない技術、担当判断、業種条件、表現だけを他教材から持ち込みます。同じ成果物を教材ごとに作り直さず、採用した素材と確認結果を主作品へ戻します。
 
-正式URLで公開済みと案内できるのは、全体構造、730課題定義、全730課題の固有本文、73章の旗艦作品プレビュー、3業種の練習データ、Web教科書の検索・絞り込み・章単位読込みです。各課題の1業種固定・必要ファイル直接取得は2026年9月3日のローカル変更であり、本番の公開確認が終わるまで「公開済み」に含めません。受講者端末QAも未実施です。各課題を実行して作った完成見本、受講形式ごとの提供範囲、正式な修了条件と記録方法は別途整備します。「全730本文をWebで公開中」とは案内できますが、「730講座が開講済み」とは案内しません。
+正式URLで公開済みと案内できるのは、全体構造、730課題定義、全730課題の固有本文、73章の旗艦作品プレビュー、3業種の練習データ、Web教科書の検索・絞り込み・章単位読込み、各課題の1業種固定・必要ファイル直接取得です。185素材すべてを正式URLから取得し、HTTP状態、容量、SHA-256の一致を確認しました。受講者端末QAは未実施です。各課題を実行して作った完成見本、受講形式ごとの提供範囲、正式な修了条件と記録方法は別途整備します。「全730本文をWebで公開中」とは案内できますが、「730講座が開講済み」とは案内しません。
 
 #### 練習用デモデータ3社パック
 
@@ -324,7 +324,7 @@ npm run dev
 
 2026年9月2日のローカル確認では、v1.1.2の3つのZIPすべてで公開用SHA-256が一致し、`ZipFile.testzip()`の破損は0件でした。各ZIPについて、156ファイル、`課題`内の14ファイル、`完成`フォルダを確認しています。Excel 135シート、Word 90ページ、PDF 309ページを描画し、PDF 300ファイルの日本語フォント埋込みと実ページの日本語表示も確認しました。配布物内の開始案内はWindowsとMacを併記し、Windows版だけに限定する古い案内は0件です。軽量検査の`npm run check:demo-data`は、この3 ZIPとカタログ、公開用SHA-256、バイト数、156ファイル、Excel実物の135シート・329,851データ行を照合して成功しています。重い検査も強化後に全件を再実行し、`tmp`原本とZIP内全ファイルのSHA-256一致、Excel実物のシート・行数、Word 90件の逐次変換、変換PDFからの`練習用・すべて架空・外部送信禁止`抽出、PDF 300件の描画に成功しました。生成された28枚の全ページ一覧も目視し、本文の文字欠け、真っ白な成果物、明らかなはみ出しはありませんでした。ローカル開発サーバーから3つのダウンロードURLも実際に取得し、すべてHTTP 200、受信容量は`catalog.json`と一致しました。正式URLでも3つのZIPを実際に取得し、すべてHTTP 200、受信容量は`catalog.json`と一致しました。この確認は成果物と配信の検査であり、本文貼り付け、書式付き資料の添付、Chat・Work、読めない時の切替、方法別保存を含む新しい受講手順のWindows・Mac実機確認はまだ実施していません。Git対象外の旧`.vercel/output`は整理済みです。再公開時は古いprebuilt成果物を再利用せず、必ず最新ソースから再生成します。
 
-2026年9月3日のローカル確認では、730課題すべてが一つの業種へ解決し、延べ805参照が185の一意素材へ解決しました。抽出総量は19,896,103 bytesで、公開URLはすべてASCIIで重複0、抽出ファイルはZIP内の元データと容量・SHA-256が一致しました。`SAL`・`CON`・`REA`の30課題は同業種データ、それ以外の業種コース70課題は仕事の流れが近い代替データとして区別しています。この確認はローカル配布物の検査であり、Sites・Vercelの正式URLによるHTTP取得と日本語名での保存は未確認です。
+2026年9月3日のローカル確認では、730課題すべてが一つの業種へ解決し、延べ805参照が185の一意素材へ解決しました。抽出総量は19,896,103 bytesで、公開URLはすべてASCIIで重複0、抽出ファイルはZIP内の元データと容量・SHA-256が一致しました。`SAL`・`CON`・`REA`の30課題は同業種データ、それ以外の業種コース70課題は仕事の流れが近い代替データとして区別しています。本番公開後は185素材すべてを正式URLから取得し、HTTP 200、容量、SHA-256の一致を確認しました。日本語ファイル名でのブラウザ保存表示は受講者端末QAで別途確認します。
 
 生成元は`scripts/build_demo_data.mjs`と`scripts/build_demo_documents.py`です。前者はExcel、後者はWord、PDF、目録、SHA-256、ZIP、公開用カタログを作ります。課題の`files`または割当ルールを変更した場合は`npm run build:demo-index`で課題別マップと直接配信素材を再生成します。パック本体の再生成はCodexのバンドル済みOffice生成環境に依存します。更新時の詳しい確認項目は[練習用デモデータ3社パック](./DEMO_DATA_PACKAGES.md)を参照してください。
 
@@ -466,7 +466,7 @@ Vercelでは`vite.config.ts`のVercel分岐がCloudflare/Sites用プラグイン
 - 親`mon-ai`: `828042e`で外部rewriteを追加し、Vercel deployment `dpl_CYc8jXuF3W7rbppt8W7LQjKci8q3`がREADY
 - 正式URL: `https://mon-ai.jp/aijuku`とWeb教科書の3画面、favicon、デモデータをHTTP 200で確認。不正課題の404と旧`?task=ID`から新本文URLへの307も確認
 - 実ブラウザ: 正式URLの教材検索画面と本文を表示。ローカルで検索、コース選択後のフォーカス、本文目次のフォーカス移動を確認
-- 未完了: 会員機能の転送先Sitesが旧版のため、正式URLの`/join`は404。新しいSites実装と本番D1は未公開
+- 完了: 既存Sitesプロジェクトの最新保存版を公開し、正式URLの`/join`、追加D1テーブル、環境変数を確認。実アカウントでの通しQAは未実施
 
 canonicalとSNS共有画像の絶対URLは、Sites実行時は現在のSites本番、Vercel実行時は目標の`https://mon-ai.jp/aijuku`を使います。公開先を明示的に切り替える場合だけ、末尾スラッシュなしの`NEXT_PUBLIC_SITE_URL`を設定してください。SNS共有画像は`npm run build:brand-og`で人物を含まない1200×630のブランドカードとして再生成できます。
 
@@ -566,7 +566,7 @@ npm run dev -- --port 3001
 - [x] デスクトップ幅と390×844のローカルブラウザで主要教材導線を確認
 - [x] commit（教材完成版`ae4fd36`）
 - [x] `main`へpush
-- [ ] Sites公開
+- [x] Sites公開（既存プロジェクトの最新保存版）
 - [x] Vercel子アプリ公開
 - [x] 親MON-Ai rewrite公開（親`mon-ai`の`828042e`）
 - [x] 公開URL確認
