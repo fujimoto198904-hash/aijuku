@@ -6,6 +6,7 @@ import {
   initialPasswordFromBirthDate,
   isValidInitialPassword,
   normalizeLoginId,
+  passwordIterations,
   validatePersonalPassword,
   verifiedIdentityMatchesTemporaryAccount,
   verifyPassword,
@@ -13,6 +14,12 @@ import {
 
 const pepper = 'local-auth-check-only-not-a-deployment-secret';
 const password = 'A safe passphrase 2026!';
+
+assert.equal(
+  passwordIterations,
+  100_000,
+  'Sites Workers support PBKDF2 iteration counts up to 100,000',
+);
 
 const firstDigest = await hashPassword(password, pepper);
 const secondDigest = await hashPassword(password, pepper);

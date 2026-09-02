@@ -1,7 +1,10 @@
 const encoder = new TextEncoder();
 
 const passwordDigestVersion = 'pbkdf2-sha256-hmacpepper-v1';
-export const passwordIterations = 600_000;
+// Sites Workers currently reject PBKDF2 iteration counts above 100,000.
+// The digest also uses a deployment-only HMAC pepper; login throttling and the
+// short-lived, verified-email flow protect the deliberately simple first key.
+export const passwordIterations = 100_000;
 export const minimumPersonalPasswordLength = 10;
 export const maximumPasswordLength = 128;
 
