@@ -1,31 +1,31 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { ShieldAlert } from "lucide-react";
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { ShieldAlert } from 'lucide-react';
 
-import { requireChatGPTUser } from "@/app/chatgpt-auth";
-import { BrandMark } from "@/components/brand-mark";
-import { MembershipOnboardingForm } from "@/components/membership-onboarding-form";
-import Link from "@/components/site-link";
-import { getMember, hasCurrentMembershipConsent } from "@/db/membership";
-import { canonicalMemberUrl, isVercelRuntime } from "@/lib/site-runtime";
+import { requireChatGPTUser } from '@/app/chatgpt-auth';
+import { BrandMark } from '@/components/brand-mark';
+import { MembershipOnboardingForm } from '@/components/membership-onboarding-form';
+import Link from '@/components/site-link';
+import { getMember, hasCurrentMembershipConsent } from '@/db/membership';
+import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "無料会員登録｜藤本実学塾",
+  title: '無料会員登録｜藤本実学塾',
   robots: { index: false, follow: false },
 };
 
 export default async function MembershipOnboardingPage() {
   if (isVercelRuntime()) {
-    redirect(canonicalMemberUrl("/mypage/onboarding"));
+    redirect(canonicalMemberUrl('/mypage/onboarding'));
   }
-  const user = await requireChatGPTUser("/mypage/onboarding");
+  const user = await requireChatGPTUser('/mypage/onboarding');
   const member = await getMember(user.userId);
-  if (member?.status === "active" && hasCurrentMembershipConsent(member)) {
-    redirect("/mypage");
+  if (member?.status === 'active' && hasCurrentMembershipConsent(member)) {
+    redirect('/mypage');
   }
-  if (member?.status === "suspended") {
+  if (member?.status === 'suspended') {
     return (
       <main
         id="main-content"
@@ -44,7 +44,7 @@ export default async function MembershipOnboardingPage() {
       </main>
     );
   }
-  if (member?.status === "withdrawn") {
+  if (member?.status === 'withdrawn') {
     return (
       <main
         id="main-content"
@@ -66,7 +66,7 @@ export default async function MembershipOnboardingPage() {
 
   const isConsentUpdate = Boolean(member);
   const defaultName =
-    member?.displayName || user.fullName?.trim() || user.email.split("@")[0];
+    member?.displayName || user.fullName?.trim() || user.email.split('@')[0];
 
   return (
     <main
@@ -86,9 +86,9 @@ export default async function MembershipOnboardingPage() {
             FREE MEMBERSHIP
           </p>
           <h1 className="text-soft-glow mt-5 font-mincho text-4xl leading-tight">
-            {isConsentUpdate ? "同意内容を、" : "無料会員登録を、"}
+            {isConsentUpdate ? '同意内容を、' : '無料会員登録を、'}
             <br />
-            {isConsentUpdate ? "更新します。" : "完了します。"}
+            {isConsentUpdate ? '更新します。' : '完了します。'}
           </h1>
           <ol className="mt-10 grid gap-5 text-sm text-white/70">
             <li className="border-t border-white/15 pt-4">
@@ -108,12 +108,12 @@ export default async function MembershipOnboardingPage() {
             ACCOUNT SETUP
           </p>
           <h2 className="mt-4 font-mincho text-3xl">
-            {isConsentUpdate ? "現行規約の確認" : "登録内容の確認"}
+            {isConsentUpdate ? '現行規約の確認' : '登録内容の確認'}
           </h2>
           <p className="mt-4 text-sm leading-7 text-quiet">
             {isConsentUpdate
-              ? "AI実学パスポートと第三者評価に対応した現行版を確認し、同意日時を更新します。"
-              : "ここで無料会員が成立します。受講申込と有料契約は、登録後に別途選びます。"}
+              ? 'AI実学パスポートとURL共有プロフィールに対応した現行版を確認し、同意日時を更新します。'
+              : 'ここで無料会員が成立します。受講申込と有料契約は、登録後に別途選びます。'}
           </p>
           <MembershipOnboardingForm
             defaultName={defaultName}

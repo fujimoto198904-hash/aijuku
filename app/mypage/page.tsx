@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import {
   ArrowRight,
   BookOpenText,
@@ -10,45 +10,43 @@ import {
   LogOut,
   Sparkles,
   UserRound,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
-import { BrandMark } from "@/components/brand-mark";
-import { MemberApplicationActions } from "@/components/member-application-actions";
-import { MemberProfileSettings } from "@/components/member-profile-settings";
-import { MobileMemberNav } from "@/components/mobile-member-nav";
-import Link from "@/components/site-link";
+import { chatGPTSignOutPath, requireChatGPTUser } from '@/app/chatgpt-auth';
+import { BrandMark } from '@/components/brand-mark';
+import { MemberApplicationActions } from '@/components/member-application-actions';
+import { MemberProfileSettings } from '@/components/member-profile-settings';
+import { MobileMemberNav } from '@/components/mobile-member-nav';
+import Link from '@/components/site-link';
 import {
   SkillPassport,
   type SkillTaskOption,
-} from "@/components/skill-passport";
+} from '@/components/skill-passport';
 import {
   getMember,
   hasCurrentMembershipConsent,
   listMemberApplications,
   refreshMemberEmail,
-} from "@/db/membership";
+} from '@/db/membership';
 import {
   ensureSkillProfile,
-  listMemberExternalReviews,
-  listMemberExternalReviewRequests,
   listMemberSkillEvidence,
-} from "@/db/skill-passport";
+} from '@/db/skill-passport';
 import {
   applicationStatusGuidance,
   applicationStatusLabels,
   findMemberServicePlan,
   memberServicePlans,
-} from "@/lib/member-service-plans";
-import { canonicalMemberUrl, isVercelRuntime } from "@/lib/site-runtime";
-import { textbookCatalog } from "@/lib/textbook-catalog";
+} from '@/lib/member-service-plans';
+import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
+import { textbookCatalog } from '@/lib/textbook-catalog';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "マイページ｜藤本実学塾",
+  title: 'マイページ｜藤本実学塾',
   description:
-    "藤本実学塾の無料会員マイページです。受講申込、学習記録、講師確認、第三者評価、URL共有プロフィールを管理できます。",
+    '藤本実学塾の無料会員マイページです。受講申込、学習記録、講師確認、URL共有プロフィールを管理できます。',
   robots: {
     index: false,
     follow: false,
@@ -67,62 +65,54 @@ const skillTaskOptions: SkillTaskOption[] = textbookCatalog.tasks.map(
 );
 
 function formatDate(value: number) {
-  return new Intl.DateTimeFormat("ja-JP", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Tokyo",
+  return new Intl.DateTimeFormat('ja-JP', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Tokyo',
   }).format(new Date(value));
 }
 
 export default async function MyPage() {
-  if (isVercelRuntime()) redirect(canonicalMemberUrl("/mypage"));
-  const user = await requireChatGPTUser("/mypage");
+  if (isVercelRuntime()) redirect(canonicalMemberUrl('/mypage'));
+  const user = await requireChatGPTUser('/mypage');
   const member = await getMember(user.userId);
   if (
     !member ||
-    member.status !== "active" ||
+    member.status !== 'active' ||
     !hasCurrentMembershipConsent(member)
   ) {
-    redirect("/mypage/onboarding");
+    redirect('/mypage/onboarding');
   }
 
   await refreshMemberEmail(user);
-  const [
-    applications,
-    skillProfile,
-    skillEvidence,
-    externalReviews,
-    externalReviewRequests,
-  ] = await Promise.all([
+  const [applications, skillProfile, skillEvidence] = await Promise.all([
     listMemberApplications(user.userId),
     ensureSkillProfile(user.userId),
     listMemberSkillEvidence(user.userId),
-    listMemberExternalReviews(user.userId),
-    listMemberExternalReviewRequests(user.userId),
   ]);
   const activeApplications = applications.filter(
     (application) =>
-      application.status === "received" || application.status === "reviewing",
+      application.status === 'received' || application.status === 'reviewing',
   );
   const nextStep = activeApplications.length
     ? {
-        title: "申込の確認を待ちながら、教科書を進める",
-        body: "対応中の申込があります。運営の確認中もWeb教科書は無料で進められます。",
-        href: "#applications",
-        label: "申込状況を見る",
+        title: '申込の確認を待ちながら、教科書を進める',
+        body: '対応中の申込があります。運営の確認中もWeb教科書は無料で進められます。',
+        href: '#applications',
+        label: '申込状況を見る',
       }
     : skillEvidence.length === 0
       ? {
-          title: "最初の課題を一つ選ぶ",
-          body: "Web教科書から今の仕事や暮らしに近い課題を一つ選び、完成物を作ってみましょう。",
-          href: "/textbook",
-          label: "Web教科書から選ぶ",
+          title: '最初の課題を一つ選ぶ',
+          body: 'Web教科書から今の仕事や暮らしに近い課題を一つ選び、完成物を作ってみましょう。',
+          href: '/textbook',
+          label: 'Web教科書から選ぶ',
         }
       : {
-          title: "次の実践記録を積み重ねる",
-          body: "できたことを証拠と一緒に残すほど、講師確認と第三者評価へつなげやすくなります。",
-          href: "#skills",
-          label: "AI実学パスポートへ",
+          title: '次の実践記録を積み重ねる',
+          body: 'できたことを証拠と一緒に残すほど、講師が確認した範囲と分けて説明しやすくなります。',
+          href: '#skills',
+          label: 'AI実学パスポートへ',
         };
 
   return (
@@ -192,7 +182,7 @@ export default async function MyPage() {
             </p>
             <Link
               className="mt-5 inline-flex items-center gap-2 text-xs text-white/55 hover:text-white"
-              href={chatGPTSignOutPath("/")}
+              href={chatGPTSignOutPath('/')}
               target="_top"
             >
               <LogOut className="size-3.5" aria-hidden="true" />
@@ -224,7 +214,7 @@ export default async function MyPage() {
                 >
                   Web教科書
                 </Link>
-                <MobileMemberNav signOutHref={chatGPTSignOutPath("/")} />
+                <MobileMemberNav signOutHref={chatGPTSignOutPath('/')} />
               </div>
             </div>
           </header>
@@ -242,7 +232,7 @@ export default async function MyPage() {
                     何から始めますか。
                   </h1>
                   <p className="mt-5 max-w-2xl text-sm leading-7 text-quiet">
-                    Web教科書はいつでも無料で読めます。作ったものは実践記録として残し、講師確認と第三者評価を加えて、応募先へ説明できる形へ育てられます。
+                    Web教科書はいつでも無料で読めます。作ったものは実践記録として残し、講師が確認した範囲と分けて、応募先へ説明できる形へ育てられます。
                   </p>
                 </div>
                 <a
@@ -283,7 +273,7 @@ export default async function MyPage() {
                     className="mt-2 inline-flex items-center gap-2 font-semibold text-sapphire"
                     href="/textbook"
                   >
-                    730課題から探す{" "}
+                    730課題から探す{' '}
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
                 </div>
@@ -435,27 +425,27 @@ export default async function MyPage() {
                               {application.memberMessage ??
                                 applicationStatusGuidance[application.status]}
                             </p>
-                            {application.status === "confirmed" &&
+                            {application.status === 'confirmed' &&
                             application.scheduledAt ? (
                               <p className="mt-3 font-semibold">
                                 実施：{formatDate(application.scheduledAt)}
                                 （日本時間）
                               </p>
                             ) : null}
-                            {application.status === "confirmed" &&
+                            {application.status === 'confirmed' &&
                             application.assignedInstructor ? (
                               <p className="mt-1">
                                 担当：{application.assignedInstructor}
                               </p>
                             ) : null}
-                            {application.status === "confirmed" &&
+                            {application.status === 'confirmed' &&
                             application.deliveryDetails ? (
                               <p className="mt-3 whitespace-pre-wrap break-words border-t border-rule pt-3">
                                 {application.deliveryDetails}
                               </p>
                             ) : null}
-                            {application.status === "received" ||
-                            application.status === "reviewing" ? (
+                            {application.status === 'received' ||
+                            application.status === 'reviewing' ? (
                               <MemberApplicationActions
                                 applicationId={application.id}
                                 updatedAt={application.updatedAt}
@@ -473,8 +463,6 @@ export default async function MyPage() {
             <SkillPassport
               evidence={skillEvidence}
               profile={skillProfile}
-              reviewRequests={externalReviewRequests}
-              reviews={externalReviews}
               tasks={skillTaskOptions}
             />
 

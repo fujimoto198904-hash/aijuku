@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowUpRight,
@@ -11,42 +11,33 @@ import {
   EyeOff,
   FileCheck2,
   Link2,
-  MessageSquareText,
   Plus,
   Search,
   Send,
   ShieldCheck,
   UserRoundCheck,
-} from "lucide-react";
-import { type SubmitEvent, useMemo, useState } from "react";
+} from 'lucide-react';
+import { type SubmitEvent, useMemo, useState } from 'react';
 
-import Link from "@/components/site-link";
-import { EvidenceRevisionForm } from "@/components/evidence-revision-form";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import type {
-  ExternalReviewRecord,
-  MemberExternalReviewRequest,
-  SkillEvidenceRecord,
-  SkillProfile,
-} from "@/db/skill-passport";
+import Link from '@/components/site-link';
+import { EvidenceRevisionForm } from '@/components/evidence-revision-form';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import type { SkillEvidenceRecord, SkillProfile } from '@/db/skill-passport';
 import {
   evidenceSourceLabels,
-  externalRatingLabels,
-  externalRelationshipLabels,
   instructorStatusLabels,
-  moderationStatusLabels,
   type EvidenceSourceType,
   type EvidenceVisibility,
-} from "@/lib/skill-passport";
-import { withSiteBasePath } from "@/lib/site-paths";
+} from '@/lib/skill-passport';
+import { withSiteBasePath } from '@/lib/site-paths';
 import {
   getSkillDefinition,
   skillDefinitions,
   type SkillKey,
-} from "@/lib/skill-taxonomy";
+} from '@/lib/skill-taxonomy';
 
 export type SkillTaskOption = {
   id: string;
@@ -57,9 +48,9 @@ export type SkillTaskOption = {
 };
 
 function formatDate(value: number) {
-  return new Intl.DateTimeFormat("ja-JP", {
-    dateStyle: "medium",
-    timeZone: "Asia/Tokyo",
+  return new Intl.DateTimeFormat('ja-JP', {
+    dateStyle: 'medium',
+    timeZone: 'Asia/Tokyo',
   }).format(new Date(value));
 }
 
@@ -67,12 +58,12 @@ function hostnameFromUrl(value: string) {
   try {
     return new URL(value).hostname;
   } catch {
-    return "外部サイト";
+    return '外部サイト';
   }
 }
 
 function safeVerifierName(value: string | null) {
-  if (!value || value.includes("@")) return "藤本実学塾 講師・運営";
+  if (!value || value.includes('@')) return '藤本実学塾 講師・運営';
   return value;
 }
 
@@ -80,13 +71,13 @@ function StatusMessage({
   kind,
   children,
 }: {
-  kind: "success" | "error";
+  kind: 'success' | 'error';
   children: React.ReactNode;
 }) {
   return (
     <p
-      className={`soft-control border-l-4 p-4 text-sm leading-7 text-brand-dark ${kind === "success" ? "border-future-mint bg-future-mint-soft" : "border-human-coral bg-human-coral-soft"}`}
-      role={kind === "error" ? "alert" : "status"}
+      className={`soft-control border-l-4 p-4 text-sm leading-7 text-brand-dark ${kind === 'success' ? 'border-future-mint bg-future-mint-soft' : 'border-human-coral bg-human-coral-soft'}`}
+      role={kind === 'error' ? 'alert' : 'status'}
     >
       {children}
     </p>
@@ -96,14 +87,10 @@ function StatusMessage({
 export function SkillPassport({
   profile,
   evidence,
-  reviews,
-  reviewRequests,
   tasks,
 }: {
   profile: SkillProfile;
   evidence: SkillEvidenceRecord[];
-  reviews: ExternalReviewRecord[];
-  reviewRequests: MemberExternalReviewRequest[];
   tasks: SkillTaskOption[];
 }) {
   const [savedProfile, setSavedProfile] = useState(profile);
@@ -114,28 +101,25 @@ export function SkillPassport({
     shareEnabled: profile.shareEnabled,
   });
   const [profileStatus, setProfileStatus] = useState<
-    "idle" | "sending" | "success" | "error"
-  >("idle");
-  const [profileMessage, setProfileMessage] = useState("");
+    'idle' | 'sending' | 'success' | 'error'
+  >('idle');
+  const [profileMessage, setProfileMessage] = useState('');
   const [sourceType, setSourceType] =
-    useState<EvidenceSourceType>("curriculum");
-  const [taskQuery, setTaskQuery] = useState("");
-  const [selectedTaskId, setSelectedTaskId] = useState("");
+    useState<EvidenceSourceType>('curriculum');
+  const [taskQuery, setTaskQuery] = useState('');
+  const [selectedTaskId, setSelectedTaskId] = useState('');
   const [priorWorkSkillKeys, setPriorWorkSkillKeys] = useState<SkillKey[]>([]);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [evidenceStatus, setEvidenceStatus] = useState<
-    "idle" | "sending" | "success" | "error"
-  >("idle");
+    'idle' | 'sending' | 'success' | 'error'
+  >('idle');
   const [evidenceRequestId] = useState(() => crypto.randomUUID());
-  const [evidenceMessage, setEvidenceMessage] = useState("");
+  const [evidenceMessage, setEvidenceMessage] = useState('');
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
-  const [actionMessage, setActionMessage] = useState("");
+  const [actionMessage, setActionMessage] = useState('');
   const [actionMessageKind, setActionMessageKind] = useState<
-    "success" | "error"
-  >("success");
-  const [invitationUrl, setInvitationUrl] = useState("");
-  const [invitationRequestId, setInvitationRequestId] = useState("");
-  const [revokedRequestIds, setRevokedRequestIds] = useState<string[]>([]);
+    'success' | 'error'
+  >('success');
 
   const selectedTask = tasks.find((task) => task.id === selectedTaskId);
   const matchingTasks = useMemo(() => {
@@ -144,21 +128,12 @@ export function SkillPassport({
     return tasks
       .filter((task) =>
         [task.id, task.title, task.outcome, task.courseTitle, task.trackLabel]
-          .join(" ")
+          .join(' ')
           .toLowerCase()
           .includes(query),
       )
       .slice(0, 8);
   }, [taskQuery, tasks]);
-
-  const reviewCountByEvidence = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const review of reviews) {
-      if (review.moderationStatus === "rejected") continue;
-      counts.set(review.evidenceId, (counts.get(review.evidenceId) ?? 0) + 1);
-    }
-    return counts;
-  }, [reviews]);
 
   const skillStats = useMemo(
     () =>
@@ -170,31 +145,24 @@ export function SkillPassport({
           ...skill,
           recorded: related.length,
           verified: related.filter(
-            (item) => item.instructorStatus === "verified",
-          ).length,
-          externallyReviewed: related.filter(
-            (item) => (reviewCountByEvidence.get(item.id) ?? 0) > 0,
+            (item) => item.instructorStatus === 'verified',
           ).length,
         };
       }),
-    [evidence, reviewCountByEvidence],
+    [evidence],
   );
 
   const verifiedCount = evidence.filter(
-    (item) => item.instructorStatus === "verified",
+    (item) => item.instructorStatus === 'verified',
   ).length;
-  const approvedReviewCount = reviews.filter(
-    (review) => review.moderationStatus === "approved" && review.consentPublic,
-  ).length;
-
   async function saveProfile(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setProfileStatus("sending");
-    setProfileMessage("");
+    setProfileStatus('sending');
+    setProfileMessage('');
     try {
-      const response = await fetch(withSiteBasePath("/api/skills/profile"), {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
+      const response = await fetch(withSiteBasePath('/api/skills/profile'), {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify(profileDraft),
       });
       const body = (await response.json()) as {
@@ -202,60 +170,60 @@ export function SkillPassport({
         profile?: SkillProfile;
       };
       if (!response.ok) {
-        throw new Error(body.error ?? "プロフィールを保存できませんでした。");
+        throw new Error(body.error ?? 'プロフィールを保存できませんでした。');
       }
       if (body.profile) setSavedProfile(body.profile);
-      setProfileStatus("success");
+      setProfileStatus('success');
       setProfileMessage(
         profileDraft.shareEnabled
-          ? "プロフィールを保存しました。共有を再開した場合は、安全のため新しいURLを発行しています。"
-          : "プロフィールと共有停止を保存しました。以前の共有URLからは閲覧できません。",
+          ? 'プロフィールを保存しました。共有を再開した場合は、安全のため新しいURLを発行しています。'
+          : 'プロフィールと共有停止を保存しました。以前の共有URLからは閲覧できません。',
       );
     } catch (error) {
-      setProfileStatus("error");
+      setProfileStatus('error');
       setProfileMessage(
         error instanceof Error
           ? error.message
-          : "プロフィールを保存できませんでした。",
+          : 'プロフィールを保存できませんでした。',
       );
     }
   }
 
   async function saveEvidence(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setEvidenceStatus("sending");
-    setEvidenceMessage("");
+    setEvidenceStatus('sending');
+    setEvidenceMessage('');
     const form = new FormData(event.currentTarget);
     try {
-      const response = await fetch(withSiteBasePath("/api/skills/evidence"), {
-        method: "POST",
-        headers: { "content-type": "application/json" },
+      const response = await fetch(withSiteBasePath('/api/skills/evidence'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           clientRequestId: evidenceRequestId,
           sourceType,
-          taskId: sourceType === "curriculum" ? selectedTaskId : null,
+          taskId: sourceType === 'curriculum' ? selectedTaskId : null,
           skillKeys: priorWorkSkillKeys,
-          title: form.get("title"),
-          summary: form.get("summary"),
-          evidenceUrl: form.get("evidenceUrl"),
+          title: form.get('title'),
+          summary: form.get('summary'),
+          evidenceUrl: form.get('evidenceUrl'),
           rightsConfirmed,
-          visibility: form.get("visibility"),
+          visibility: form.get('visibility'),
         }),
       });
       const body = (await response.json()) as { error?: string };
       if (!response.ok) {
-        throw new Error(body.error ?? "学習記録を保存できませんでした。");
+        throw new Error(body.error ?? '学習記録を保存できませんでした。');
       }
-      setEvidenceStatus("success");
+      setEvidenceStatus('success');
       setEvidenceMessage(
-        "実践記録を保存し、講師確認待ちにしました。公開設定を選んでいても、講師確認までは共有ページへ出ません。",
+        '実践記録を保存し、講師確認待ちにしました。公開設定を選んでいても、講師確認までは共有ページへ出ません。',
       );
     } catch (error) {
-      setEvidenceStatus("error");
+      setEvidenceStatus('error');
       setEvidenceMessage(
         error instanceof Error
           ? error.message
-          : "学習記録を保存できませんでした。",
+          : '学習記録を保存できませんでした。',
       );
     }
   }
@@ -265,115 +233,33 @@ export function SkillPassport({
     visibility: EvidenceVisibility,
   ) {
     if (
-      visibility === "shared" &&
+      visibility === 'shared' &&
       !window.confirm(
-        "この成果物の名前・説明・外部URLと講師確認範囲が、共有プロフィールのURLを知る人へ表示されます。内容を確認して共有しますか？",
+        'この成果物の名前・説明・外部URLと講師確認範囲が、共有プロフィールのURLを知る人へ表示されます。内容を確認して共有しますか？',
       )
     ) {
       return;
     }
     setPendingActionId(evidenceId);
-    setActionMessage("");
+    setActionMessage('');
     try {
-      const response = await fetch(withSiteBasePath("/api/skills/evidence"), {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
+      const response = await fetch(withSiteBasePath('/api/skills/evidence'), {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ evidenceId, visibility }),
       });
       const body = (await response.json()) as { error?: string };
       if (!response.ok) {
-        throw new Error(body.error ?? "公開範囲を変更できませんでした。");
+        throw new Error(body.error ?? '公開範囲を変更できませんでした。');
       }
       window.location.reload();
     } catch (error) {
-      setActionMessageKind("error");
+      setActionMessageKind('error');
       setActionMessage(
         error instanceof Error
           ? error.message
-          : "公開範囲を変更できませんでした。",
+          : '公開範囲を変更できませんでした。',
       );
-      setPendingActionId(null);
-    }
-  }
-
-  async function createReviewLink(evidenceId: string) {
-    if (
-      !window.confirm(
-        "評価リンクは、URLを受け取ったChatGPT利用者なら回答できます。意図した相手へ個別に送り、誤送信時はすぐ失効してください。作成しますか？",
-      )
-    ) {
-      return;
-    }
-    setPendingActionId(evidenceId);
-    setActionMessage("");
-    setInvitationUrl("");
-    setInvitationRequestId("");
-    try {
-      const response = await fetch(
-        withSiteBasePath("/api/skills/review-requests"),
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ evidenceId }),
-        },
-      );
-      const body = (await response.json()) as {
-        error?: string;
-        invitation?: { id: string; token: string; expiresAt: number };
-      };
-      if (!response.ok || !body.invitation) {
-        throw new Error(body.error ?? "評価リンクを作成できませんでした。");
-      }
-      const url = `${window.location.origin}${withSiteBasePath(`/review/${body.invitation.token}`)}`;
-      setInvitationUrl(url);
-      setInvitationRequestId(body.invitation.id);
-      setActionMessageKind("success");
-      setActionMessage(
-        `14日間・1回だけ使える評価リンクを作成しました。この画面を離れると再表示できません。`,
-      );
-    } catch (error) {
-      setActionMessageKind("error");
-      setActionMessage(
-        error instanceof Error
-          ? error.message
-          : "評価リンクを作成できませんでした。",
-      );
-    } finally {
-      setPendingActionId(null);
-    }
-  }
-
-  async function revokeReviewRequest(requestId: string) {
-    setPendingActionId(requestId);
-    setActionMessage("");
-    try {
-      const response = await fetch(
-        withSiteBasePath("/api/skills/review-requests"),
-        {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action: "revoke", requestId }),
-        },
-      );
-      const body = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        throw new Error(body.error ?? "評価依頼を失効できませんでした。");
-      }
-      setRevokedRequestIds((current) => [...current, requestId]);
-      if (requestId === invitationRequestId) {
-        setInvitationUrl("");
-        setInvitationRequestId("");
-      }
-      setActionMessageKind("success");
-      setActionMessage("評価依頼を失効しました。以前のリンクは使えません。");
-    } catch (error) {
-      setActionMessageKind("error");
-      setActionMessage(
-        error instanceof Error
-          ? error.message
-          : "評価依頼を失効できませんでした。",
-      );
-    } finally {
       setPendingActionId(null);
     }
   }
@@ -381,12 +267,12 @@ export function SkillPassport({
   async function copyText(value: string, successMessage: string) {
     try {
       await navigator.clipboard.writeText(value);
-      setActionMessageKind("success");
+      setActionMessageKind('success');
       setActionMessage(successMessage);
     } catch {
-      setActionMessageKind("error");
+      setActionMessageKind('error');
       setActionMessage(
-        "コピーできませんでした。文字列を選択してコピーしてください。",
+        'コピーできませんでした。文字列を選択してコピーしてください。',
       );
     }
   }
@@ -413,7 +299,7 @@ export function SkillPassport({
             できることを、証拠で残す。
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-            教科書で学んだことも、これまでの実務・自主制作も記録できます。本人の記録、講師確認、第三者評価を混ぜずに表示し、応募時に説明しやすい形へ整えます。
+            教科書で学んだことも、これまでの実務・自主制作も記録できます。本人の記録と講師が確認した範囲を分けて表示し、応募時に説明しやすい形へ整えます。
           </p>
         </div>
         {savedProfile.shareEnabled ? (
@@ -429,8 +315,8 @@ export function SkillPassport({
         ) : null}
       </div>
 
-      <div className="soft-work-surface soft-panel-clip mt-8 grid border border-rule bg-paper-white sm:grid-cols-3">
-        <div className="border-b border-rule p-6 sm:border-b-0 sm:border-r">
+      <div className="soft-work-surface soft-panel-clip mt-8 grid border border-rule bg-paper-white sm:grid-cols-2">
+        <div className="p-6">
           <FileCheck2 className="size-5 text-sapphire" aria-hidden="true" />
           <p className="mt-4 text-[11px] text-quiet">本人の実践記録</p>
           <p className="numeric-text mt-2 text-3xl">{evidence.length}件</p>
@@ -442,17 +328,6 @@ export function SkillPassport({
           />
           <p className="mt-4 text-[11px] text-quiet">講師確認済み</p>
           <p className="numeric-text mt-2 text-3xl">{verifiedCount}件</p>
-        </div>
-        <div className="p-6">
-          <MessageSquareText
-            className="size-5 text-sunrise"
-            aria-hidden="true"
-          />
-          <p className="mt-4 text-xs text-quiet">運営承認・公開同意あり</p>
-          <p className="numeric-text mt-2 text-3xl">{approvedReviewCount}件</p>
-          <p className="mt-2 text-xs leading-5 text-quiet">
-            実際の共有には、現行規約への同意と成果物ごとの共有設定も必要です。
-          </p>
         </div>
       </div>
 
@@ -469,7 +344,7 @@ export function SkillPassport({
         <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           {skillStats.map((skill) => (
             <article
-              className={`soft-card border p-5 ${skill.recorded > 0 ? "border-sapphire/35 bg-paper-white" : "border-rule bg-paper-white/60"}`}
+              className={`soft-card border p-5 ${skill.recorded > 0 ? 'border-sapphire/35 bg-paper-white' : 'border-rule bg-paper-white/60'}`}
               key={skill.key}
             >
               <h4 className="font-semibold">{skill.shortLabel}</h4>
@@ -490,8 +365,8 @@ export function SkillPassport({
                   />
                 </div>
                 <div className="mt-1 flex items-center justify-between text-quiet">
-                  <span>講師 {skill.verified}</span>
-                  <span>第三者 {skill.externallyReviewed}</span>
+                  <span>講師確認済み</span>
+                  <span className="numeric-text">{skill.verified}</span>
                 </div>
               </div>
             </article>
@@ -593,7 +468,7 @@ export function SkillPassport({
                 URL共有ページを有効にする。検索エンジンには掲載しませんが、URLを知る人は閲覧できます。共有を選んだ講師確認済み成果物だけを表示します。
               </span>
             </label>
-            {profileStatus === "success" || profileStatus === "error" ? (
+            {profileStatus === 'success' || profileStatus === 'error' ? (
               <StatusMessage kind={profileStatus}>
                 {profileMessage}
               </StatusMessage>
@@ -601,16 +476,16 @@ export function SkillPassport({
             <Button
               className="min-h-12 bg-brand-dark text-sm text-white"
               disabled={
-                profileStatus === "sending" ||
+                profileStatus === 'sending' ||
                 (profileDraft.shareEnabled &&
                   (profileDraft.headline.trim().length < 3 ||
                     profileDraft.bio.trim().length < 20))
               }
               type="submit"
             >
-              {profileStatus === "sending"
-                ? "保存しています…"
-                : "プロフィールを保存"}
+              {profileStatus === 'sending'
+                ? '保存しています…'
+                : 'プロフィールを保存'}
             </Button>
             {savedProfile.shareEnabled ? (
               <button
@@ -618,7 +493,7 @@ export function SkillPassport({
                 onClick={() =>
                   copyText(
                     `${window.location.origin}${withSiteBasePath(`/skills/${savedProfile.publicSlug}`)}`,
-                    "共有ページのURLをコピーしました。",
+                    '共有ページのURLをコピーしました。',
                   )
                 }
                 type="button"
@@ -647,9 +522,9 @@ export function SkillPassport({
           <fieldset className="mt-6">
             <legend className="text-sm font-semibold">記録するもの</legend>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              {(["curriculum", "prior-work"] as const).map((value) => (
+              {(['curriculum', 'prior-work'] as const).map((value) => (
                 <label
-                  className={`soft-control cursor-pointer border p-4 text-sm ${sourceType === value ? "border-sapphire bg-sapphire-soft font-semibold text-sapphire" : "border-rule bg-white"}`}
+                  className={`soft-control cursor-pointer border p-4 text-sm ${sourceType === value ? 'border-sapphire bg-sapphire-soft font-semibold text-sapphire' : 'border-rule bg-white'}`}
                   key={value}
                 >
                   <input
@@ -665,7 +540,7 @@ export function SkillPassport({
             </div>
           </fieldset>
 
-          {sourceType === "curriculum" ? (
+          {sourceType === 'curriculum' ? (
             <div className="mt-5">
               <label
                 className="grid gap-2 text-sm font-semibold"
@@ -682,7 +557,7 @@ export function SkillPassport({
                     id="skill-task-search"
                     onChange={(event) => {
                       setTaskQuery(event.target.value);
-                      setSelectedTaskId("");
+                      setSelectedTaskId('');
                     }}
                     placeholder="課題ID、メール、Excel、営業など"
                     value={taskQuery}
@@ -697,9 +572,9 @@ export function SkillPassport({
                   <li key={task.id}>
                     <button
                       aria-current={
-                        selectedTaskId === task.id ? "true" : undefined
+                        selectedTaskId === task.id ? 'true' : undefined
                       }
-                      className={`flex w-full items-start gap-3 rounded-xl p-3 text-left text-xs leading-6 ${selectedTaskId === task.id ? "bg-sapphire-soft text-brand-dark" : "hover:bg-paper"}`}
+                      className={`flex w-full items-start gap-3 rounded-xl p-3 text-left text-xs leading-6 ${selectedTaskId === task.id ? 'bg-sapphire-soft text-brand-dark' : 'hover:bg-paper'}`}
                       onClick={() => {
                         setSelectedTaskId(task.id);
                         setTaskQuery(`${task.id} ${task.title}`);
@@ -836,12 +711,12 @@ export function SkillPassport({
                 この記録とリンクに、無断掲載の顧客情報・社外秘・第三者の個人情報・権利未確認素材がなく、必要な共有許可を確認しました。
               </span>
             </label>
-            {evidenceStatus === "success" || evidenceStatus === "error" ? (
+            {evidenceStatus === 'success' || evidenceStatus === 'error' ? (
               <div className="grid gap-3">
                 <StatusMessage kind={evidenceStatus}>
                   {evidenceMessage}
                 </StatusMessage>
-                {evidenceStatus === "success" ? (
+                {evidenceStatus === 'success' ? (
                   <Button
                     onClick={() => window.location.reload()}
                     type="button"
@@ -855,21 +730,21 @@ export function SkillPassport({
             <Button
               className="min-h-12 bg-sapphire text-sm text-white"
               disabled={
-                evidenceStatus === "sending" ||
-                evidenceStatus === "success" ||
+                evidenceStatus === 'sending' ||
+                evidenceStatus === 'success' ||
                 !rightsConfirmed ||
-                (sourceType === "curriculum"
+                (sourceType === 'curriculum'
                   ? !selectedTaskId
                   : priorWorkSkillKeys.length < 1)
               }
               type="submit"
             >
               <Send className="size-4" aria-hidden="true" />
-              {evidenceStatus === "sending"
-                ? "保存しています…"
-                : evidenceStatus === "success"
-                  ? "保存済みです"
-                  : "実践記録を保存して講師確認へ"}
+              {evidenceStatus === 'sending'
+                ? '保存しています…'
+                : evidenceStatus === 'success'
+                  ? '保存済みです'
+                  : '実践記録を保存して講師確認へ'}
             </Button>
           </div>
         </form>
@@ -889,95 +764,7 @@ export function SkillPassport({
             <StatusMessage kind={actionMessageKind}>
               {actionMessage}
             </StatusMessage>
-            {invitationUrl ? (
-              <div className="soft-control mt-3 border border-sapphire bg-white p-4">
-                <p className="text-xs leading-6 text-quiet">
-                  このURLは評価者本人へ個別に送ってください。宛先とは技術的に結び付いていないため、転送された場合は別の人も回答できます。
-                </p>
-                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <code className="min-w-0 flex-1 overflow-x-auto text-xs text-sapphire">
-                    {invitationUrl}
-                  </code>
-                  <Button
-                    className="shrink-0"
-                    onClick={() =>
-                      copyText(
-                        invitationUrl,
-                        "第三者評価リンクをコピーしました。",
-                      )
-                    }
-                    type="button"
-                    variant="outline"
-                  >
-                    <Clipboard className="size-4" aria-hidden="true" />
-                    コピー
-                  </Button>
-                  {invitationRequestId ? (
-                    <Button
-                      className="shrink-0"
-                      disabled={pendingActionId === invitationRequestId}
-                      onClick={() => revokeReviewRequest(invitationRequestId)}
-                      type="button"
-                      variant="outline"
-                    >
-                      <EyeOff className="size-4" aria-hidden="true" />
-                      今すぐ失効
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
           </div>
-        ) : null}
-
-        {reviewRequests.length > 0 ? (
-          <details className="soft-panel mt-5 border border-rule bg-paper-white p-5">
-            <summary className="cursor-pointer text-sm font-semibold">
-              第三者評価依頼を管理（最新{reviewRequests.length}件）
-            </summary>
-            <p className="mt-3 text-xs leading-6 text-quiet">
-              評価URLは作成時だけ表示します。誤送信した場合や不要になった場合は、期限前でもここから失効できます。
-            </p>
-            <div className="mt-4 grid gap-3">
-              {reviewRequests.map((request) => {
-                const revoked = revokedRequestIds.includes(request.id);
-                const statusLabel = revoked
-                  ? "失効済み"
-                  : request.status === "submitted"
-                    ? "回答済み"
-                    : request.status === "revoked"
-                      ? "失効済み"
-                      : "回答待ち（期限到来後は使用不可）";
-                return (
-                  <div
-                    className="soft-control grid gap-3 border border-rule bg-paper p-4 text-xs sm:grid-cols-[1fr_auto] sm:items-center"
-                    key={request.id}
-                  >
-                    <div className="min-w-0">
-                      <p className="break-words font-semibold">
-                        {request.evidenceTitle}
-                      </p>
-                      <p className="mt-1 text-quiet">
-                        {statusLabel}／作成 {formatDate(request.createdAt)}
-                        ／期限 {formatDate(request.expiresAt)}
-                      </p>
-                    </div>
-                    {request.status === "open" && !revoked ? (
-                      <Button
-                        disabled={pendingActionId === request.id}
-                        onClick={() => revokeReviewRequest(request.id)}
-                        type="button"
-                        variant="outline"
-                      >
-                        <EyeOff className="size-4" aria-hidden="true" />
-                        この依頼を失効
-                      </Button>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </details>
         ) : null}
 
         {evidence.length === 0 ? (
@@ -993,9 +780,6 @@ export function SkillPassport({
         ) : (
           <div className="mt-6 grid gap-5">
             {evidence.map((item) => {
-              const itemReviews = reviews.filter(
-                (review) => review.evidenceId === item.id,
-              );
               return (
                 <article
                   className="soft-panel border border-rule bg-paper-white p-6 sm:p-8"
@@ -1003,10 +787,10 @@ export function SkillPassport({
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="soft-badge bg-sapphire-soft px-3 py-1 text-xs font-semibold text-sapphire">
-                      {item.taskId ?? "実務・自主制作"}
+                      {item.taskId ?? '実務・自主制作'}
                     </span>
                     <span
-                      className={`soft-badge px-3 py-1 text-xs font-semibold ${item.instructorStatus === "verified" ? "bg-future-mint-soft text-brand-dark" : item.instructorStatus === "changes_requested" ? "bg-human-coral-soft text-human-coral" : "bg-sunrise-soft text-warning"}`}
+                      className={`soft-badge px-3 py-1 text-xs font-semibold ${item.instructorStatus === 'verified' ? 'bg-future-mint-soft text-brand-dark' : item.instructorStatus === 'changes_requested' ? 'bg-human-coral-soft text-human-coral' : 'bg-sunrise-soft text-warning'}`}
                     >
                       {instructorStatusLabels[item.instructorStatus]}
                     </span>
@@ -1046,7 +830,7 @@ export function SkillPassport({
                     </div>
                   ) : null}
 
-                  {item.instructorStatus === "changes_requested" ? (
+                  {item.instructorStatus === 'changes_requested' ? (
                     <EvidenceRevisionForm evidence={item} />
                   ) : null}
 
@@ -1069,76 +853,22 @@ export function SkillPassport({
                       onClick={() =>
                         changeVisibility(
                           item.id,
-                          item.visibility === "shared" ? "private" : "shared",
+                          item.visibility === 'shared' ? 'private' : 'shared',
                         )
                       }
                       type="button"
                       variant="outline"
                     >
-                      {item.visibility === "shared" ? (
+                      {item.visibility === 'shared' ? (
                         <EyeOff className="size-4" aria-hidden="true" />
                       ) : (
                         <Eye className="size-4" aria-hidden="true" />
                       )}
-                      {item.visibility === "shared"
-                        ? "共有から外す"
-                        : "確認後に共有する"}
+                      {item.visibility === 'shared'
+                        ? '共有から外す'
+                        : '確認後に共有する'}
                     </Button>
-                    {item.instructorStatus === "verified" ? (
-                      <Button
-                        className="min-h-10 bg-brand-dark text-white"
-                        disabled={pendingActionId === item.id}
-                        onClick={() => createReviewLink(item.id)}
-                        type="button"
-                      >
-                        <UserRoundCheck className="size-4" aria-hidden="true" />
-                        第三者へ評価を依頼
-                      </Button>
-                    ) : null}
                   </div>
-
-                  {itemReviews.length > 0 ? (
-                    <div className="mt-6 grid gap-3 border-t border-rule pt-5">
-                      <p className="text-xs font-semibold text-sapphire">
-                        第三者から届いた評価
-                      </p>
-                      {itemReviews.map((review) => (
-                        <div
-                          className="soft-control border border-rule bg-paper p-5"
-                          key={review.id}
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-3 text-[11px]">
-                            <p className="font-semibold">
-                              {review.reviewerName}
-                              {review.reviewerAffiliation
-                                ? `／${review.reviewerAffiliation}`
-                                : ""}
-                            </p>
-                            <span className="soft-badge bg-white px-3 py-1 text-quiet">
-                              {moderationStatusLabels[review.moderationStatus]}
-                            </span>
-                          </div>
-                          <p className="mt-2 text-[11px] text-quiet">
-                            {externalRelationshipLabels[review.relationship]}／
-                            {externalRatingLabels[review.rating]}
-                          </p>
-                          <p className="mt-3 text-sm leading-7">
-                            {review.comment}
-                          </p>
-                          {review.moderationNote ? (
-                            <p className="mt-3 border-t border-rule pt-3 text-[11px] leading-5 text-quiet">
-                              運営の掲載判断：{review.moderationNote}
-                            </p>
-                          ) : null}
-                          {!review.consentPublic ? (
-                            <p className="mt-3 text-[10px] text-quiet">
-                              評価者は公開掲載に同意していないため、マイページ内だけで表示します。
-                            </p>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
                 </article>
               );
             })}

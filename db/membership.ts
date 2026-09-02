@@ -1,20 +1,20 @@
-import { env } from "cloudflare:workers";
+import { env } from 'cloudflare:workers';
 
-import type { ChatGPTUser } from "@/app/chatgpt-auth";
+import type { ChatGPTUser } from '@/app/chatgpt-auth';
 
 export const serviceTypeValues = [
-  "in-person-tutor",
-  "online-tutor",
-  "self-study",
+  'in-person-tutor',
+  'online-tutor',
+  'self-study',
 ] as const;
 
 export type ServiceType = (typeof serviceTypeValues)[number];
 
 export const applicationStatusValues = [
-  "received",
-  "reviewing",
-  "confirmed",
-  "cancelled",
+  'received',
+  'reviewing',
+  'confirmed',
+  'cancelled',
 ] as const;
 
 export type ApplicationStatus = (typeof applicationStatusValues)[number];
@@ -23,8 +23,8 @@ const adminApplicationTransitions: Record<
   ApplicationStatus,
   readonly ApplicationStatus[]
 > = {
-  received: ["reviewing", "cancelled"],
-  reviewing: ["confirmed", "cancelled"],
+  received: ['reviewing', 'cancelled'],
+  reviewing: ['confirmed', 'cancelled'],
   confirmed: [],
   cancelled: [],
 };
@@ -75,7 +75,7 @@ export type AdminApplicationStatusEvent = {
   serviceType: ServiceType;
   fromStatus: ApplicationStatus;
   toStatus: ApplicationStatus;
-  actorType: "member" | "owner";
+  actorType: 'member' | 'owner';
   actorName: string;
   hasMemberMessage: number;
   createdAt: number;
@@ -85,25 +85,25 @@ export type MemberProfile = {
   id: string;
   email: string;
   displayName: string;
-  status: "active" | "suspended" | "withdrawn";
+  status: 'active' | 'suspended' | 'withdrawn';
   termsVersion: string;
   privacyVersion: string;
   createdAt: number;
 };
 
-type RawMemberApplication = Omit<MemberApplication, "offerSnapshot"> & {
+type RawMemberApplication = Omit<MemberApplication, 'offerSnapshot'> & {
   offerSnapshot: string;
 };
 
-type RawAdminApplication = Omit<AdminApplication, "offerSnapshot"> & {
+type RawAdminApplication = Omit<AdminApplication, 'offerSnapshot'> & {
   offerSnapshot: string;
 };
 
-export const membershipTermsVersion = "2026-09-02-portal-v3";
-export const privacyPolicyVersion = "2026-09-02-portal-v2";
+export const membershipTermsVersion = '2026-09-02-portal-v4';
+export const privacyPolicyVersion = '2026-09-02-portal-v3';
 
 export function hasCurrentMembershipConsent(
-  member: Pick<MemberProfile, "termsVersion" | "privacyVersion">,
+  member: Pick<MemberProfile, 'termsVersion' | 'privacyVersion'>,
 ): boolean {
   return (
     member.termsVersion === membershipTermsVersion &&
@@ -115,7 +115,7 @@ let schemaReady: Promise<void> | null = null;
 
 function getD1(): D1Database {
   if (!env.DB) {
-    throw new Error("D1 binding `DB` is unavailable.");
+    throw new Error('D1 binding `DB` is unavailable.');
   }
   return env.DB;
 }
@@ -218,39 +218,39 @@ async function initializeSchema(): Promise<void> {
 
 async function ensureApplicationColumns(db: D1Database): Promise<void> {
   const columns = await db
-    .prepare("PRAGMA table_info(applications)")
+    .prepare('PRAGMA table_info(applications)')
     .all<{ name: string }>();
   const existing = new Set(columns.results.map((column) => column.name));
   const migrations = [
     [
-      "offer_snapshot",
+      'offer_snapshot',
       "ALTER TABLE applications ADD COLUMN offer_snapshot TEXT NOT NULL DEFAULT '{}'",
     ],
     [
-      "terms_version",
+      'terms_version',
       "ALTER TABLE applications ADD COLUMN terms_version TEXT NOT NULL DEFAULT 'legacy'",
     ],
     [
-      "privacy_version",
+      'privacy_version',
       "ALTER TABLE applications ADD COLUMN privacy_version TEXT NOT NULL DEFAULT 'legacy'",
     ],
     [
-      "member_message",
-      "ALTER TABLE applications ADD COLUMN member_message TEXT",
+      'member_message',
+      'ALTER TABLE applications ADD COLUMN member_message TEXT',
     ],
     [
-      "assigned_instructor",
-      "ALTER TABLE applications ADD COLUMN assigned_instructor TEXT",
+      'assigned_instructor',
+      'ALTER TABLE applications ADD COLUMN assigned_instructor TEXT',
     ],
     [
-      "scheduled_at",
-      "ALTER TABLE applications ADD COLUMN scheduled_at INTEGER",
+      'scheduled_at',
+      'ALTER TABLE applications ADD COLUMN scheduled_at INTEGER',
     ],
     [
-      "delivery_details",
-      "ALTER TABLE applications ADD COLUMN delivery_details TEXT",
+      'delivery_details',
+      'ALTER TABLE applications ADD COLUMN delivery_details TEXT',
     ],
-    ["internal_note", "ALTER TABLE applications ADD COLUMN internal_note TEXT"],
+    ['internal_note', 'ALTER TABLE applications ADD COLUMN internal_note TEXT'],
   ] as const;
   const statements = migrations
     .filter(([name]) => !existing.has(name))
@@ -260,9 +260,9 @@ async function ensureApplicationColumns(db: D1Database): Promise<void> {
 
 async function ensureApplicationEventColumns(db: D1Database): Promise<void> {
   const columns = await db
-    .prepare("PRAGMA table_info(application_status_events)")
+    .prepare('PRAGMA table_info(application_status_events)')
     .all<{ name: string }>();
-  if (!columns.results.some((column) => column.name === "operation_snapshot")) {
+  if (!columns.results.some((column) => column.name === 'operation_snapshot')) {
     await db
       .prepare(
         "ALTER TABLE application_status_events ADD COLUMN operation_snapshot TEXT NOT NULL DEFAULT '{}'",
@@ -275,11 +275,11 @@ function parseOfferSnapshot(value: string): ApplicationOfferSnapshot | null {
   try {
     const parsed = JSON.parse(value) as Partial<ApplicationOfferSnapshot>;
     if (
-      typeof parsed.serviceName !== "string" ||
-      typeof parsed.price !== "string" ||
-      typeof parsed.area !== "string" ||
-      typeof parsed.enrollmentFee !== "string" ||
-      typeof parsed.pricingNote !== "string"
+      typeof parsed.serviceName !== 'string' ||
+      typeof parsed.price !== 'string' ||
+      typeof parsed.area !== 'string' ||
+      typeof parsed.enrollmentFee !== 'string' ||
+      typeof parsed.pricingNote !== 'string'
     ) {
       return null;
     }
@@ -292,7 +292,7 @@ function parseOfferSnapshot(value: string): ApplicationOfferSnapshot | null {
 function hydrateApplication(
   application: RawMemberApplication,
 ): MemberApplication {
-  const confirmed = application.status === "confirmed";
+  const confirmed = application.status === 'confirmed';
   return {
     ...application,
     offerSnapshot: parseOfferSnapshot(application.offerSnapshot),
@@ -332,11 +332,11 @@ export async function registerMember(input: {
 }): Promise<MemberProfile> {
   await ensureMembershipSchema();
   const currentMember = await getMember(input.user.userId);
-  if (currentMember?.status === "suspended") {
-    throw new Error("Suspended membership cannot be reactivated.");
+  if (currentMember?.status === 'suspended') {
+    throw new Error('Suspended membership cannot be reactivated.');
   }
-  if (currentMember?.status === "withdrawn") {
-    throw new Error("Withdrawn membership requires explicit reactivation.");
+  if (currentMember?.status === 'withdrawn') {
+    throw new Error('Withdrawn membership requires explicit reactivation.');
   }
   const now = Date.now();
   await getD1()
@@ -379,7 +379,7 @@ export async function registerMember(input: {
     .run();
 
   const member = await getMember(input.user.userId);
-  if (!member) throw new Error("Member could not be saved.");
+  if (!member) throw new Error('Member could not be saved.');
   return member;
 }
 
@@ -470,10 +470,10 @@ export async function createMemberApplication(input: {
   const member = await getMember(input.user.userId);
   if (
     !member ||
-    member.status !== "active" ||
+    member.status !== 'active' ||
     !hasCurrentMembershipConsent(member)
   ) {
-    throw new Error("Active membership is required.");
+    throw new Error('Active membership is required.');
   }
   await refreshMemberEmail(input.user);
   const db = getD1();
@@ -518,7 +518,7 @@ export async function createMemberApplication(input: {
     .bind(input.user.userId)
     .first<{ count: number }>();
   if (Number(activeCount?.count ?? 0) >= 3) {
-    throw new Error("Too many active applications.");
+    throw new Error('Too many active applications.');
   }
   const recentCount = await db
     .prepare(
@@ -531,7 +531,7 @@ export async function createMemberApplication(input: {
     .bind(input.user.userId, now - 24 * 60 * 60 * 1000)
     .first<{ count: number }>();
   if (Number(recentCount?.count ?? 0) >= 10) {
-    throw new Error("Application rate limit exceeded.");
+    throw new Error('Application rate limit exceeded.');
   }
 
   await db.batch([
@@ -672,12 +672,12 @@ export async function createMemberApplication(input: {
         .first<{ count: number }>(),
     ]);
     if (Number(activeCountAfterInsert?.count ?? 0) >= 3) {
-      throw new Error("Too many active applications.");
+      throw new Error('Too many active applications.');
     }
     if (Number(recentCountAfterInsert?.count ?? 0) >= 10) {
-      throw new Error("Application rate limit exceeded.");
+      throw new Error('Application rate limit exceeded.');
     }
-    throw new Error("Application could not be saved.");
+    throw new Error('Application could not be saved.');
   }
   return hydrateApplication(result);
 }
@@ -688,11 +688,11 @@ export async function countAdminApplications(
   await ensureMembershipSchema();
   const result = status
     ? await getD1()
-        .prepare("SELECT COUNT(*) AS count FROM applications WHERE status = ?")
+        .prepare('SELECT COUNT(*) AS count FROM applications WHERE status = ?')
         .bind(status)
         .first<{ count: number }>()
     : await getD1()
-        .prepare("SELECT COUNT(*) AS count FROM applications")
+        .prepare('SELECT COUNT(*) AS count FROM applications')
         .first<{ count: number }>();
   return Number(result?.count ?? 0);
 }
@@ -705,7 +705,7 @@ export async function listAdminApplications(input?: {
   await ensureMembershipSchema();
   const limit = Math.min(100, Math.max(1, input?.limit ?? 50));
   const offset = Math.max(0, input?.offset ?? 0);
-  const statusClause = input?.status ? "WHERE applications.status = ?" : "";
+  const statusClause = input?.status ? 'WHERE applications.status = ?' : '';
   const statement = getD1().prepare(`
       SELECT
         applications.id,
@@ -793,7 +793,7 @@ export async function updateAdminApplication(input: {
   internalNote: string | null;
   actor: ChatGPTUser;
 }): Promise<
-  number | "not_found" | "conflict" | "invalid_transition" | "invalid_schedule"
+  number | 'not_found' | 'conflict' | 'invalid_transition' | 'invalid_schedule'
 > {
   await ensureMembershipSchema();
   const db = getD1();
@@ -815,19 +815,19 @@ export async function updateAdminApplication(input: {
       scheduledAt: number | null;
       updatedAt: number;
     }>();
-  if (!current) return "not_found";
-  if (current.updatedAt !== input.expectedUpdatedAt) return "conflict";
+  if (!current) return 'not_found';
+  if (current.updatedAt !== input.expectedUpdatedAt) return 'conflict';
   if (!canAdminTransitionApplication(current.status, input.status)) {
-    return "invalid_transition";
+    return 'invalid_transition';
   }
   if (
-    input.status === "confirmed" &&
+    input.status === 'confirmed' &&
     (!input.scheduledAt ||
-      ((current.status !== "confirmed" ||
+      ((current.status !== 'confirmed' ||
         input.scheduledAt !== current.scheduledAt) &&
         input.scheduledAt <= Date.now()))
   ) {
-    return "invalid_schedule";
+    return 'invalid_schedule';
   }
 
   const now = Math.max(Date.now(), input.expectedUpdatedAt + 1);
@@ -896,7 +896,7 @@ export async function updateAdminApplication(input: {
         input.expectedUpdatedAt,
       ),
   ]);
-  return Number(updateResult.meta.changes ?? 0) > 0 ? now : "conflict";
+  return Number(updateResult.meta.changes ?? 0) > 0 ? now : 'conflict';
 }
 
 export async function cancelMemberApplication(input: {
@@ -904,7 +904,7 @@ export async function cancelMemberApplication(input: {
   applicationId: string;
   expectedUpdatedAt: number;
   actorName: string;
-}): Promise<"cancelled" | "not_found" | "conflict"> {
+}): Promise<'cancelled' | 'not_found' | 'conflict'> {
   await ensureMembershipSchema();
   const db = getD1();
   const current = await db
@@ -918,11 +918,11 @@ export async function cancelMemberApplication(input: {
     )
     .bind(input.applicationId, input.memberId)
     .first<{ status: ApplicationStatus }>();
-  if (!current) return "not_found";
-  if (!["received", "reviewing"].includes(current.status)) return "conflict";
+  if (!current) return 'not_found';
+  if (!['received', 'reviewing'].includes(current.status)) return 'conflict';
 
   const now = Math.max(Date.now(), input.expectedUpdatedAt + 1);
-  const memberMessage = "会員本人がマイページから申込希望を取り消しました。";
+  const memberMessage = '会員本人がマイページから申込希望を取り消しました。';
   const [, updateResult] = await db.batch([
     db
       .prepare(
@@ -976,5 +976,5 @@ export async function cancelMemberApplication(input: {
         input.expectedUpdatedAt,
       ),
   ]);
-  return Number(updateResult.meta.changes ?? 0) > 0 ? "cancelled" : "conflict";
+  return Number(updateResult.meta.changes ?? 0) > 0 ? 'cancelled' : 'conflict';
 }

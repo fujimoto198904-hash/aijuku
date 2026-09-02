@@ -1,51 +1,51 @@
 import {
   ArrowRight,
   BadgeCheck,
+  BriefcaseBusiness,
   FileCheck2,
-  MessageSquareText,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { SectionIntro } from "@/components/home/section-intro";
-import Link from "@/components/site-link";
+import { SectionIntro } from '@/components/home/section-intro';
+import Link from '@/components/site-link';
 
 const goals = [
   {
-    label: "はじめて",
-    title: "まず、話しかけてみる",
-    body: "画面の開き方や言葉の入れ方から。分からない言葉を置き去りにしません。",
+    label: 'はじめて',
+    title: 'まず、話しかけてみる',
+    body: '画面の開き方や言葉の入れ方から。分からない言葉を置き去りにしません。',
   },
   {
-    label: "暮らし",
-    title: "毎日の小さな手間を軽くする",
-    body: "調べ物、予定、文章づくりなど、自分に必要な場面だけ選んで使います。",
+    label: '暮らし',
+    title: '毎日の小さな手間を軽くする',
+    body: '調べ物、予定、文章づくりなど、自分に必要な場面だけ選んで使います。',
   },
   {
-    label: "仕事",
-    title: "使える成果物を一つ作る",
-    body: "メール、資料、整理、提案。実際に使う前の確認までを一続きで学びます。",
+    label: '仕事',
+    title: '使える成果物を一つ作る',
+    body: 'メール、資料、整理、提案。実際に使う前の確認までを一続きで学びます。',
   },
   {
-    label: "チーム",
-    title: "使い方を、仕組みに変える",
-    body: "担当、手順、確認点を残し、誰かが続きから動ける状態を目指します。",
+    label: 'チーム',
+    title: '使い方を、仕組みに変える',
+    body: '担当、手順、確認点を残し、誰かが続きから動ける状態を目指します。',
   },
 ] as const;
 
 const passportParts = [
   {
     Icon: FileCheck2,
-    title: "本人の実践記録",
-    body: "教科書の課題も、これまでの実務・自主制作も、成果物と一緒に残す。",
+    title: '本人の実践記録',
+    body: '教科書の課題も、これまでの実務・自主制作も、成果物と一緒に残す。',
   },
   {
     Icon: BadgeCheck,
-    title: "講師が確認",
-    body: "成果物・操作・未確認事項を、実際に見た範囲だけ記録する。",
+    title: '講師が確認',
+    body: '成果物・操作・未確認事項を、実際に見た範囲だけ記録する。',
   },
   {
-    Icon: MessageSquareText,
-    title: "第三者の評価",
-    body: "上司・同僚・顧客などが、実際に確認した場面を本人の同意付きで残す。",
+    Icon: BriefcaseBusiness,
+    title: '応募用プロフィール',
+    body: '本人の実践記録と講師が確認した範囲をまとめ、今できることを説明しやすい形にする。',
   },
 ] as const;
 
@@ -117,7 +117,7 @@ export function GoalSection() {
             </div>
             <div className="mt-7 flex flex-col gap-4 border-t border-white/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-2xl text-xs leading-6 text-white/70">
-                人を点数やレベル番号で順位づけせず、本人記録・講師確認・第三者評価を分けて表示します。公的資格や採用を保証する制度ではありません。
+                本人記録と講師が確認した範囲を分けて表示します。公的資格や採用を保証する制度ではありません。
               </p>
               <Link
                 className="soft-button inline-flex min-h-11 shrink-0 items-center justify-center gap-3 bg-white px-5 text-xs font-semibold text-brand-dark"

@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import {
   ArrowRight,
   BadgeCheck,
@@ -7,52 +7,52 @@ import {
   CalendarCheck,
   CircleDollarSign,
   UserRoundCheck,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { chatGPTSignInPath, getChatGPTUser } from "@/app/chatgpt-auth";
-import { OnlinePriceSpotlight } from "@/components/online-price-spotlight";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import Link from "@/components/site-link";
-import { canonicalMemberUrl, isVercelRuntime } from "@/lib/site-runtime";
+import { chatGPTSignInPath, getChatGPTUser } from '@/app/chatgpt-auth';
+import { OnlinePriceSpotlight } from '@/components/online-price-spotlight';
+import { SiteFooter } from '@/components/site-footer';
+import { SiteHeader } from '@/components/site-header';
+import Link from '@/components/site-link';
+import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "無料会員登録｜藤本実学塾",
+  title: '無料会員登録｜藤本実学塾',
   description:
-    "藤本実学塾の無料会員登録ページです。受講申込、学習記録、講師確認、第三者評価を一つのマイページで管理できます。",
+    '藤本実学塾の無料会員登録ページです。受講申込、学習記録、講師確認を一つのマイページで管理できます。',
 };
 
 const benefits = [
   {
     Icon: CalendarCheck,
-    title: "3つの受講方法へ申し込める",
-    body: "対面、Google Meet、対面・教科書自習式から、自分に合う学び方を選べます。",
+    title: '3つの受講方法へ申し込める',
+    body: '対面、Google Meet、対面・教科書自習式から、自分に合う学び方を選べます。',
   },
   {
     Icon: BookOpenText,
-    title: "申込と学びの続きがまとまる",
-    body: "受付状況、これから進める課題、できた成果物をマイページへ集約します。",
+    title: '申込と学びの続きがまとまる',
+    body: '受付状況、これから進める課題、できた成果物をマイページへ集約します。',
   },
   {
     Icon: BadgeCheck,
-    title: "できることを証拠で残せる",
-    body: "本人の実践記録、講師確認、第三者評価を分け、応募先へURL共有できます。",
+    title: 'できることを証拠で残せる',
+    body: '本人の実践記録と、講師が確認した範囲を分け、応募先へURL共有できます。',
   },
   {
     Icon: CircleDollarSign,
-    title: "登録だけなら0円",
-    body: "有料受講を申し込み、条件を確認するまでは入会金・受講料は発生しません。",
+    title: '登録だけなら0円',
+    body: '有料受講を申し込み、条件を確認するまでは入会金・受講料は発生しません。',
   },
 ] as const;
 
 export default async function JoinPage() {
-  if (isVercelRuntime()) redirect(canonicalMemberUrl("/join"));
+  if (isVercelRuntime()) redirect(canonicalMemberUrl('/join'));
   const user = await getChatGPTUser();
   const destination = user
-    ? "/mypage"
-    : chatGPTSignInPath("/mypage/onboarding");
+    ? '/mypage'
+    : chatGPTSignInPath('/mypage/onboarding');
 
   return (
     <>
@@ -114,16 +114,16 @@ export default async function JoinPage() {
 
             <div className="soft-panel mx-auto mt-12 max-w-2xl border border-rule bg-paper-white p-7 sm:p-10">
               <p className="text-center text-xs font-semibold tracking-[0.14em] text-sapphire">
-                {user ? "SIGNED IN" : "START HERE"}
+                {user ? 'SIGNED IN' : 'START HERE'}
               </p>
               <Link
                 className="button-glow group mt-6 flex min-h-16 items-center justify-between px-6 text-sm font-semibold text-white"
                 href={destination}
-                target={user ? undefined : "_top"}
+                target={user ? undefined : '_top'}
               >
                 {user
-                  ? "登録状況を確認してマイページへ"
-                  : "ChatGPTで無料会員登録を始める"}
+                  ? '登録状況を確認してマイページへ'
+                  : 'ChatGPTで無料会員登録を始める'}
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-1"
                   aria-hidden="true"

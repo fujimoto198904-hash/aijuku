@@ -1,13 +1,13 @@
-import { env } from "cloudflare:workers";
+import { env } from 'cloudflare:workers';
 
-import type { ChatGPTUser } from "@/app/chatgpt-auth";
+import type { ChatGPTUser } from '@/app/chatgpt-auth';
 import {
   ensureMembershipSchema,
   getMember,
   hasCurrentMembershipConsent,
   membershipTermsVersion,
   privacyPolicyVersion,
-} from "@/db/membership";
+} from '@/db/membership';
 import {
   type EvidenceSourceType,
   type EvidenceVisibility,
@@ -16,13 +16,13 @@ import {
   type InstructorStatus,
   type ModerationStatus,
   parseObservationIds,
-} from "@/lib/skill-passport";
+} from '@/lib/skill-passport';
 import {
   type SkillKey,
   inferTaskSkills,
   parseSkillKeys,
-} from "@/lib/skill-taxonomy";
-import { findTextbookTask, type TextbookTrack } from "@/lib/textbook-catalog";
+} from '@/lib/skill-taxonomy';
+import { findTextbookTask, type TextbookTrack } from '@/lib/textbook-catalog';
 
 export type SkillProfile = {
   memberId: string;
@@ -42,7 +42,7 @@ export type SkillEvidenceRecord = {
   taskId: string | null;
   taskTitle: string;
   taskOutcome: string;
-  track: TextbookTrack | "other";
+  track: TextbookTrack | 'other';
   courseTitle: string;
   skillKeys: SkillKey[];
   title: string;
@@ -111,7 +111,7 @@ export type MemberExternalReviewRequest = {
   id: string;
   evidenceId: string;
   evidenceTitle: string;
-  status: "open" | "submitted" | "revoked";
+  status: 'open' | 'submitted' | 'revoked';
   expiresAt: number;
   createdAt: number;
   usedAt: number | null;
@@ -121,20 +121,19 @@ export type PublicSkillPassport = {
   displayName: string;
   profile: SkillProfile;
   evidence: SkillEvidenceRecord[];
-  reviews: ExternalReviewRecord[];
 };
 
-type RawSkillProfile = Omit<SkillProfile, "shareEnabled"> & {
+type RawSkillProfile = Omit<SkillProfile, 'shareEnabled'> & {
   shareEnabled: number;
 };
 
-type RawSkillEvidence = Omit<SkillEvidenceRecord, "skillKeys"> & {
+type RawSkillEvidence = Omit<SkillEvidenceRecord, 'skillKeys'> & {
   skillKeys: string;
 };
 
 type RawExternalReview = Omit<
   ExternalReviewRecord,
-  "observations" | "consentPublic"
+  'observations' | 'consentPublic'
 > & {
   observations: string;
   consentPublic: number;
@@ -143,7 +142,7 @@ type RawExternalReview = Omit<
 let schemaReady: Promise<void> | null = null;
 
 function getD1(): D1Database {
-  if (!env.DB) throw new Error("D1 binding `DB` is unavailable.");
+  if (!env.DB) throw new Error('D1 binding `DB` is unavailable.');
   return env.DB;
 }
 
@@ -317,32 +316,32 @@ async function initializeSchema(): Promise<void> {
       CREATE INDEX IF NOT EXISTS external_review_moderation_events_review_created_idx
       ON external_review_moderation_events(review_id, created_at)
     `),
-    db.prepare("PRAGMA optimize"),
+    db.prepare('PRAGMA optimize'),
   ]);
   await ensureSkillPassportColumns(db);
 }
 
 async function ensureSkillPassportColumns(db: D1Database): Promise<void> {
   const columns = await db
-    .prepare("PRAGMA table_info(external_reviews)")
+    .prepare('PRAGMA table_info(external_reviews)')
     .all<{ name: string }>();
   const existing = new Set(columns.results.map((column) => column.name));
   const migrations = [
     [
-      "terms_version",
-      "ALTER TABLE external_reviews ADD COLUMN terms_version TEXT",
+      'terms_version',
+      'ALTER TABLE external_reviews ADD COLUMN terms_version TEXT',
     ],
     [
-      "privacy_version",
-      "ALTER TABLE external_reviews ADD COLUMN privacy_version TEXT",
+      'privacy_version',
+      'ALTER TABLE external_reviews ADD COLUMN privacy_version TEXT',
     ],
     [
-      "policy_accepted_at",
-      "ALTER TABLE external_reviews ADD COLUMN policy_accepted_at INTEGER",
+      'policy_accepted_at',
+      'ALTER TABLE external_reviews ADD COLUMN policy_accepted_at INTEGER',
     ],
     [
-      "moderation_note",
-      "ALTER TABLE external_reviews ADD COLUMN moderation_note TEXT",
+      'moderation_note',
+      'ALTER TABLE external_reviews ADD COLUMN moderation_note TEXT',
     ],
   ] as const;
   const statements = migrations
@@ -351,15 +350,15 @@ async function ensureSkillPassportColumns(db: D1Database): Promise<void> {
   if (statements.length > 0) await db.batch(statements);
 
   const evidenceColumns = await db
-    .prepare("PRAGMA table_info(skill_evidence)")
+    .prepare('PRAGMA table_info(skill_evidence)')
     .all<{ name: string }>();
   if (
     !evidenceColumns.results.some(
-      (column) => column.name === "client_request_id",
+      (column) => column.name === 'client_request_id',
     )
   ) {
     await db
-      .prepare("ALTER TABLE skill_evidence ADD COLUMN client_request_id TEXT")
+      .prepare('ALTER TABLE skill_evidence ADD COLUMN client_request_id TEXT')
       .run();
   }
   await db
@@ -412,7 +411,7 @@ export async function ensureSkillProfile(
       ON CONFLICT(member_id) DO NOTHING
     `,
     )
-    .bind(memberId, `p_${crypto.randomUUID().replaceAll("-", "")}`, now, now)
+    .bind(memberId, `p_${crypto.randomUUID().replaceAll('-', '')}`, now, now)
     .run();
 
   const profile = await db
@@ -435,7 +434,7 @@ export async function ensureSkillProfile(
     .bind(memberId)
     .first<RawSkillProfile>();
 
-  if (!profile) throw new Error("Skill profile could not be initialized.");
+  if (!profile) throw new Error('Skill profile could not be initialized.');
   return hydrateProfile(profile);
 }
 
@@ -449,7 +448,7 @@ export async function updateSkillProfile(input: {
   const current = await ensureSkillProfile(input.memberId);
   const publicSlug =
     input.shareEnabled && !current.shareEnabled
-      ? `p_${crypto.randomUUID().replaceAll("-", "")}`
+      ? `p_${crypto.randomUUID().replaceAll('-', '')}`
       : current.publicSlug;
   await getD1()
     .prepare(
@@ -531,10 +530,10 @@ export async function createSkillEvidence(input: {
   const member = await getMember(input.memberId);
   if (
     !member ||
-    member.status !== "active" ||
+    member.status !== 'active' ||
     !hasCurrentMembershipConsent(member)
   ) {
-    throw new Error("Active membership is required.");
+    throw new Error('Active membership is required.');
   }
   await ensureSkillPassportSchema();
 
@@ -571,24 +570,24 @@ export async function createSkillEvidence(input: {
     .first<RawSkillEvidence>();
   if (existingEvidence) return hydrateEvidence(existingEvidence);
 
-  if (input.sourceType === "prior-work" && input.taskId) {
-    throw new Error("Prior work must not reference a textbook task.");
+  if (input.sourceType === 'prior-work' && input.taskId) {
+    throw new Error('Prior work must not reference a textbook task.');
   }
   const task =
-    input.sourceType === "curriculum" && input.taskId
+    input.sourceType === 'curriculum' && input.taskId
       ? findTextbookTask(input.taskId)
       : undefined;
-  if (input.sourceType === "curriculum" && !task) {
-    throw new Error("Textbook task was not found.");
+  if (input.sourceType === 'curriculum' && !task) {
+    throw new Error('Textbook task was not found.');
   }
   if (
-    input.sourceType === "prior-work" &&
+    input.sourceType === 'prior-work' &&
     (input.priorWorkSkillKeys.length < 1 || input.priorWorkSkillKeys.length > 3)
   ) {
-    throw new Error("Prior work must have one to three skill keys.");
+    throw new Error('Prior work must have one to three skill keys.');
   }
   if (!input.rightsConfirmed) {
-    throw new Error("Evidence rights must be confirmed.");
+    throw new Error('Evidence rights must be confirmed.');
   }
 
   const recentCount = await getD1()
@@ -602,7 +601,7 @@ export async function createSkillEvidence(input: {
     .bind(input.memberId, Date.now() - 24 * 60 * 60 * 1000)
     .first<{ count: number }>();
   if (Number(recentCount?.count ?? 0) >= 100) {
-    throw new Error("Skill evidence rate limit exceeded.");
+    throw new Error('Skill evidence rate limit exceeded.');
   }
 
   const skillKeys = task
@@ -641,10 +640,10 @@ export async function createSkillEvidence(input: {
       input.clientRequestId,
       input.sourceType,
       task?.id ?? null,
-      task?.title ?? "教科書外の実務・自主制作",
+      task?.title ?? '教科書外の実務・自主制作',
       task?.outcome ?? input.title,
-      task?.track ?? "other",
-      task?.courseTitle ?? "これまでの実務・自主制作",
+      task?.track ?? 'other',
+      task?.courseTitle ?? 'これまでの実務・自主制作',
       JSON.stringify(skillKeys),
       input.title,
       input.summary,
@@ -687,7 +686,7 @@ export async function createSkillEvidence(input: {
     )
     .bind(input.memberId, input.clientRequestId)
     .first<RawSkillEvidence>();
-  if (!result) throw new Error("Skill evidence could not be saved.");
+  if (!result) throw new Error('Skill evidence could not be saved.');
   return hydrateEvidence(result);
 }
 
@@ -718,14 +717,14 @@ export async function resubmitSkillEvidence(input: {
   summary: string;
   evidenceUrl: string | null;
   rightsConfirmed: boolean;
-}): Promise<"updated" | "not_found" | "conflict"> {
+}): Promise<'updated' | 'not_found' | 'conflict'> {
   const member = await getMember(input.memberId);
   if (
     !member ||
-    member.status !== "active" ||
+    member.status !== 'active' ||
     !hasCurrentMembershipConsent(member)
   ) {
-    throw new Error("Active membership is required.");
+    throw new Error('Active membership is required.');
   }
   await ensureSkillPassportSchema();
   const db = getD1();
@@ -740,68 +739,43 @@ export async function resubmitSkillEvidence(input: {
     )
     .bind(input.evidenceId, input.memberId)
     .first<{ instructorStatus: InstructorStatus }>();
-  if (!existing) return "not_found";
-  if (existing.instructorStatus !== "changes_requested") return "conflict";
+  if (!existing) return 'not_found';
+  if (existing.instructorStatus !== 'changes_requested') return 'conflict';
 
   const now = Math.max(Date.now(), input.expectedUpdatedAt + 1);
-  const [, updateResult] = await db.batch([
-    db
-      .prepare(
-        `
-        UPDATE external_review_requests
-        SET status = 'revoked'
-        WHERE
-          evidence_id = ?
-          AND status = 'open'
-          AND EXISTS (
-            SELECT 1 FROM skill_evidence
-            WHERE
-              id = ?
-              AND member_id = ?
-              AND instructor_status = 'changes_requested'
-              AND updated_at = ?
-          )
-      `,
-      )
-      .bind(
-        input.evidenceId,
-        input.evidenceId,
-        input.memberId,
-        input.expectedUpdatedAt,
-      ),
-    db
-      .prepare(
-        `
-        UPDATE skill_evidence
-        SET
-          title = ?,
-          summary = ?,
-          evidence_url = ?,
-          rights_confirmed_at = ?,
-          instructor_status = 'pending',
-          verified_by = NULL,
-          verified_by_name = NULL,
-          verified_at = NULL,
-          updated_at = ?
-        WHERE
-          id = ?
-          AND member_id = ?
-          AND instructor_status = 'changes_requested'
-          AND updated_at = ?
-      `,
-      )
-      .bind(
-        input.title,
-        input.summary,
-        input.evidenceUrl,
-        input.rightsConfirmed ? now : 0,
-        now,
-        input.evidenceId,
-        input.memberId,
-        input.expectedUpdatedAt,
-      ),
-  ]);
-  return Number(updateResult.meta.changes ?? 0) > 0 ? "updated" : "conflict";
+  const updateResult = await db
+    .prepare(
+      `
+      UPDATE skill_evidence
+      SET
+        title = ?,
+        summary = ?,
+        evidence_url = ?,
+        rights_confirmed_at = ?,
+        instructor_status = 'pending',
+        verified_by = NULL,
+        verified_by_name = NULL,
+        verified_at = NULL,
+        updated_at = ?
+      WHERE
+        id = ?
+        AND member_id = ?
+        AND instructor_status = 'changes_requested'
+        AND updated_at = ?
+    `,
+    )
+    .bind(
+      input.title,
+      input.summary,
+      input.evidenceUrl,
+      input.rightsConfirmed ? now : 0,
+      now,
+      input.evidenceId,
+      input.memberId,
+      input.expectedUpdatedAt,
+    )
+    .run();
+  return Number(updateResult.meta.changes ?? 0) > 0 ? 'updated' : 'conflict';
 }
 
 export async function listMemberExternalReviews(
@@ -838,12 +812,12 @@ export async function listMemberExternalReviews(
 
 async function hashToken(token: string): Promise<string> {
   const digest = await crypto.subtle.digest(
-    "SHA-256",
+    'SHA-256',
     new TextEncoder().encode(token),
   );
   return Array.from(new Uint8Array(digest), (byte) =>
-    byte.toString(16).padStart(2, "0"),
-  ).join("");
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
 }
 
 export async function createExternalReviewRequest(input: {
@@ -861,10 +835,10 @@ export async function createExternalReviewRequest(input: {
   const member = await getMember(input.memberId);
   if (
     !member ||
-    member.status !== "active" ||
+    member.status !== 'active' ||
     !hasCurrentMembershipConsent(member)
   ) {
-    throw new Error("Active membership is required.");
+    throw new Error('Active membership is required.');
   }
   const db = getD1();
   const evidence = await db
@@ -879,7 +853,7 @@ export async function createExternalReviewRequest(input: {
     .bind(input.evidenceId, input.memberId)
     .first<{ id: string; title: string }>();
   if (!evidence) {
-    throw new Error("Only verified evidence can request an external review.");
+    throw new Error('Only verified evidence can request an external review.');
   }
 
   const now = Date.now();
@@ -905,7 +879,7 @@ export async function createExternalReviewRequest(input: {
     .bind(input.memberId)
     .first<{ count: number }>();
   if (Number(openCount?.count ?? 0) >= 10) {
-    throw new Error("Too many open external review requests.");
+    throw new Error('Too many open external review requests.');
   }
   const recentCount = await db
     .prepare(
@@ -918,10 +892,10 @@ export async function createExternalReviewRequest(input: {
     .bind(input.memberId, now - 24 * 60 * 60 * 1000)
     .first<{ count: number }>();
   if (Number(recentCount?.count ?? 0) >= 20) {
-    throw new Error("External review request rate limit exceeded.");
+    throw new Error('External review request rate limit exceeded.');
   }
 
-  const token = `${crypto.randomUUID().replaceAll("-", "")}${crypto.randomUUID().replaceAll("-", "")}`;
+  const token = `${crypto.randomUUID().replaceAll('-', '')}${crypto.randomUUID().replaceAll('-', '')}`;
   const expiresAt = now + 14 * 24 * 60 * 60 * 1000;
   const requestId = crypto.randomUUID();
   await db
@@ -1043,7 +1017,7 @@ export async function getExternalReviewRequest(
       privacyPolicyVersion,
     )
     .first<
-      Omit<ExternalReviewRequestView, "skillKeys"> & { skillKeys: string }
+      Omit<ExternalReviewRequestView, 'skillKeys'> & { skillKeys: string }
     >();
   return result
     ? { ...result, skillKeys: parseSkillKeys(result.skillKeys) }
@@ -1063,12 +1037,12 @@ export async function submitExternalReview(input: {
   policyAccepted: boolean;
 }): Promise<void> {
   const request = await getExternalReviewRequest(input.token);
-  if (!request) throw new Error("External review request is unavailable.");
+  if (!request) throw new Error('External review request is unavailable.');
   if (request.memberId === input.reviewer.userId) {
-    throw new Error("Self review is not allowed.");
+    throw new Error('Self review is not allowed.');
   }
   if (!input.policyAccepted) {
-    throw new Error("External reviewer policy acceptance is required.");
+    throw new Error('External reviewer policy acceptance is required.');
   }
 
   const db = getD1();
@@ -1166,7 +1140,7 @@ export async function submitExternalReview(input: {
       .bind(now, request.requestId, reviewId),
   ]);
   if (Number(insertResult.meta.changes ?? 0) < 1) {
-    throw new Error("External review request is unavailable.");
+    throw new Error('External review request is unavailable.');
   }
 }
 
@@ -1176,10 +1150,10 @@ export async function listAdminSkillEvidence(input?: {
 }): Promise<AdminSkillEvidenceRecord[]> {
   await ensureSkillPassportSchema();
   const memberEmailExpression = input?.includeMemberEmail
-    ? "members.email"
+    ? 'members.email'
     : "''";
   const statusClause = input?.includeResolved
-    ? ""
+    ? ''
     : "WHERE skill_evidence.instructor_status = 'pending'";
   const result = await getD1()
     .prepare(
@@ -1251,10 +1225,10 @@ export async function countPendingAdminSkillEvidence(): Promise<number> {
 export async function reviewSkillEvidence(input: {
   evidenceId: string;
   expectedUpdatedAt: number;
-  status: Extract<InstructorStatus, "verified" | "changes_requested">;
+  status: Extract<InstructorStatus, 'verified' | 'changes_requested'>;
   note: string;
   reviewer: ChatGPTUser;
-}): Promise<"updated" | "not_found" | "conflict"> {
+}): Promise<'updated' | 'not_found' | 'conflict'> {
   await ensureSkillPassportSchema();
   const owner = await getD1()
     .prepare(
@@ -1269,18 +1243,16 @@ export async function reviewSkillEvidence(input: {
     )
     .bind(input.evidenceId)
     .first<{ memberId: string; instructorStatus: InstructorStatus }>();
-  if (!owner) return "not_found";
+  if (!owner) return 'not_found';
   if (owner?.memberId === input.reviewer.userId) {
-    throw new Error("Self instructor review is not allowed.");
+    throw new Error('Self instructor review is not allowed.');
   }
-  if (owner.instructorStatus !== "pending") return "conflict";
+  if (owner.instructorStatus !== 'pending') return 'conflict';
 
-  const verified = input.status === "verified";
+  const verified = input.status === 'verified';
   const reviewerName =
-    input.reviewer.fullName?.trim() || "藤本実学塾 講師・運営";
+    input.reviewer.fullName?.trim() || '藤本実学塾 講師・運営';
   const now = Math.max(Date.now(), input.expectedUpdatedAt + 1);
-  const invalidationNote =
-    "成果物が講師から差し戻されたため、この評価は現行版への掲載対象外になりました。";
   const batchResults = await getD1().batch([
     getD1()
       .prepare(
@@ -1319,113 +1291,6 @@ export async function reviewSkillEvidence(input: {
     getD1()
       .prepare(
         `
-        INSERT INTO external_review_moderation_events (
-          id,
-          review_id,
-          from_status,
-          to_status,
-          moderator_user_id,
-          moderator_name,
-          note,
-          created_at
-        )
-        SELECT
-          lower(hex(randomblob(16))),
-          external_reviews.id,
-          external_reviews.moderation_status,
-          'rejected',
-          ?,
-          ?,
-          ?,
-          ?
-        FROM external_reviews
-        WHERE
-          external_reviews.evidence_id = ?
-          AND external_reviews.moderation_status <> 'rejected'
-          AND ? = 'changes_requested'
-          AND EXISTS (
-            SELECT 1 FROM skill_evidence
-            WHERE
-              id = ?
-              AND member_id <> ?
-              AND instructor_status = 'pending'
-              AND updated_at = ?
-          )
-      `,
-      )
-      .bind(
-        input.reviewer.userId,
-        reviewerName,
-        invalidationNote,
-        now,
-        input.evidenceId,
-        input.status,
-        input.evidenceId,
-        input.reviewer.userId,
-        input.expectedUpdatedAt,
-      ),
-    getD1()
-      .prepare(
-        `
-        UPDATE external_reviews
-        SET
-          moderation_status = 'rejected',
-          moderation_note = ?,
-          moderated_by = ?,
-          moderated_at = ?
-        WHERE
-          evidence_id = ?
-          AND moderation_status <> 'rejected'
-          AND ? = 'changes_requested'
-          AND EXISTS (
-            SELECT 1 FROM skill_evidence
-            WHERE
-              id = ?
-              AND member_id <> ?
-              AND instructor_status = 'pending'
-              AND updated_at = ?
-          )
-      `,
-      )
-      .bind(
-        invalidationNote,
-        input.reviewer.userId,
-        now,
-        input.evidenceId,
-        input.status,
-        input.evidenceId,
-        input.reviewer.userId,
-        input.expectedUpdatedAt,
-      ),
-    getD1()
-      .prepare(
-        `
-        UPDATE external_review_requests
-        SET status = 'revoked'
-        WHERE
-          evidence_id = ?
-          AND status = 'open'
-          AND ? = 'changes_requested'
-          AND EXISTS (
-            SELECT 1 FROM skill_evidence
-            WHERE
-              id = ?
-              AND member_id <> ?
-              AND instructor_status = 'pending'
-              AND updated_at = ?
-          )
-      `,
-      )
-      .bind(
-        input.evidenceId,
-        input.status,
-        input.evidenceId,
-        input.reviewer.userId,
-        input.expectedUpdatedAt,
-      ),
-    getD1()
-      .prepare(
-        `
         UPDATE skill_evidence
         SET
           instructor_status = ?,
@@ -1454,7 +1319,7 @@ export async function reviewSkillEvidence(input: {
       ),
   ]);
   const updateResult = batchResults[batchResults.length - 1]!;
-  return Number(updateResult.meta.changes ?? 0) > 0 ? "updated" : "conflict";
+  return Number(updateResult.meta.changes ?? 0) > 0 ? 'updated' : 'conflict';
 }
 
 export async function listAdminExternalReviews(input?: {
@@ -1462,7 +1327,7 @@ export async function listAdminExternalReviews(input?: {
 }): Promise<AdminExternalReviewRecord[]> {
   await ensureSkillPassportSchema();
   const statusClause = input?.includeResolved
-    ? ""
+    ? ''
     : "WHERE external_reviews.moderation_status = 'pending'";
   const result = await getD1()
     .prepare(
@@ -1558,10 +1423,10 @@ export async function countPendingAdminExternalReviews(): Promise<number> {
 export async function moderateExternalReview(input: {
   reviewId: string;
   expectedStatus: ModerationStatus;
-  status: Extract<ModerationStatus, "approved" | "rejected">;
+  status: Extract<ModerationStatus, 'approved' | 'rejected'>;
   note: string;
   reviewer: ChatGPTUser;
-}): Promise<"updated" | "not_found" | "conflict"> {
+}): Promise<'updated' | 'not_found' | 'conflict'> {
   await ensureSkillPassportSchema();
   const review = await getD1()
     .prepare(
@@ -1583,24 +1448,24 @@ export async function moderateExternalReview(input: {
       memberId: string;
       moderationStatus: ModerationStatus;
     }>();
-  if (!review) return "not_found";
+  if (!review) return 'not_found';
   if (
     review &&
     (review.reviewerUserId === input.reviewer.userId ||
       review.memberId === input.reviewer.userId)
   ) {
-    throw new Error("Self external review moderation is not allowed.");
+    throw new Error('Self external review moderation is not allowed.');
   }
 
   if (
-    input.expectedStatus !== "pending" ||
+    input.expectedStatus !== 'pending' ||
     review.moderationStatus !== input.expectedStatus
   ) {
-    return "conflict";
+    return 'conflict';
   }
   const now = Date.now();
   const moderatorName =
-    input.reviewer.fullName?.trim() || "藤本実学塾 掲載審査";
+    input.reviewer.fullName?.trim() || '藤本実学塾 掲載審査';
   const [, updateResult] = await getD1().batch([
     getD1()
       .prepare(
@@ -1666,7 +1531,7 @@ export async function moderateExternalReview(input: {
         input.reviewer.userId,
       ),
   ]);
-  return Number(updateResult.meta.changes ?? 0) > 0 ? "updated" : "conflict";
+  return Number(updateResult.meta.changes ?? 0) > 0 ? 'updated' : 'conflict';
 }
 
 export async function getPublicSkillPassport(
@@ -1735,45 +1600,10 @@ export async function getPublicSkillPassport(
     .bind(profile.memberId)
     .all<RawSkillEvidence>();
 
-  const reviewResult = await db
-    .prepare(
-      `
-      SELECT
-        external_reviews.id,
-        external_reviews.evidence_id AS evidenceId,
-        skill_evidence.title AS evidenceTitle,
-        external_reviews.reviewer_name AS reviewerName,
-        external_reviews.reviewer_affiliation AS reviewerAffiliation,
-        external_reviews.relationship,
-        external_reviews.rating,
-        external_reviews.observations,
-        external_reviews.comment,
-        external_reviews.consent_public AS consentPublic,
-        external_reviews.moderation_status AS moderationStatus,
-        external_reviews.moderation_note AS moderationNote,
-        external_reviews.created_at AS createdAt
-      FROM external_reviews
-      INNER JOIN skill_evidence ON skill_evidence.id = external_reviews.evidence_id
-      WHERE
-        skill_evidence.member_id = ?
-        AND skill_evidence.visibility = 'shared'
-        AND skill_evidence.instructor_status = 'verified'
-        AND external_reviews.moderation_status = 'approved'
-        AND external_reviews.consent_public = 1
-        AND external_reviews.terms_version = ?
-        AND external_reviews.privacy_version = ?
-        AND external_reviews.policy_accepted_at > 0
-      ORDER BY external_reviews.created_at DESC
-    `,
-    )
-    .bind(profile.memberId, membershipTermsVersion, privacyPolicyVersion)
-    .all<RawExternalReview>();
-
   const { displayName, ...profileData } = profile;
   return {
     displayName,
     profile: hydrateProfile(profileData),
     evidence: evidenceResult.results.map(hydrateEvidence),
-    reviews: reviewResult.results.map(hydrateExternalReview),
   };
 }

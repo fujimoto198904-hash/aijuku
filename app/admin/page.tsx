@@ -1,40 +1,38 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { LogOut, ShieldAlert, ShieldCheck } from "lucide-react";
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { LogOut, ShieldAlert, ShieldCheck } from 'lucide-react';
 
-import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
-import { AdminApplicationAuditLog } from "@/components/admin-application-audit-log";
-import { AdminApplicationQueue } from "@/components/admin-application-queue";
-import { AdminSkillReview } from "@/components/admin-skill-review";
-import { BrandMark } from "@/components/brand-mark";
-import Link from "@/components/site-link";
+import { chatGPTSignOutPath, requireChatGPTUser } from '@/app/chatgpt-auth';
+import { AdminApplicationAuditLog } from '@/components/admin-application-audit-log';
+import { AdminApplicationQueue } from '@/components/admin-application-queue';
+import { AdminSkillReview } from '@/components/admin-skill-review';
+import { BrandMark } from '@/components/brand-mark';
+import Link from '@/components/site-link';
 import {
   applicationStatusValues,
   countAdminApplications,
   listAdminApplications,
   listAdminApplicationStatusEvents,
   type ApplicationStatus,
-} from "@/db/membership";
+} from '@/db/membership';
 import {
-  countPendingAdminExternalReviews,
   countPendingAdminSkillEvidence,
-  listAdminExternalReviews,
   listAdminSkillEvidence,
-} from "@/db/skill-passport";
-import { canonicalMemberUrl, isVercelRuntime } from "@/lib/site-runtime";
-import { getStaffPermissions, hasStaffAccess } from "@/lib/staff-permissions";
+} from '@/db/skill-passport';
+import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
+import { getStaffPermissions, hasStaffAccess } from '@/lib/staff-permissions';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "運営管理｜藤本実学塾",
+  title: '運営管理｜藤本実学塾',
   robots: { index: false, follow: false },
 };
 
 const applicationPageSize = 30;
 
 function firstSearchValue(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+  return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
 }
 
 export default async function AdminPage({
@@ -42,8 +40,8 @@ export default async function AdminPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  if (isVercelRuntime()) redirect(canonicalMemberUrl("/admin"));
-  const user = await requireChatGPTUser("/admin");
+  if (isVercelRuntime()) redirect(canonicalMemberUrl('/admin'));
+  const user = await requireChatGPTUser('/admin');
   const permissions = getStaffPermissions(user.email);
 
   if (!hasStaffAccess(permissions)) {
@@ -62,7 +60,7 @@ export default async function AdminPage({
           </div>
           <h1 className="mt-6 font-mincho text-3xl">管理権限がありません</h1>
           <p className="mt-4 text-sm leading-7 text-quiet">
-            ログインは確認できましたが、このアカウントには運営・講師・掲載審査のいずれの権限もありません。
+            ログインは確認できましたが、このアカウントには運営・講師のいずれの権限もありません。
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
@@ -73,7 +71,7 @@ export default async function AdminPage({
             </Link>
             <Link
               className="inline-flex items-center gap-2 px-5 py-3 text-xs text-quiet"
-              href={chatGPTSignOutPath("/")}
+              href={chatGPTSignOutPath('/')}
               target="_top"
             >
               <LogOut className="size-4" aria-hidden="true" /> ログアウト
@@ -97,9 +95,7 @@ export default async function AdminPage({
   const [
     applicationTotal,
     skillEvidence,
-    externalReviews,
     pendingEvidenceTotal,
-    pendingExternalReviewTotal,
     applicationHistory,
   ] = await Promise.all([
     permissions.canManageApplications
@@ -111,14 +107,8 @@ export default async function AdminPage({
           includeResolved: permissions.isOwner,
         })
       : Promise.resolve([]),
-    permissions.canModerateReviews
-      ? listAdminExternalReviews({ includeResolved: permissions.isOwner })
-      : Promise.resolve([]),
     permissions.canReviewEvidence
       ? countPendingAdminSkillEvidence()
-      : Promise.resolve(0),
-    permissions.canModerateReviews
-      ? countPendingAdminExternalReviews()
       : Promise.resolve(0),
     permissions.isOwner
       ? listAdminApplicationStatusEvents()
@@ -138,14 +128,8 @@ export default async function AdminPage({
     : [];
   const evidenceForClient = skillEvidence.map((item) => ({
     ...item,
-    memberId: item.memberId === user.userId ? user.userId : "",
+    memberId: item.memberId === user.userId ? user.userId : '',
   }));
-  const reviewsForClient = externalReviews.map((review) => ({
-    ...review,
-    memberId: review.memberId === user.userId ? user.userId : "",
-    reviewerUserId: review.reviewerUserId === user.userId ? user.userId : "",
-  }));
-
   return (
     <main id="main-content" className="min-h-screen bg-paper text-ink">
       <header className="border-b border-white/15 bg-brand-dark px-5 py-6 text-white sm:px-8">
@@ -161,7 +145,7 @@ export default async function AdminPage({
           </Link>
           <Link
             className="inline-flex items-center gap-2 text-xs text-white/60 hover:text-white"
-            href={chatGPTSignOutPath("/")}
+            href={chatGPTSignOutPath('/')}
             target="_top"
           >
             <LogOut className="size-4" aria-hidden="true" /> ログアウト
@@ -179,7 +163,7 @@ export default async function AdminPage({
               </p>
               <h1 className="mt-3 font-mincho text-3xl">今日の運営キュー</h1>
               <p className="mt-3 text-sm leading-7 text-quiet">
-                オーナーだけが申込者情報を扱い、講師確認と第三者評価の掲載審査は必要な範囲だけ表示します。
+                オーナーだけが申込者情報を扱い、講師確認は必要な成果物と確認記録だけを表示します。
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs">
@@ -193,11 +177,6 @@ export default async function AdminPage({
                   講師確認
                 </span>
               ) : null}
-              {permissions.canModerateReviews ? (
-                <span className="soft-badge bg-sunrise-soft px-3 py-2">
-                  掲載審査
-                </span>
-              ) : null}
             </div>
           </div>
         </section>
@@ -205,7 +184,7 @@ export default async function AdminPage({
         {permissions.canManageApplications ? (
           <AdminApplicationQueue
             applications={applications}
-            key={`${statusFilter ?? "all"}-${page}`}
+            key={`${statusFilter ?? 'all'}-${page}`}
             page={page}
             pageCount={pageCount}
             statusFilter={statusFilter}
@@ -222,13 +201,10 @@ export default async function AdminPage({
         ) : null}
 
         <AdminSkillReview
-          canModerateReviews={permissions.canModerateReviews}
           canReviewEvidence={permissions.canReviewEvidence}
           currentUserId={user.userId}
           evidence={evidenceForClient}
-          externalReviews={reviewsForClient}
           pendingEvidenceTotal={pendingEvidenceTotal}
-          pendingExternalReviewTotal={pendingExternalReviewTotal}
         />
 
         <p className="mt-8 text-xs leading-6 text-quiet">

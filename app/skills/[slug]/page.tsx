@@ -1,30 +1,24 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import {
   ArrowUpRight,
   BadgeCheck,
   BriefcaseBusiness,
-  MessagesSquare,
   ShieldCheck,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { BrandMark } from "@/components/brand-mark";
-import Link from "@/components/site-link";
-import { getPublicSkillPassport } from "@/db/skill-passport";
-import {
-  externalObservationOptions,
-  externalRatingLabels,
-  externalRelationshipLabels,
-} from "@/lib/skill-passport";
-import { getSkillDefinition, skillDefinitions } from "@/lib/skill-taxonomy";
-import { canonicalMemberUrl, isVercelRuntime } from "@/lib/site-runtime";
+import { BrandMark } from '@/components/brand-mark';
+import Link from '@/components/site-link';
+import { getPublicSkillPassport } from '@/db/skill-passport';
+import { getSkillDefinition, skillDefinitions } from '@/lib/skill-taxonomy';
+import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "AI実学パスポート｜藤本実学塾",
+  title: 'AI実学パスポート｜藤本実学塾',
   description:
-    "作った成果物と、講師・第三者が確認した範囲を分けて示すURL共有プロフィールです。",
+    '作った成果物と、講師が確認した範囲を分けて示すURL共有プロフィールです。',
   robots: { index: false, follow: false },
 };
 
@@ -33,14 +27,14 @@ type SkillPageProps = {
 };
 
 function formatDate(value: number) {
-  return new Intl.DateTimeFormat("ja-JP", {
-    dateStyle: "medium",
-    timeZone: "Asia/Tokyo",
+  return new Intl.DateTimeFormat('ja-JP', {
+    dateStyle: 'medium',
+    timeZone: 'Asia/Tokyo',
   }).format(new Date(value));
 }
 
 function publicVerifierName(value: string | null) {
-  if (!value || value.includes("@")) return "藤本実学塾 講師・運営";
+  if (!value || value.includes('@')) return '藤本実学塾 講師・運営';
   return value;
 }
 
@@ -48,7 +42,7 @@ function hostnameFromUrl(value: string) {
   try {
     return new URL(value).hostname;
   } catch {
-    return "外部サイト";
+    return '外部サイト';
   }
 }
 
@@ -87,21 +81,11 @@ export default async function PublicSkillPassportPage({
   const passport = await getPublicSkillPassport(slug);
   if (!passport) return <UnavailablePassport />;
 
-  const skillCounts = new Map<
-    string,
-    { evidence: number; externallyReviewed: number }
-  >();
+  const skillCounts = new Map<string, { evidence: number }>();
   for (const evidence of passport.evidence) {
-    const externallyReviewed = passport.reviews.some(
-      (review) => review.evidenceId === evidence.id,
-    );
     for (const key of evidence.skillKeys) {
-      const current = skillCounts.get(key) ?? {
-        evidence: 0,
-        externallyReviewed: 0,
-      };
+      const current = skillCounts.get(key) ?? { evidence: 0 };
       current.evidence += 1;
-      if (externallyReviewed) current.externallyReviewed += 1;
       skillCounts.set(key, current);
     }
   }
@@ -151,7 +135,7 @@ export default async function PublicSkillPassportPage({
             />
             <p className="mt-4 text-[11px] text-quiet">目指す仕事・役割</p>
             <p className="mt-2 break-words font-semibold">
-              {passport.profile.targetRole || "本人から面談時に説明します"}
+              {passport.profile.targetRole || '本人から面談時に説明します'}
             </p>
             <p className="mt-5 break-words text-sm leading-7 text-quiet">
               {passport.profile.bio}
@@ -170,7 +154,7 @@ export default async function PublicSkillPassportPage({
               </h2>
             </div>
             <p className="max-w-lg text-xs leading-6 text-quiet">
-              棒グラフの点数ではなく、講師が確認した成果物数と、第三者が実際の場面で確認した件数を示します。
+              棒グラフの点数ではなく、講師が確認した成果物数を示します。
             </p>
           </div>
 
@@ -197,17 +181,11 @@ export default async function PublicSkillPassportPage({
                       aria-hidden="true"
                     />
                   </div>
-                  <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
+                  <div className="mt-5 text-xs">
                     <div className="soft-control bg-sapphire-soft p-4">
                       <p className="text-quiet">講師確認済み</p>
                       <p className="numeric-text mt-1 text-2xl text-sapphire">
                         {skill.evidence}件
-                      </p>
-                    </div>
-                    <div className="soft-control bg-future-mint-soft p-4">
-                      <p className="text-quiet">第三者評価あり</p>
-                      <p className="numeric-text mt-1 text-2xl text-brand-dark">
-                        {skill.externallyReviewed}件
                       </p>
                     </div>
                   </div>
@@ -233,9 +211,6 @@ export default async function PublicSkillPassportPage({
 
           <div className="mt-8 grid gap-6">
             {passport.evidence.map((evidence) => {
-              const evidenceReviews = passport.reviews.filter(
-                (review) => review.evidenceId === evidence.id,
-              );
               return (
                 <article
                   className="soft-panel border border-rule bg-paper-white p-6 sm:p-8"
@@ -243,16 +218,11 @@ export default async function PublicSkillPassportPage({
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="soft-badge bg-sapphire-soft px-3 py-1 text-[11px] font-semibold text-sapphire">
-                      {evidence.taskId ?? "実務・自主制作"}
+                      {evidence.taskId ?? '実務・自主制作'}
                     </span>
                     <span className="soft-badge bg-future-mint-soft px-3 py-1 text-[11px] font-semibold text-brand-dark">
                       講師確認済み {formatDate(evidence.verifiedAt!)}
                     </span>
-                    {evidenceReviews.length > 0 ? (
-                      <span className="soft-badge bg-sunrise-soft px-3 py-1 text-[11px] font-semibold text-warning">
-                        第三者評価 {evidenceReviews.length}件
-                      </span>
-                    ) : null}
                   </div>
                   <h3 className="mt-5 font-mincho text-3xl">
                     {evidence.title}
@@ -301,54 +271,6 @@ export default async function PublicSkillPassportPage({
                       </a>
                     ) : null}
                   </div>
-
-                  {evidenceReviews.length > 0 ? (
-                    <div className="mt-6 grid gap-3 border-t border-rule pt-6">
-                      {evidenceReviews.map((review) => (
-                        <blockquote
-                          className="soft-control bg-future-mint-soft p-5"
-                          key={review.id}
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <MessagesSquare
-                              className="size-5 shrink-0 text-sapphire"
-                              aria-hidden="true"
-                            />
-                            <span className="text-right text-[10px] leading-5 text-quiet">
-                              {externalRatingLabels[review.rating]}
-                            </span>
-                          </div>
-                          <p className="mt-4 text-sm leading-7">
-                            「{review.comment}」
-                          </p>
-                          <footer className="mt-4 text-[11px] leading-6 text-quiet">
-                            {review.reviewerName}
-                            {review.reviewerAffiliation
-                              ? `／${review.reviewerAffiliation}`
-                              : ""}
-                            ／{externalRelationshipLabels[review.relationship]}
-                            ／{formatDate(review.createdAt)}
-                          </footer>
-                          <ul className="mt-3 flex flex-wrap gap-2">
-                            {review.observations.map((observationId) => {
-                              const observation =
-                                externalObservationOptions.find(
-                                  (item) => item.id === observationId,
-                                );
-                              return observation ? (
-                                <li
-                                  className="soft-badge border border-future-mint bg-white/70 px-3 py-1 text-[10px]"
-                                  key={observationId}
-                                >
-                                  {observation.label}
-                                </li>
-                              ) : null;
-                            })}
-                          </ul>
-                        </blockquote>
-                      ))}
-                    </div>
-                  ) : null}
                 </article>
               );
             })}
@@ -359,7 +281,7 @@ export default async function PublicSkillPassportPage({
           <ShieldCheck className="size-6 text-sapphire" aria-hidden="true" />
           <h2 className="mt-4 font-mincho text-2xl">このページの読み方</h2>
           <p className="mt-3 text-sm leading-7 text-brand-dark/75">
-            「講師確認済み」は、藤本実学塾の講師・運営が記載範囲を確認した記録です。「第三者評価」は、招待されたChatGPTログイン利用者が申告し、本人の掲載同意と運営確認を経た内容です。勤務先・資格・雇用関係そのものを証明するものではありません。
+            「講師確認済み」は、藤本実学塾の講師・運営が記載範囲を確認した記録です。能力全体、勤務先、資格、雇用関係そのものを証明するものではありません。
           </p>
         </section>
       </div>

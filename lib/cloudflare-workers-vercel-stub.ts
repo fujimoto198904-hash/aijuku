@@ -5,5 +5,4 @@ export const env = {
   DB: undefined,
   ADMIN_EMAILS: undefined,
   INSTRUCTOR_EMAILS: undefined,
-  REVIEW_MODERATOR_EMAILS: undefined,
 } as unknown as Cloudflare.Env;

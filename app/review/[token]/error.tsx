@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { RotateCcw, ShieldAlert } from "lucide-react";
+import { RotateCcw, ShieldAlert } from 'lucide-react';
 
-import { BrandMark } from "@/components/brand-mark";
-import { Button } from "@/components/ui/button";
+import { BrandMark } from '@/components/brand-mark';
+import { Button } from '@/components/ui/button';
 
 export default function ReviewError({ reset }: { reset: () => void }) {
   return (
@@ -17,10 +17,10 @@ export default function ReviewError({ reset }: { reset: () => void }) {
           <ShieldAlert aria-hidden="true" className="size-6 text-human-coral" />
         </div>
         <h1 className="mt-7 font-mincho text-3xl">
-          評価依頼を開けませんでした
+          ご案内を表示できませんでした
         </h1>
         <p className="mt-4 text-sm leading-7 text-quiet">
-          一時的な通信エラーの可能性があります。評価リンクや認証情報は画面へ表示していません。
+          第三者評価機能は提供していません。一時的な通信エラーの場合は、このページを再読込みしてください。
         </p>
         <Button
           className="mt-7"

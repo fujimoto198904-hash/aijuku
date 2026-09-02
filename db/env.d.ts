@@ -3,6 +3,5 @@ declare namespace Cloudflare {
     DB: D1Database;
     ADMIN_EMAILS?: string;
     INSTRUCTOR_EMAILS?: string;
-    REVIEW_MODERATOR_EMAILS?: string;
   }
 }
