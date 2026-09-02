@@ -38,10 +38,12 @@ export function MemberLearningProgress({
   tasks,
   initialProgress,
   initialTaskId,
+  readOnly = false,
 }: {
   tasks: MemberLearningTask[];
   initialProgress: MemberLessonProgress[];
   initialTaskId?: string;
+  readOnly?: boolean;
 }) {
   const initialTask = useMemo(
     () => tasks.find((task) => task.id === initialTaskId),
@@ -105,7 +107,7 @@ export function MemberLearningProgress({
     next: { bookmarked: boolean; completed: boolean },
     successMessage: string,
   ) {
-    if (savingRef.current) return;
+    if (readOnly || savingRef.current) return;
     savingRef.current = true;
     setIsSaving(true);
     setMessage('');
@@ -172,7 +174,7 @@ export function MemberLearningProgress({
             教科書を開く
             <ExternalLink className="size-3.5" aria-hidden="true" />
           </Link>
-          {kind === 'later' ? (
+          {!readOnly && kind === 'later' ? (
             <>
               <Button
                 className="min-h-11 bg-deep-green px-4 text-xs text-white"
@@ -205,7 +207,7 @@ export function MemberLearningProgress({
                 あとでやるから外す
               </Button>
             </>
-          ) : (
+          ) : !readOnly ? (
             <Button
               className="min-h-11 px-4 text-xs"
               disabled={pending}
@@ -222,7 +224,7 @@ export function MemberLearningProgress({
               <Undo2 className="size-4" aria-hidden="true" />
               未完了へ戻す
             </Button>
-          )}
+          ) : null}
         </div>
       </article>
     );
@@ -242,8 +244,13 @@ export function MemberLearningProgress({
             次にやることも、できたことも。
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-            気になる課題は「あとでやる」へ。完成したら「完了」に移します。同じChatGPTアカウントで、学びの一覧をいつでも確認できます。
+            気になる課題は「あとでやる」へ。完成したら「完了」に移します。同じ会員アカウントで、学びの一覧をいつでも確認できます。
           </p>
+          {readOnly ? (
+            <p className="soft-control mt-4 inline-flex border border-sapphire/30 bg-sapphire-soft px-4 py-2 text-xs font-semibold text-sapphire">
+              デモでは学習状況の変更は保存されません。
+            </p>
+          ) : null}
         </div>
         <div className="soft-control grid min-w-[260px] grid-cols-2 border border-rule bg-paper-white text-center">
           <div className="border-r border-rule p-4">
@@ -261,7 +268,9 @@ export function MemberLearningProgress({
         <div className="flex items-center gap-3">
           <Search className="size-5 text-sapphire" aria-hidden="true" />
           <div>
-            <p className="font-semibold">課題を探して保存</p>
+            <p className="font-semibold">
+              {readOnly ? '課題を探す' : '課題を探して保存'}
+            </p>
             <p className="mt-1 text-xs leading-6 text-quiet">
               レベル番号、作りたいもの、仕事の悩みから検索できます。
             </p>
@@ -324,7 +333,17 @@ export function MemberLearningProgress({
             </p>
             <p className="mt-2 font-mincho text-xl">{selectedTask.title}</p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {selectedProgress?.completed ? (
+              {readOnly ? (
+                <Link
+                  className="soft-control inline-flex min-h-11 items-center gap-2 border border-sapphire px-4 text-xs font-semibold text-sapphire"
+                  href={textbookLessonPath(selectedTask.id)}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  教科書を開く
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                </Link>
+              ) : selectedProgress?.completed ? (
                 <Button
                   className="min-h-11 px-4 text-xs"
                   disabled={isSaving}

@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   CircleDollarSign,
   Clock3,
+  Eye,
   LogOut,
   Sparkles,
   UserRound,
@@ -19,6 +20,7 @@ import { MemberLearningProgress } from '@/components/member-learning-progress';
 import { MemberProfileSettings } from '@/components/member-profile-settings';
 import { MobileMemberNav } from '@/components/mobile-member-nav';
 import Link from '@/components/site-link';
+import { getMemberAuthAccount } from '@/db/member-auth';
 import {
   SkillPassport,
   type SkillTaskOption,
@@ -32,6 +34,7 @@ import {
 } from '@/db/membership';
 import {
   ensureSkillProfile,
+  getMemberSkillProfile,
   listMemberSkillEvidence,
 } from '@/db/skill-passport';
 import {
@@ -105,23 +108,34 @@ async function MemberPageContent({
   returnTo: string;
 }) {
   const user = await requireChatGPTUser(returnTo);
-  const member = await getMember(user.userId);
+  const isDemo = user.isDemo === true;
+  const [member, authAccount] = await Promise.all([
+    getMember(user.userId),
+    getMemberAuthAccount(user.userId),
+  ]);
   if (
     !member ||
     member.status !== 'active' ||
-    !hasCurrentMembershipConsent(member)
+    !hasCurrentMembershipConsent(member) ||
+    !authAccount
   ) {
     redirect(`/mypage/onboarding?return_to=${encodeURIComponent(returnTo)}`);
   }
 
-  await refreshMemberEmail(user);
-  const [applications, lessonProgress, skillProfile, skillEvidence] =
+  if (!isDemo) await refreshMemberEmail(user);
+  const [applications, lessonProgress, skillProfileResult, skillEvidence] =
     await Promise.all([
       listMemberApplications(user.userId),
       listMemberLessonProgress(user.userId),
-      ensureSkillProfile(user.userId),
+      isDemo
+        ? getMemberSkillProfile(user.userId)
+        : ensureSkillProfile(user.userId),
       listMemberSkillEvidence(user.userId),
     ]);
+  if (!skillProfileResult) {
+    throw new Error('Demo skill profile is unavailable.');
+  }
+  const skillProfile = skillProfileResult;
   const activeApplications = applications.filter(
     (application) =>
       application.status === 'received' || application.status === 'reviewing',
@@ -187,12 +201,14 @@ async function MemberPageContent({
             >
               ホーム
             </a>
-            <a
-              className="border-b border-white/10 py-4 text-white/60 hover:text-white"
-              href="#apply"
-            >
-              受講を申し込む
-            </a>
+            {!isDemo ? (
+              <a
+                className="border-b border-white/10 py-4 text-white/60 hover:text-white"
+                href="#apply"
+              >
+                受講を申し込む
+              </a>
+            ) : null}
             <a
               className="border-b border-white/10 py-4 text-white/60 hover:text-white"
               href="#applications"
@@ -227,7 +243,7 @@ async function MemberPageContent({
 
           <div className="mt-auto border-t border-white/15 pt-6">
             <p className="text-[10px] tracking-[0.12em] text-white/55">
-              FREE MEMBER
+              {isDemo ? 'DEMO / READ ONLY' : 'FREE MEMBER'}
             </p>
             <p className="mt-2 text-sm font-semibold">{member.displayName}</p>
             <p className="mt-1 break-all text-[10px] text-white/55">
@@ -267,12 +283,33 @@ async function MemberPageContent({
                 >
                   Web教科書
                 </Link>
-                <MobileMemberNav signOutHref={chatGPTSignOutPath('/')} />
+                <MobileMemberNav
+                  readOnly={isDemo}
+                  signOutHref={chatGPTSignOutPath('/')}
+                />
               </div>
             </div>
           </header>
 
           <div className="mx-auto w-full max-w-[1220px] px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+            {isDemo ? (
+              <section
+                aria-label="デモアカウントのご案内"
+                className="soft-panel mb-10 flex flex-col gap-4 border border-sapphire/35 bg-sapphire-soft p-5 sm:flex-row sm:items-center sm:p-6"
+              >
+                <span className="soft-icon grid size-11 shrink-0 place-items-center bg-white text-sapphire">
+                  <Eye className="size-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="font-semibold text-sapphire">
+                    デモアカウントで閲覧中
+                  </p>
+                  <p className="mt-1 text-xs leading-6 text-quiet">
+                    マイページの画面と学び方を試せます。申込、ブックマーク、学習記録、会員情報の編集はできません。
+                  </p>
+                </div>
+              </section>
+            ) : null}
             <section id="home" className="scroll-mt-24">
               <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
                 <div>
@@ -288,13 +325,13 @@ async function MemberPageContent({
                     Web教科書はいつでも無料で読めます。気になる課題と完了した課題をマイページに残し、作ったものは実践記録として育てられます。
                   </p>
                 </div>
-                <a
+                <Link
                   className="soft-button inline-flex min-h-13 items-center justify-between gap-8 bg-sapphire px-6 text-sm font-semibold text-white hover:bg-brand-dark"
-                  href="#apply"
+                  href={isDemo ? textbookExplorePath : '#apply'}
                 >
-                  受講方法を選ぶ
+                  {isDemo ? 'Web教科書を見る' : '受講方法を選ぶ'}
                   <ArrowRight className="size-4" aria-hidden="true" />
-                </a>
+                </Link>
               </div>
 
               <div className="soft-work-surface soft-panel-clip mt-10 grid border border-rule bg-paper-white md:grid-cols-3">
@@ -304,7 +341,9 @@ async function MemberPageContent({
                     aria-hidden="true"
                   />
                   <p className="mt-4 text-[11px] text-quiet">会員種別</p>
-                  <p className="mt-2 font-semibold">無料会員</p>
+                  <p className="mt-2 font-semibold">
+                    {isDemo ? 'デモ（閲覧専用）' : '無料会員'}
+                  </p>
                 </div>
                 <div className="border-b border-rule p-6 md:border-b-0 md:border-r">
                   <CalendarDays
@@ -357,60 +396,62 @@ async function MemberPageContent({
               </div>
             </section>
 
-            <section
-              id="apply"
-              className="mt-16 scroll-mt-24 border-t-2 border-brand-dark pt-8"
-            >
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-                <div>
-                  <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
-                    APPLY
-                  </p>
-                  <h2 className="mt-3 font-mincho text-3xl sm:text-4xl">
-                    受講を申し込む
-                  </h2>
-                </div>
-                <p className="max-w-xl text-xs leading-6 text-quiet">
-                  まず希望を受け付け、運営が日程と条件を確認します。送信だけで料金は発生しません。
-                </p>
-              </div>
-
-              <div className="mt-8 grid gap-4 lg:grid-cols-3">
-                {memberServicePlans.map((plan) => (
-                  <article
-                    className="soft-work-surface flex flex-col border border-rule bg-paper-white p-6"
-                    key={plan.id}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="numeric-text text-xs text-sapphire">
-                        {plan.number}
-                      </span>
-                      <span className="text-[10px] text-quiet">
-                        {plan.area}
-                      </span>
-                    </div>
-                    <h3 className="mt-6 font-mincho text-2xl">{plan.name}</h3>
-                    <p className="numeric-text mt-4 text-xl">{plan.price}</p>
-                    <p className="mt-4 text-xs leading-6 text-quiet">
-                      {plan.summary}
+            {!isDemo ? (
+              <section
+                id="apply"
+                className="mt-16 scroll-mt-24 border-t-2 border-brand-dark pt-8"
+              >
+                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                  <div>
+                    <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
+                      APPLY
                     </p>
-                    <Link
-                      className="soft-control mt-7 inline-flex min-h-11 items-center justify-between border border-sapphire px-4 text-xs font-semibold text-sapphire hover:bg-sapphire hover:text-white"
-                      href={`/reserve?service=${plan.id}`}
+                    <h2 className="mt-3 font-mincho text-3xl sm:text-4xl">
+                      受講を申し込む
+                    </h2>
+                  </div>
+                  <p className="max-w-xl text-xs leading-6 text-quiet">
+                    まず希望を受け付け、運営が日程と条件を確認します。送信だけで料金は発生しません。
+                  </p>
+                </div>
+
+                <div className="mt-8 grid gap-4 lg:grid-cols-3">
+                  {memberServicePlans.map((plan) => (
+                    <article
+                      className="soft-work-surface flex flex-col border border-rule bg-paper-white p-6"
+                      key={plan.id}
                     >
-                      この方法で申し込む
-                      <ArrowRight className="size-4" aria-hidden="true" />
-                    </Link>
-                  </article>
-                ))}
-              </div>
-              <p className="mt-4 text-xs leading-6 text-quiet">
-                {sharedFees.entranceCampaign}は入会金
-                {sharedFees.entrance}（{sharedFees.entranceRegular}）です。
-                {sharedFees.entranceCondition}
-                税込区分、支払方法、変更・取消条件は、確定前に必ず提示します。
-              </p>
-            </section>
+                      <div className="flex items-center justify-between">
+                        <span className="numeric-text text-xs text-sapphire">
+                          {plan.number}
+                        </span>
+                        <span className="text-[10px] text-quiet">
+                          {plan.area}
+                        </span>
+                      </div>
+                      <h3 className="mt-6 font-mincho text-2xl">{plan.name}</h3>
+                      <p className="numeric-text mt-4 text-xl">{plan.price}</p>
+                      <p className="mt-4 text-xs leading-6 text-quiet">
+                        {plan.summary}
+                      </p>
+                      <Link
+                        className="soft-control mt-7 inline-flex min-h-11 items-center justify-between border border-sapphire px-4 text-xs font-semibold text-sapphire hover:bg-sapphire hover:text-white"
+                        href={`/reserve?service=${plan.id}`}
+                      >
+                        この方法で申し込む
+                        <ArrowRight className="size-4" aria-hidden="true" />
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+                <p className="mt-4 text-xs leading-6 text-quiet">
+                  {sharedFees.entranceCampaign}は入会金
+                  {sharedFees.entrance}（{sharedFees.entranceRegular}）です。
+                  {sharedFees.entranceCondition}
+                  税込区分、支払方法、変更・取消条件は、確定前に必ず提示します。
+                </p>
+              </section>
+            ) : null}
 
             <section
               id="applications"
@@ -433,7 +474,9 @@ async function MemberPageContent({
                 <div className="soft-work-surface mt-7 border border-rule bg-paper-white p-7 sm:p-9">
                   <p className="font-mincho text-2xl">まだ申込はありません。</p>
                   <p className="mt-4 text-sm leading-7 text-quiet">
-                    3つの学び方から選び、できるようになりたいことと希望時期を送ってください。
+                    {isDemo
+                      ? '本登録後は、ここで受講申込と対応状況を確認できます。'
+                      : '3つの学び方から選び、できるようになりたいことと希望時期を送ってください。'}
                   </p>
                 </div>
               ) : (
@@ -500,8 +543,9 @@ async function MemberPageContent({
                                 {application.deliveryDetails}
                               </p>
                             ) : null}
-                            {application.status === 'received' ||
-                            application.status === 'reviewing' ? (
+                            {!isDemo &&
+                            (application.status === 'received' ||
+                              application.status === 'reviewing') ? (
                               <MemberApplicationActions
                                 applicationId={application.id}
                                 updatedAt={application.updatedAt}
@@ -519,12 +563,14 @@ async function MemberPageContent({
             <MemberLearningProgress
               initialProgress={lessonProgress}
               initialTaskId={initialTaskId}
+              readOnly={isDemo}
               tasks={skillTaskOptions}
             />
 
             <SkillPassport
               evidence={skillEvidence}
               profile={skillProfile}
+              readOnly={isDemo}
               tasks={skillTaskOptions}
             />
 
@@ -554,6 +600,7 @@ async function MemberPageContent({
             <MemberProfileSettings
               displayName={member.displayName}
               email={user.email}
+              readOnly={isDemo}
             />
           </div>
         </div>

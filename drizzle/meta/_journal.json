@@ -57,6 +57,13 @@
       "when": 1788369275324,
       "tag": "0007_nervous_ted_forrester",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788385138461,
+      "tag": "0008_oval_malice",
+      "breakpoints": true
     }
   ]
 }

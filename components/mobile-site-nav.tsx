@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Menu, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Menu, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
-import Link from "@/components/site-link";
+import Link from '@/components/site-link';
 
 export function MobileSiteNav({
   items,
@@ -18,7 +18,7 @@ export function MobileSiteNav({
     if (!open) return;
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape") return;
+      if (event.key !== 'Escape') return;
       setOpen(false);
       buttonRef.current?.focus();
     }
@@ -32,11 +32,11 @@ export function MobileSiteNav({
       }
     }
 
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('pointerdown', handlePointerDown);
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handlePointerDown);
     };
   }, [open]);
 
@@ -47,10 +47,10 @@ export function MobileSiteNav({
   return (
     <div className="relative xl:hidden" ref={containerRef}>
       <button
-        aria-controls={open ? "mobile-site-navigation" : undefined}
+        aria-controls={open ? 'mobile-site-navigation' : undefined}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={open ? "メニューを閉じる" : "メニューを開く"}
+        aria-label={open ? 'メニューを閉じる' : 'メニューを開く'}
         className="soft-control grid size-11 cursor-pointer place-items-center border border-interactive-border bg-paper-white shadow-[0_8px_24px_rgba(16,42,54,0.07)] transition-colors hover:border-sapphire hover:text-sapphire"
         onClick={() => setOpen((current) => !current)}
         ref={buttonRef}
@@ -80,7 +80,7 @@ export function MobileSiteNav({
           ))}
           <Link
             className="soft-control mt-2 border border-sapphire px-4 py-3 text-center font-semibold text-sapphire"
-            href="/mypage"
+            href="/login"
             onClick={closeMenu}
           >
             ログイン

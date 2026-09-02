@@ -88,10 +88,12 @@ export function SkillPassport({
   profile,
   evidence,
   tasks,
+  readOnly = false,
 }: {
   profile: SkillProfile;
   evidence: SkillEvidenceRecord[];
   tasks: SkillTaskOption[];
+  readOnly?: boolean;
 }) {
   const [savedProfile, setSavedProfile] = useState(profile);
   const [profileDraft, setProfileDraft] = useState({
@@ -157,6 +159,7 @@ export function SkillPassport({
   ).length;
   async function saveProfile(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (readOnly) return;
     setProfileStatus('sending');
     setProfileMessage('');
     try {
@@ -191,6 +194,7 @@ export function SkillPassport({
 
   async function saveEvidence(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (readOnly) return;
     setEvidenceStatus('sending');
     setEvidenceMessage('');
     const form = new FormData(event.currentTarget);
@@ -232,6 +236,7 @@ export function SkillPassport({
     evidenceId: string,
     visibility: EvidenceVisibility,
   ) {
+    if (readOnly) return;
     if (
       visibility === 'shared' &&
       !window.confirm(
@@ -374,381 +379,392 @@ export function SkillPassport({
         </div>
       </section>
 
-      <div className="mt-10 grid gap-6 xl:grid-cols-2">
-        <form
-          className="soft-panel border border-rule bg-paper-white p-6 sm:p-8"
-          onSubmit={saveProfile}
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold text-sapphire">PROFILE</p>
-              <h3 className="mt-2 font-mincho text-3xl">応募用の見せ方</h3>
+      {readOnly ? (
+        <div className="soft-panel mt-10 border border-sapphire/30 bg-sapphire-soft p-6 sm:p-8">
+          <p className="font-semibold text-sapphire">
+            デモでは実践記録の追加・編集はできません。
+          </p>
+          <p className="mt-2 text-xs leading-6 text-quiet">
+            本登録後は、作った成果物を記録し、講師の確認状況と分けて整理できます。
+          </p>
+        </div>
+      ) : (
+        <div className="mt-10 grid gap-6 xl:grid-cols-2">
+          <form
+            className="soft-panel border border-rule bg-paper-white p-6 sm:p-8"
+            onSubmit={saveProfile}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-sapphire">PROFILE</p>
+                <h3 className="mt-2 font-mincho text-3xl">応募用の見せ方</h3>
+              </div>
+              <BriefcaseBusiness
+                className="size-5 text-sapphire"
+                aria-hidden="true"
+              />
             </div>
-            <BriefcaseBusiness
-              className="size-5 text-sapphire"
-              aria-hidden="true"
-            />
-          </div>
-          <div className="mt-6 grid gap-5">
-            <label
-              className="grid gap-2 text-sm font-semibold"
-              htmlFor="skill-profile-headline"
-            >
-              一言で表すと
-              <Input
-                className="min-h-12 bg-white px-4 font-normal"
-                id="skill-profile-headline"
-                maxLength={120}
-                minLength={profileDraft.shareEnabled ? 3 : undefined}
-                onChange={(event) =>
-                  setProfileDraft((current) => ({
-                    ...current,
-                    headline: event.target.value,
-                  }))
-                }
-                placeholder="例：現場の困りごとを、AIと小さな仕組みに変えます"
-                value={profileDraft.headline}
-              />
-            </label>
-            <label
-              className="grid gap-2 text-sm font-semibold"
-              htmlFor="skill-profile-target-role"
-            >
-              目指す仕事・役割（任意）
-              <Input
-                className="min-h-12 bg-white px-4 font-normal"
-                id="skill-profile-target-role"
-                maxLength={80}
-                onChange={(event) =>
-                  setProfileDraft((current) => ({
-                    ...current,
-                    targetRole: event.target.value,
-                  }))
-                }
-                placeholder="例：営業企画／社内AI推進"
-                value={profileDraft.targetRole}
-              />
-            </label>
-            <label
-              className="grid gap-2 text-sm font-semibold"
-              htmlFor="skill-profile-bio"
-            >
-              仕事でどう活かしたいか
-              <Textarea
-                className="min-h-32 bg-white p-4 font-normal leading-7"
-                id="skill-profile-bio"
-                maxLength={600}
-                minLength={profileDraft.shareEnabled ? 20 : undefined}
-                onChange={(event) =>
-                  setProfileDraft((current) => ({
-                    ...current,
-                    bio: event.target.value,
-                  }))
-                }
-                placeholder="学んだ背景、得意な仕事、これから挑戦したいことを書きます。"
-                value={profileDraft.bio}
-              />
-            </label>
-            <label
-              className="soft-control flex cursor-pointer items-start gap-3 border border-sapphire/25 bg-sapphire-soft p-5 text-sm leading-7"
-              htmlFor="skill-profile-share-enabled"
-            >
-              <Checkbox
-                checked={profileDraft.shareEnabled}
-                className="mt-1"
-                id="skill-profile-share-enabled"
-                onCheckedChange={(checked) =>
-                  setProfileDraft((current) => ({
-                    ...current,
-                    shareEnabled: checked === true,
-                  }))
-                }
-              />
-              <span>
-                URL共有ページを有効にする。検索エンジンには掲載しませんが、URLを知る人は閲覧できます。共有を選んだ講師確認済み成果物だけを表示します。
-              </span>
-            </label>
-            {profileStatus === 'success' || profileStatus === 'error' ? (
-              <StatusMessage kind={profileStatus}>
-                {profileMessage}
-              </StatusMessage>
-            ) : null}
-            <Button
-              className="min-h-12 bg-brand-dark text-sm text-white"
-              disabled={
-                profileStatus === 'sending' ||
-                (profileDraft.shareEnabled &&
-                  (profileDraft.headline.trim().length < 3 ||
-                    profileDraft.bio.trim().length < 20))
-              }
-              type="submit"
-            >
-              {profileStatus === 'sending'
-                ? '保存しています…'
-                : 'プロフィールを保存'}
-            </Button>
-            {savedProfile.shareEnabled ? (
-              <button
-                className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-sapphire"
-                onClick={() =>
-                  copyText(
-                    `${window.location.origin}${withSiteBasePath(`/skills/${savedProfile.publicSlug}`)}`,
-                    '共有ページのURLをコピーしました。',
-                  )
-                }
-                type="button"
-              >
-                <Clipboard className="size-4" aria-hidden="true" />
-                URL共有ページをコピー
-              </button>
-            ) : null}
-          </div>
-        </form>
-
-        <form
-          className="soft-panel border border-rule bg-paper-white p-6 sm:p-8"
-          onSubmit={saveEvidence}
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold text-sapphire">
-                ADD EVIDENCE
-              </p>
-              <h3 className="mt-2 font-mincho text-3xl">できたことを記録</h3>
-            </div>
-            <Plus className="size-5 text-sapphire" aria-hidden="true" />
-          </div>
-
-          <fieldset className="mt-6">
-            <legend className="text-sm font-semibold">記録するもの</legend>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {(['curriculum', 'prior-work'] as const).map((value) => (
-                <label
-                  className={`soft-control cursor-pointer border p-4 text-sm ${sourceType === value ? 'border-sapphire bg-sapphire-soft font-semibold text-sapphire' : 'border-rule bg-white'}`}
-                  key={value}
-                >
-                  <input
-                    checked={sourceType === value}
-                    className="sr-only"
-                    name="sourceType"
-                    onChange={() => setSourceType(value)}
-                    type="radio"
-                  />
-                  {evidenceSourceLabels[value]}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          {sourceType === 'curriculum' ? (
-            <div className="mt-5">
+            <div className="mt-6 grid gap-5">
               <label
                 className="grid gap-2 text-sm font-semibold"
-                htmlFor="skill-task-search"
+                htmlFor="skill-profile-headline"
               >
-                教科書の課題から探す
-                <span className="relative">
-                  <Search
-                    className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-quiet"
-                    aria-hidden="true"
-                  />
-                  <Input
-                    className="min-h-12 bg-white pl-11 pr-4 font-normal"
-                    id="skill-task-search"
-                    onChange={(event) => {
-                      setTaskQuery(event.target.value);
-                      setSelectedTaskId('');
-                    }}
-                    placeholder="課題ID、メール、Excel、営業など"
-                    value={taskQuery}
-                  />
+                一言で表すと
+                <Input
+                  className="min-h-12 bg-white px-4 font-normal"
+                  id="skill-profile-headline"
+                  maxLength={120}
+                  minLength={profileDraft.shareEnabled ? 3 : undefined}
+                  onChange={(event) =>
+                    setProfileDraft((current) => ({
+                      ...current,
+                      headline: event.target.value,
+                    }))
+                  }
+                  placeholder="例：現場の困りごとを、AIと小さな仕組みに変えます"
+                  value={profileDraft.headline}
+                />
+              </label>
+              <label
+                className="grid gap-2 text-sm font-semibold"
+                htmlFor="skill-profile-target-role"
+              >
+                目指す仕事・役割（任意）
+                <Input
+                  className="min-h-12 bg-white px-4 font-normal"
+                  id="skill-profile-target-role"
+                  maxLength={80}
+                  onChange={(event) =>
+                    setProfileDraft((current) => ({
+                      ...current,
+                      targetRole: event.target.value,
+                    }))
+                  }
+                  placeholder="例：営業企画／社内AI推進"
+                  value={profileDraft.targetRole}
+                />
+              </label>
+              <label
+                className="grid gap-2 text-sm font-semibold"
+                htmlFor="skill-profile-bio"
+              >
+                仕事でどう活かしたいか
+                <Textarea
+                  className="min-h-32 bg-white p-4 font-normal leading-7"
+                  id="skill-profile-bio"
+                  maxLength={600}
+                  minLength={profileDraft.shareEnabled ? 20 : undefined}
+                  onChange={(event) =>
+                    setProfileDraft((current) => ({
+                      ...current,
+                      bio: event.target.value,
+                    }))
+                  }
+                  placeholder="学んだ背景、得意な仕事、これから挑戦したいことを書きます。"
+                  value={profileDraft.bio}
+                />
+              </label>
+              <label
+                className="soft-control flex cursor-pointer items-start gap-3 border border-sapphire/25 bg-sapphire-soft p-5 text-sm leading-7"
+                htmlFor="skill-profile-share-enabled"
+              >
+                <Checkbox
+                  checked={profileDraft.shareEnabled}
+                  className="mt-1"
+                  id="skill-profile-share-enabled"
+                  onCheckedChange={(checked) =>
+                    setProfileDraft((current) => ({
+                      ...current,
+                      shareEnabled: checked === true,
+                    }))
+                  }
+                />
+                <span>
+                  URL共有ページを有効にする。検索エンジンには掲載しませんが、URLを知る人は閲覧できます。共有を選んだ講師確認済み成果物だけを表示します。
                 </span>
               </label>
-              <ul
-                aria-label="課題の検索結果"
-                className="mt-3 max-h-60 overflow-y-auto rounded-2xl border border-rule bg-white p-2"
+              {profileStatus === 'success' || profileStatus === 'error' ? (
+                <StatusMessage kind={profileStatus}>
+                  {profileMessage}
+                </StatusMessage>
+              ) : null}
+              <Button
+                className="min-h-12 bg-brand-dark text-sm text-white"
+                disabled={
+                  profileStatus === 'sending' ||
+                  (profileDraft.shareEnabled &&
+                    (profileDraft.headline.trim().length < 3 ||
+                      profileDraft.bio.trim().length < 20))
+                }
+                type="submit"
               >
-                {matchingTasks.map((task) => (
-                  <li key={task.id}>
-                    <button
-                      aria-current={
-                        selectedTaskId === task.id ? 'true' : undefined
-                      }
-                      className={`flex w-full items-start gap-3 rounded-xl p-3 text-left text-xs leading-6 ${selectedTaskId === task.id ? 'bg-sapphire-soft text-brand-dark' : 'hover:bg-paper'}`}
-                      onClick={() => {
-                        setSelectedTaskId(task.id);
-                        setTaskQuery(`${task.id} ${task.title}`);
-                      }}
-                      type="button"
-                    >
-                      <span className="numeric-text mt-0.5 shrink-0 text-sapphire">
-                        {task.id}
-                      </span>
-                      <span>{task.title}</span>
-                    </button>
-                  </li>
-                ))}
-                {matchingTasks.length === 0 ? (
-                  <li className="p-4 text-xs text-quiet">
-                    該当する課題がありません。
-                  </li>
-                ) : null}
-              </ul>
-              {selectedTask ? (
-                <div
-                  aria-live="polite"
-                  className="soft-control mt-3 border border-future-mint bg-future-mint-soft p-4 text-xs leading-6"
+                {profileStatus === 'sending'
+                  ? '保存しています…'
+                  : 'プロフィールを保存'}
+              </Button>
+              {savedProfile.shareEnabled ? (
+                <button
+                  className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-sapphire"
+                  onClick={() =>
+                    copyText(
+                      `${window.location.origin}${withSiteBasePath(`/skills/${savedProfile.publicSlug}`)}`,
+                      '共有ページのURLをコピーしました。',
+                    )
+                  }
+                  type="button"
                 >
-                  <p className="font-semibold">{selectedTask.title}</p>
-                  <p className="mt-1 text-quiet">
-                    完成物：{selectedTask.outcome}
-                  </p>
-                </div>
+                  <Clipboard className="size-4" aria-hidden="true" />
+                  URL共有ページをコピー
+                </button>
               ) : null}
             </div>
-          ) : (
-            <fieldset className="mt-5">
-              <legend className="text-sm font-semibold">
-                今できるスキルを1〜3個選ぶ
-              </legend>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {skillDefinitions.map((skill) => (
+          </form>
+
+          <form
+            className="soft-panel border border-rule bg-paper-white p-6 sm:p-8"
+            onSubmit={saveEvidence}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-sapphire">
+                  ADD EVIDENCE
+                </p>
+                <h3 className="mt-2 font-mincho text-3xl">できたことを記録</h3>
+              </div>
+              <Plus className="size-5 text-sapphire" aria-hidden="true" />
+            </div>
+
+            <fieldset className="mt-6">
+              <legend className="text-sm font-semibold">記録するもの</legend>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                {(['curriculum', 'prior-work'] as const).map((value) => (
                   <label
-                    className="soft-control flex cursor-pointer items-center gap-3 border border-rule bg-white p-3 text-xs"
-                    htmlFor={`prior-work-skill-${skill.key}`}
-                    key={skill.key}
+                    className={`soft-control cursor-pointer border p-4 text-sm ${sourceType === value ? 'border-sapphire bg-sapphire-soft font-semibold text-sapphire' : 'border-rule bg-white'}`}
+                    key={value}
                   >
-                    <Checkbox
-                      checked={priorWorkSkillKeys.includes(skill.key)}
-                      disabled={
-                        priorWorkSkillKeys.length >= 3 &&
-                        !priorWorkSkillKeys.includes(skill.key)
-                      }
-                      id={`prior-work-skill-${skill.key}`}
-                      onCheckedChange={(checked) =>
-                        togglePriorWorkSkill(skill.key, checked === true)
-                      }
+                    <input
+                      checked={sourceType === value}
+                      className="sr-only"
+                      name="sourceType"
+                      onChange={() => setSourceType(value)}
+                      type="radio"
                     />
-                    <span>{skill.label}</span>
+                    {evidenceSourceLabels[value]}
                   </label>
                 ))}
               </div>
             </fieldset>
-          )}
 
-          <div className="mt-5 grid gap-5">
-            <label
-              className="grid gap-2 text-sm font-semibold"
-              htmlFor="skill-evidence-title"
-            >
-              成果物名
-              <Input
-                className="min-h-12 bg-white px-4 font-normal"
-                id="skill-evidence-title"
-                maxLength={120}
-                minLength={3}
-                name="title"
-                placeholder="例：商談後フォローを10分で終える営業セット"
-                required
-              />
-            </label>
-            <label
-              className="grid gap-2 text-sm font-semibold"
-              htmlFor="skill-evidence-summary"
-            >
-              できるようになったこと・確認したこと
-              <Textarea
-                className="min-h-36 bg-white p-4 font-normal leading-7"
-                id="skill-evidence-summary"
-                maxLength={1_200}
-                minLength={20}
-                name="summary"
-                placeholder="何を作り、どんな操作をして、どこまで確認できたか。未確認の点も書きます。"
-                required
-              />
-            </label>
-            <label
-              className="grid gap-2 text-sm font-semibold"
-              htmlFor="skill-evidence-url"
-            >
-              成果物URL（任意・httpsのみ）
-              <Input
-                className="min-h-12 bg-white px-4 font-normal"
-                id="skill-evidence-url"
-                maxLength={2_000}
-                name="evidenceUrl"
-                placeholder="https://..."
-                type="url"
-              />
-              <span className="text-[11px] font-normal leading-5 text-quiet">
-                現在はファイル直接アップロード未対応です。顧客情報・社外秘・権利未確認素材は載せず、共有権限も確認してください。
-              </span>
-            </label>
-            <label className="grid gap-2 text-sm font-semibold">
-              講師確認後の公開範囲
-              <select
-                className="min-h-12 border border-input bg-white px-4 font-normal outline-none focus:border-sapphire focus:ring-3 focus:ring-sapphire/20"
-                defaultValue="private"
-                name="visibility"
-              >
-                <option value="private">自分と講師だけ</option>
-                <option value="shared">URL共有プロフィールへ掲載</option>
-              </select>
-            </label>
-            <label
-              className="soft-control flex cursor-pointer items-start gap-3 border border-sunrise/40 bg-sunrise-soft p-5 text-sm leading-7"
-              htmlFor="skill-evidence-rights-confirmed"
-            >
-              <Checkbox
-                checked={rightsConfirmed}
-                className="mt-1"
-                id="skill-evidence-rights-confirmed"
-                onCheckedChange={(checked) =>
-                  setRightsConfirmed(checked === true)
-                }
-              />
-              <span>
-                この記録とリンクに、無断掲載の顧客情報・社外秘・第三者の個人情報・権利未確認素材がなく、必要な共有許可を確認しました。
-              </span>
-            </label>
-            {evidenceStatus === 'success' || evidenceStatus === 'error' ? (
-              <div className="grid gap-3">
-                <StatusMessage kind={evidenceStatus}>
-                  {evidenceMessage}
-                </StatusMessage>
-                {evidenceStatus === 'success' ? (
-                  <Button
-                    onClick={() => window.location.reload()}
-                    type="button"
-                    variant="outline"
+            {sourceType === 'curriculum' ? (
+              <div className="mt-5">
+                <label
+                  className="grid gap-2 text-sm font-semibold"
+                  htmlFor="skill-task-search"
+                >
+                  教科書の課題から探す
+                  <span className="relative">
+                    <Search
+                      className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-quiet"
+                      aria-hidden="true"
+                    />
+                    <Input
+                      className="min-h-12 bg-white pl-11 pr-4 font-normal"
+                      id="skill-task-search"
+                      onChange={(event) => {
+                        setTaskQuery(event.target.value);
+                        setSelectedTaskId('');
+                      }}
+                      placeholder="課題ID、メール、Excel、営業など"
+                      value={taskQuery}
+                    />
+                  </span>
+                </label>
+                <ul
+                  aria-label="課題の検索結果"
+                  className="mt-3 max-h-60 overflow-y-auto rounded-2xl border border-rule bg-white p-2"
+                >
+                  {matchingTasks.map((task) => (
+                    <li key={task.id}>
+                      <button
+                        aria-current={
+                          selectedTaskId === task.id ? 'true' : undefined
+                        }
+                        className={`flex w-full items-start gap-3 rounded-xl p-3 text-left text-xs leading-6 ${selectedTaskId === task.id ? 'bg-sapphire-soft text-brand-dark' : 'hover:bg-paper'}`}
+                        onClick={() => {
+                          setSelectedTaskId(task.id);
+                          setTaskQuery(`${task.id} ${task.title}`);
+                        }}
+                        type="button"
+                      >
+                        <span className="numeric-text mt-0.5 shrink-0 text-sapphire">
+                          {task.id}
+                        </span>
+                        <span>{task.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                  {matchingTasks.length === 0 ? (
+                    <li className="p-4 text-xs text-quiet">
+                      該当する課題がありません。
+                    </li>
+                  ) : null}
+                </ul>
+                {selectedTask ? (
+                  <div
+                    aria-live="polite"
+                    className="soft-control mt-3 border border-future-mint bg-future-mint-soft p-4 text-xs leading-6"
                   >
-                    保存した記録を一覧へ反映
-                  </Button>
+                    <p className="font-semibold">{selectedTask.title}</p>
+                    <p className="mt-1 text-quiet">
+                      完成物：{selectedTask.outcome}
+                    </p>
+                  </div>
                 ) : null}
               </div>
-            ) : null}
-            <Button
-              className="min-h-12 bg-sapphire text-sm text-white"
-              disabled={
-                evidenceStatus === 'sending' ||
-                evidenceStatus === 'success' ||
-                !rightsConfirmed ||
-                (sourceType === 'curriculum'
-                  ? !selectedTaskId
-                  : priorWorkSkillKeys.length < 1)
-              }
-              type="submit"
-            >
-              <Send className="size-4" aria-hidden="true" />
-              {evidenceStatus === 'sending'
-                ? '保存しています…'
-                : evidenceStatus === 'success'
-                  ? '保存済みです'
-                  : '実践記録を保存して講師確認へ'}
-            </Button>
-          </div>
-        </form>
-      </div>
+            ) : (
+              <fieldset className="mt-5">
+                <legend className="text-sm font-semibold">
+                  今できるスキルを1〜3個選ぶ
+                </legend>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {skillDefinitions.map((skill) => (
+                    <label
+                      className="soft-control flex cursor-pointer items-center gap-3 border border-rule bg-white p-3 text-xs"
+                      htmlFor={`prior-work-skill-${skill.key}`}
+                      key={skill.key}
+                    >
+                      <Checkbox
+                        checked={priorWorkSkillKeys.includes(skill.key)}
+                        disabled={
+                          priorWorkSkillKeys.length >= 3 &&
+                          !priorWorkSkillKeys.includes(skill.key)
+                        }
+                        id={`prior-work-skill-${skill.key}`}
+                        onCheckedChange={(checked) =>
+                          togglePriorWorkSkill(skill.key, checked === true)
+                        }
+                      />
+                      <span>{skill.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+
+            <div className="mt-5 grid gap-5">
+              <label
+                className="grid gap-2 text-sm font-semibold"
+                htmlFor="skill-evidence-title"
+              >
+                成果物名
+                <Input
+                  className="min-h-12 bg-white px-4 font-normal"
+                  id="skill-evidence-title"
+                  maxLength={120}
+                  minLength={3}
+                  name="title"
+                  placeholder="例：商談後フォローを10分で終える営業セット"
+                  required
+                />
+              </label>
+              <label
+                className="grid gap-2 text-sm font-semibold"
+                htmlFor="skill-evidence-summary"
+              >
+                できるようになったこと・確認したこと
+                <Textarea
+                  className="min-h-36 bg-white p-4 font-normal leading-7"
+                  id="skill-evidence-summary"
+                  maxLength={1_200}
+                  minLength={20}
+                  name="summary"
+                  placeholder="何を作り、どんな操作をして、どこまで確認できたか。未確認の点も書きます。"
+                  required
+                />
+              </label>
+              <label
+                className="grid gap-2 text-sm font-semibold"
+                htmlFor="skill-evidence-url"
+              >
+                成果物URL（任意・httpsのみ）
+                <Input
+                  className="min-h-12 bg-white px-4 font-normal"
+                  id="skill-evidence-url"
+                  maxLength={2_000}
+                  name="evidenceUrl"
+                  placeholder="https://..."
+                  type="url"
+                />
+                <span className="text-[11px] font-normal leading-5 text-quiet">
+                  現在はファイル直接アップロード未対応です。顧客情報・社外秘・権利未確認素材は載せず、共有権限も確認してください。
+                </span>
+              </label>
+              <label className="grid gap-2 text-sm font-semibold">
+                講師確認後の公開範囲
+                <select
+                  className="min-h-12 border border-input bg-white px-4 font-normal outline-none focus:border-sapphire focus:ring-3 focus:ring-sapphire/20"
+                  defaultValue="private"
+                  name="visibility"
+                >
+                  <option value="private">自分と講師だけ</option>
+                  <option value="shared">URL共有プロフィールへ掲載</option>
+                </select>
+              </label>
+              <label
+                className="soft-control flex cursor-pointer items-start gap-3 border border-sunrise/40 bg-sunrise-soft p-5 text-sm leading-7"
+                htmlFor="skill-evidence-rights-confirmed"
+              >
+                <Checkbox
+                  checked={rightsConfirmed}
+                  className="mt-1"
+                  id="skill-evidence-rights-confirmed"
+                  onCheckedChange={(checked) =>
+                    setRightsConfirmed(checked === true)
+                  }
+                />
+                <span>
+                  この記録とリンクに、無断掲載の顧客情報・社外秘・第三者の個人情報・権利未確認素材がなく、必要な共有許可を確認しました。
+                </span>
+              </label>
+              {evidenceStatus === 'success' || evidenceStatus === 'error' ? (
+                <div className="grid gap-3">
+                  <StatusMessage kind={evidenceStatus}>
+                    {evidenceMessage}
+                  </StatusMessage>
+                  {evidenceStatus === 'success' ? (
+                    <Button
+                      onClick={() => window.location.reload()}
+                      type="button"
+                      variant="outline"
+                    >
+                      保存した記録を一覧へ反映
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+              <Button
+                className="min-h-12 bg-sapphire text-sm text-white"
+                disabled={
+                  evidenceStatus === 'sending' ||
+                  evidenceStatus === 'success' ||
+                  !rightsConfirmed ||
+                  (sourceType === 'curriculum'
+                    ? !selectedTaskId
+                    : priorWorkSkillKeys.length < 1)
+                }
+                type="submit"
+              >
+                <Send className="size-4" aria-hidden="true" />
+                {evidenceStatus === 'sending'
+                  ? '保存しています…'
+                  : evidenceStatus === 'success'
+                    ? '保存済みです'
+                    : '実践記録を保存して講師確認へ'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <section className="mt-12">
         <div className="flex items-center justify-between gap-4">
@@ -771,10 +787,14 @@ export function SkillPassport({
           <div className="soft-panel mt-6 border border-rule bg-paper-white p-7 sm:p-9">
             <FileCheck2 className="size-5 text-sapphire" aria-hidden="true" />
             <p className="mt-4 font-mincho text-2xl">
-              最初の成果物を残しましょう。
+              {readOnly
+                ? '実践記録の表示イメージ'
+                : '最初の成果物を残しましょう。'}
             </p>
             <p className="mt-3 text-sm leading-7 text-quiet">
-              まず一つ、作ったものと確認できたことを記録すると、スキルマップが動き始めます。
+              {readOnly
+                ? '本登録後に実践記録を追加すると、ここに成果物と講師の確認状況が表示されます。'
+                : 'まず一つ、作ったものと確認できたことを記録すると、スキルマップが動き始めます。'}
             </p>
           </div>
         ) : (
@@ -830,7 +850,8 @@ export function SkillPassport({
                     </div>
                   ) : null}
 
-                  {item.instructorStatus === 'changes_requested' ? (
+                  {!readOnly &&
+                  item.instructorStatus === 'changes_requested' ? (
                     <EvidenceRevisionForm evidence={item} />
                   ) : null}
 
@@ -847,27 +868,29 @@ export function SkillPassport({
                         外部成果物を開く（{hostnameFromUrl(item.evidenceUrl)}）
                       </a>
                     ) : null}
-                    <Button
-                      className="min-h-10"
-                      disabled={pendingActionId === item.id}
-                      onClick={() =>
-                        changeVisibility(
-                          item.id,
-                          item.visibility === 'shared' ? 'private' : 'shared',
-                        )
-                      }
-                      type="button"
-                      variant="outline"
-                    >
-                      {item.visibility === 'shared' ? (
-                        <EyeOff className="size-4" aria-hidden="true" />
-                      ) : (
-                        <Eye className="size-4" aria-hidden="true" />
-                      )}
-                      {item.visibility === 'shared'
-                        ? '共有から外す'
-                        : '確認後に共有する'}
-                    </Button>
+                    {!readOnly ? (
+                      <Button
+                        className="min-h-10"
+                        disabled={pendingActionId === item.id}
+                        onClick={() =>
+                          changeVisibility(
+                            item.id,
+                            item.visibility === 'shared' ? 'private' : 'shared',
+                          )
+                        }
+                        type="button"
+                        variant="outline"
+                      >
+                        {item.visibility === 'shared' ? (
+                          <EyeOff className="size-4" aria-hidden="true" />
+                        ) : (
+                          <Eye className="size-4" aria-hidden="true" />
+                        )}
+                        {item.visibility === 'shared'
+                          ? '共有から外す'
+                          : '確認後に共有する'}
+                      </Button>
+                    ) : null}
                   </div>
                 </article>
               );

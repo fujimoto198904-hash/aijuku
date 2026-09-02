@@ -6,10 +6,12 @@ import {
   BookmarkCheck,
   CalendarCheck,
   CheckCircle2,
+  KeyRound,
+  ShieldCheck,
   UserRoundCheck,
 } from 'lucide-react';
 
-import { chatGPTSignInPath, getChatGPTUser } from '@/app/chatgpt-auth';
+import { chatGPTSignInPath, getAuthenticatedUser } from '@/app/chatgpt-auth';
 import { OnlinePriceSpotlight } from '@/components/online-price-spotlight';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
@@ -50,9 +52,11 @@ const benefits = [
 
 export default async function JoinPage() {
   if (isVercelRuntime()) redirect(canonicalMemberUrl('/join'));
-  const user = await getChatGPTUser();
+  const user = await getAuthenticatedUser();
   const destination = user
-    ? '/mypage'
+    ? user.mustChangePassword
+      ? '/account/password?return_to=%2Fmypage%2Fonboarding'
+      : '/mypage/onboarding'
     : chatGPTSignInPath('/mypage/onboarding');
 
   return (
@@ -78,6 +82,25 @@ export default async function JoinPage() {
               <p className="mt-7 max-w-2xl text-base leading-8 text-quiet">
                 公開中のWeb教科書は、登録も購入も不要で完全無料です。無料会員になると、気になる課題のブックマーク、自分で完了にした課題、成果物名や外部URLの実践記録をマイページへまとめられます。登録だけで料金は発生しません。
               </p>
+              <div className="mt-8 grid gap-3 lg:hidden">
+                <Link
+                  className="button-glow flex min-h-14 items-center justify-between px-5 text-sm font-semibold text-white"
+                  href={destination}
+                  target={user ? undefined : '_top'}
+                >
+                  {user ? 'マイページへ進む' : 'ChatGPTで無料会員登録'}
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+                {!user ? (
+                  <Link
+                    className="soft-outline-button flex min-h-12 items-center justify-between border border-rule bg-paper px-5 text-xs font-semibold text-sapphire"
+                    href="/login"
+                  >
+                    登録済みの方はログイン
+                    <KeyRound className="size-4" aria-hidden="true" />
+                  </Link>
+                ) : null}
+              </div>
             </div>
 
             <div className="space-y-5">
@@ -87,9 +110,11 @@ export default async function JoinPage() {
                   className="size-6 text-sapphire"
                   aria-hidden="true"
                 />
-                <p className="mt-5 text-sm font-semibold">ChatGPTで本人確認</p>
+                <p className="mt-5 text-sm font-semibold">
+                  ChatGPTで、まず本人確認
+                </p>
                 <p className="mt-3 text-xs leading-6 text-quiet">
-                  新しいパスワードは作りません。これから学習に使うChatGPTアカウントで登録します。
+                  これから学習に使うChatGPTアカウントでメールアドレスを確認。本人のアドレスだけで無料会員を作れます。
                 </p>
               </div>
             </div>
@@ -113,23 +138,78 @@ export default async function JoinPage() {
               ))}
             </div>
 
-            <div className="soft-panel mx-auto mt-12 max-w-2xl border border-rule bg-paper-white p-7 sm:p-10">
+            <div className="soft-panel mx-auto mt-12 max-w-3xl border border-rule bg-paper-white p-7 sm:p-10">
               <p className="text-center text-xs font-semibold tracking-[0.14em] text-sapphire">
-                {user ? 'SIGNED IN' : 'START HERE'}
+                {user ? 'CONTINUE SETUP' : 'CHOOSE YOUR WAY'}
               </p>
-              <Link
-                className="button-glow group mt-6 flex min-h-16 items-center justify-between px-6 text-sm font-semibold text-white"
-                href={destination}
-                target={user ? undefined : '_top'}
-              >
-                {user
-                  ? '登録状況を確認してマイページへ'
-                  : 'ChatGPTで無料会員登録を始める'}
-                <ArrowRight
-                  className="size-4 transition-transform group-hover:translate-x-1"
+              {user ? (
+                <Link
+                  className="button-glow group mt-6 flex min-h-16 items-center justify-between px-6 text-sm font-semibold text-white"
+                  href={destination}
+                >
+                  マイページへ進む
+                  <ArrowRight
+                    className="size-4 transition-transform group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
+                </Link>
+              ) : (
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <Link
+                    className="button-glow group flex min-h-36 flex-col items-start justify-between p-6 text-white"
+                    href={destination}
+                    target="_top"
+                  >
+                    <UserRoundCheck className="size-6" aria-hidden="true" />
+                    <span className="mt-6 flex w-full items-end justify-between gap-3 text-left">
+                      <span>
+                        <span className="block text-[11px] font-semibold tracking-[0.12em] text-white/65">
+                          初めての方
+                        </span>
+                        <span className="mt-1 block text-sm font-semibold">
+                          ChatGPTで無料会員登録
+                        </span>
+                      </span>
+                      <ArrowRight
+                        className="size-4 shrink-0 transition-transform group-hover:translate-x-1"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </Link>
+                  <Link
+                    className="soft-card soft-interactive flex min-h-36 flex-col items-start justify-between border border-rule bg-paper p-6 text-ink"
+                    href="/login"
+                  >
+                    <KeyRound
+                      className="size-6 text-sapphire"
+                      aria-hidden="true"
+                    />
+                    <span className="mt-6 flex w-full items-end justify-between gap-3 text-left">
+                      <span>
+                        <span className="block text-[11px] font-semibold tracking-[0.12em] text-quiet">
+                          登録済みの方
+                        </span>
+                        <span className="mt-1 block text-sm font-semibold">
+                          ID・パスワードでログイン
+                        </span>
+                      </span>
+                      <ArrowRight
+                        className="size-4 shrink-0 text-sapphire"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </Link>
+                </div>
+              )}
+              <div className="soft-control mt-5 flex gap-3 bg-paper p-4 text-left">
+                <ShieldCheck
+                  className="mt-0.5 size-5 shrink-0 text-sapphire"
                   aria-hidden="true"
                 />
-              </Link>
+                <p className="text-xs leading-6 text-quiet">
+                  登録の最後に誕生日から初期パスワードを作ります。誕生日そのものは保存しません。初回ログイン時に、自分だけのパスワードへ変更します。
+                </p>
+              </div>
               <p className="mt-5 text-center text-xs leading-6 text-quiet">
                 登録は無料です。{sharedFees.entranceCampaign}は入会金
                 {sharedFees.entrance}（{sharedFees.entranceRegular}）。

@@ -51,7 +51,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <Link
             className="hidden min-h-11 items-center justify-center px-3 text-xs font-semibold text-quiet transition-colors hover:text-sapphire md:inline-flex"
-            href="/mypage"
+            href="/login"
           >
             ログイン
           </Link>

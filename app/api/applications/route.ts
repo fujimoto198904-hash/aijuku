@@ -8,6 +8,7 @@ import {
   type ServiceType,
 } from '@/db/membership';
 import { findMemberServicePlan, sharedFees } from '@/lib/member-service-plans';
+import { rejectDemoWrite } from '@/lib/demo-access';
 import { cleanRequestText, isSameOriginRequest } from '@/lib/request-security';
 import { isVercelRuntime } from '@/lib/site-runtime';
 
@@ -31,6 +32,8 @@ export async function POST(request: Request) {
   if (!user) {
     return Response.json({ error: 'ログインが必要です。' }, { status: 401 });
   }
+  const demoResponse = rejectDemoWrite(user);
+  if (demoResponse) return demoResponse;
 
   try {
     const member = await getMember(user.userId);
@@ -169,6 +172,8 @@ export async function PATCH(request: Request) {
   if (!user) {
     return Response.json({ error: 'ログインが必要です。' }, { status: 401 });
   }
+  const demoResponse = rejectDemoWrite(user);
+  if (demoResponse) return demoResponse;
 
   try {
     const member = await getMember(user.userId);

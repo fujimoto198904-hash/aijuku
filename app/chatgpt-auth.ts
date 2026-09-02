@@ -1,27 +1,75 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-import { withSiteBasePath, withoutSiteBasePath } from "@/lib/site-paths";
+import {
+  getMemberAuthAccount,
+  passwordAuthEmail,
+  resolvePasswordSession,
+} from '@/db/member-auth';
+import { readMemberSessionToken } from '@/lib/member-session-cookie';
+import { withSiteBasePath, withoutSiteBasePath } from '@/lib/site-paths';
 
 export type ChatGPTUser = {
   userId: string;
   displayName: string;
   email: string;
   fullName: string | null;
+  authMethod: 'chatgpt' | 'password';
+  mustChangePassword: boolean;
+  isDemo: boolean;
 };
 
-const USER_ID_HEADER = "oai-authenticated-user-id";
-const USER_EMAIL_HEADER = "oai-authenticated-user-email";
-const USER_FULL_NAME_HEADER = "oai-authenticated-user-full-name";
-const USER_FULL_NAME_ENCODING_HEADER =
-  "oai-authenticated-user-full-name-encoding";
-const PERCENT_ENCODED_UTF8 = "percent-encoded-utf-8";
-const SIGN_IN_PATH = "/signin-with-chatgpt";
-const SIGN_OUT_PATH = "/signout-with-chatgpt";
-const CALLBACK_PATH = "/callback";
+export type ChatGPTHeaderIdentity = {
+  userId: string;
+  displayName: string;
+  email: string;
+  fullName: string | null;
+};
 
-export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
-  const requestHeaders = await headers();
+const USER_ID_HEADER = 'oai-authenticated-user-id';
+const USER_EMAIL_HEADER = 'oai-authenticated-user-email';
+const USER_FULL_NAME_HEADER = 'oai-authenticated-user-full-name';
+const USER_FULL_NAME_ENCODING_HEADER =
+  'oai-authenticated-user-full-name-encoding';
+const PERCENT_ENCODED_UTF8 = 'percent-encoded-utf-8';
+const SIGN_IN_PATH = '/signin-with-chatgpt';
+const SIGN_OUT_PATH = '/signout-with-chatgpt';
+const CALLBACK_PATH = '/callback';
+const LOGIN_PATH = '/login';
+const PASSWORD_CHANGE_PATH = '/account/password';
+
+export async function getAuthenticatedUser(): Promise<ChatGPTUser | null> {
+  const memberSessionToken = await readMemberSessionToken();
+  if (memberSessionToken) {
+    const sessionUser = await resolvePasswordSession(memberSessionToken);
+    if (sessionUser) {
+      return {
+        userId: sessionUser.memberId,
+        displayName: sessionUser.displayName,
+        email: passwordAuthEmail(sessionUser),
+        fullName: sessionUser.displayName,
+        authMethod: 'password',
+        mustChangePassword: sessionUser.sessionKind === 'password-change',
+        isDemo: sessionUser.accountKind === 'demo',
+      };
+    }
+  }
+
+  const identity = readChatGPTIdentityHeaders(await headers());
+  if (!identity) return null;
+  const linkedAccount = await getMemberAuthAccount(identity.userId);
+
+  return {
+    ...identity,
+    authMethod: 'chatgpt',
+    mustChangePassword: linkedAccount?.passwordState === 'temporary',
+    isDemo: linkedAccount?.accountKind === 'demo',
+  };
+}
+
+export function readChatGPTIdentityHeaders(
+  requestHeaders: Pick<Headers, 'get'>,
+): ChatGPTHeaderIdentity | null {
   const userId = cleanIdentityHeader(requestHeaders.get(USER_ID_HEADER), 200);
   const email = cleanIdentityHeader(requestHeaders.get(USER_EMAIL_HEADER), 320);
   if (!userId || !email || !isPlausibleEmail(email)) return null;
@@ -33,13 +81,17 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
       ? safeDecodeURIComponent(encodedFullName)
       : null;
   const fullName = cleanIdentityHeader(decodedFullName, 160);
-
   return {
     userId,
     displayName: fullName ?? email,
     email,
     fullName,
   };
+}
+
+export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
+  const user = await getAuthenticatedUser();
+  return user && !user.mustChangePassword ? user : null;
 }
 
 function cleanIdentityHeader(value: string | null, maxLength: number) {
@@ -62,10 +114,13 @@ function isPlausibleEmail(value: string) {
 export async function requireChatGPTUser(
   returnTo: string,
 ): Promise<ChatGPTUser> {
-  const user = await getChatGPTUser();
+  const user = await getAuthenticatedUser();
+  if (user?.mustChangePassword) {
+    redirect(passwordChangePath(returnTo));
+  }
   if (user) return user;
 
-  redirect(chatGPTSignInPath(returnTo));
+  redirect(memberLoginPath(returnTo));
 }
 
 export function chatGPTSignInPath(returnTo: string): string {
@@ -73,22 +128,37 @@ export function chatGPTSignInPath(returnTo: string): string {
   return `${SIGN_IN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
-export function chatGPTSignOutPath(returnTo = "/"): string {
+export function chatGPTSignOutPath(returnTo = '/'): string {
+  const safeReturnTo = safeRelativeReturnPath(returnTo);
+  return `/api/auth/logout?return_to=${encodeURIComponent(safeReturnTo)}`;
+}
+
+export function legacyChatGPTSignOutPath(returnTo = '/'): string {
   const safeReturnTo = withSiteBasePath(safeRelativeReturnPath(returnTo));
   return `${SIGN_OUT_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
-function safeRelativeReturnPath(value: string): string {
-  if (!value.startsWith("/") || value.startsWith("//")) return "/";
+export function memberLoginPath(returnTo = '/mypage'): string {
+  const safeReturnTo = safeRelativeReturnPath(returnTo);
+  return `${LOGIN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+}
+
+export function passwordChangePath(returnTo = '/mypage'): string {
+  const safeReturnTo = safeRelativeReturnPath(returnTo);
+  return `${PASSWORD_CHANGE_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+}
+
+export function safeRelativeReturnPath(value: string): string {
+  if (!value.startsWith('/') || value.startsWith('//')) return '/';
 
   let url: URL;
   try {
-    url = new URL(value, "https://app.local");
+    url = new URL(value, 'https://app.local');
   } catch {
-    return "/";
+    return '/';
   }
-  if (url.origin !== "https://app.local") return "/";
-  if (isReservedAuthPath(withoutSiteBasePath(url.pathname))) return "/";
+  if (url.origin !== 'https://app.local') return '/';
+  if (isReservedAuthPath(withoutSiteBasePath(url.pathname))) return '/';
 
   return `${url.pathname}${url.search}${url.hash}`;
 }
@@ -97,7 +167,8 @@ function isReservedAuthPath(pathname: string): boolean {
   return (
     pathname === SIGN_IN_PATH ||
     pathname === SIGN_OUT_PATH ||
-    pathname === CALLBACK_PATH
+    pathname === CALLBACK_PATH ||
+    pathname === '/api/auth/logout'
   );
 }
 

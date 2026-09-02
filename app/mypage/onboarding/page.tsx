@@ -4,8 +4,10 @@ import { ShieldAlert } from 'lucide-react';
 
 import { requireChatGPTUser } from '@/app/chatgpt-auth';
 import { BrandMark } from '@/components/brand-mark';
-import { MembershipOnboardingForm } from '@/components/membership-onboarding-form';
+import { MemberOnboardingForm } from '@/components/member-onboarding-form';
 import Link from '@/components/site-link';
+import { getMemberAuthAccount } from '@/db/member-auth';
+import { getMemberOnboardingProfile } from '@/db/member-onboarding';
 import { getMember, hasCurrentMembershipConsent } from '@/db/membership';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 
@@ -17,7 +19,10 @@ export const metadata: Metadata = {
 };
 
 type MembershipOnboardingPageProps = {
-  searchParams: Promise<{ return_to?: string | string[] }>;
+  searchParams: Promise<{
+    mode?: string | string[];
+    return_to?: string | string[];
+  }>;
 };
 
 function safeMemberReturnTo(value: string | string[] | undefined) {
@@ -30,7 +35,7 @@ function safeMemberReturnTo(value: string | string[] | undefined) {
     if (url.origin !== 'https://member.local' || url.pathname !== '/mypage') {
       return '/mypage';
     }
-    return `${url.pathname}${url.search}`;
+    return `${url.pathname}${url.search}${url.hash}`;
   } catch {
     return '/mypage';
   }
@@ -41,16 +46,21 @@ export default async function MembershipOnboardingPage({
 }: MembershipOnboardingPageProps) {
   const params = await searchParams;
   const returnTo = safeMemberReturnTo(params.return_to);
-  const onboardingPath =
-    returnTo === '/mypage'
-      ? '/mypage/onboarding'
-      : `/mypage/onboarding?return_to=${encodeURIComponent(returnTo)}`;
+  const requestedMode = Array.isArray(params.mode)
+    ? params.mode[0]
+    : params.mode;
+  const requestedEdit = requestedMode === 'edit';
+  const query = new URLSearchParams();
+  if (requestedEdit) query.set('mode', 'edit');
+  if (returnTo !== '/mypage') query.set('return_to', returnTo);
+  const onboardingPath = `/mypage/onboarding${query.size ? `?${query}` : ''}`;
   if (isVercelRuntime()) {
     redirect(canonicalMemberUrl(onboardingPath));
   }
   return (
     <MembershipOnboardingContent
       onboardingPath={onboardingPath}
+      requestedEdit={requestedEdit}
       returnTo={returnTo}
     />
   );
@@ -58,14 +68,26 @@ export default async function MembershipOnboardingPage({
 
 async function MembershipOnboardingContent({
   onboardingPath,
+  requestedEdit,
   returnTo,
 }: {
   onboardingPath: string;
+  requestedEdit: boolean;
   returnTo: string;
 }) {
   const user = await requireChatGPTUser(onboardingPath);
-  const member = await getMember(user.userId);
-  if (member?.status === 'active' && hasCurrentMembershipConsent(member)) {
+  const [member, authAccount, onboardingProfile] = await Promise.all([
+    getMember(user.userId),
+    getMemberAuthAccount(user.userId),
+    getMemberOnboardingProfile(user.userId),
+  ]);
+  const hasCurrentConsent = Boolean(
+    member?.status === 'active' && hasCurrentMembershipConsent(member),
+  );
+  const isProfileEdit = Boolean(
+    requestedEdit && hasCurrentConsent && authAccount,
+  );
+  if (hasCurrentConsent && authAccount && !isProfileEdit) {
     redirect(returnTo);
   }
   if (member?.status === 'suspended') {
@@ -116,54 +138,82 @@ async function MembershipOnboardingContent({
       id="main-content"
       className="min-h-screen bg-paper px-5 py-10 text-ink sm:px-8 sm:py-16"
     >
-      <div className="soft-panel soft-panel-clip mx-auto grid w-full max-w-[1080px] border border-rule bg-paper-white lg:grid-cols-[0.78fr_1.22fr]">
-        <section className="bg-brand-dark p-8 text-white sm:p-10 lg:p-12">
+      <div className="soft-panel soft-panel-clip mx-auto grid w-full max-w-[1120px] border border-rule bg-paper-white lg:grid-cols-[1.28fr_0.72fr]">
+        <section className="p-7 sm:p-10 lg:p-12">
           <Link
-            className="flex items-center gap-3 font-mincho text-xl"
+            className="mb-9 flex items-center gap-3 font-mincho text-xl lg:hidden"
             href="/"
           >
             <BrandMark framed />
             藤本実学塾
           </Link>
-          <p className="mt-14 text-xs font-semibold tracking-[0.16em] text-future-mint">
-            FREE MEMBERSHIP
-          </p>
-          <h1 className="text-soft-glow mt-5 font-mincho text-4xl leading-tight">
-            {isConsentUpdate ? '同意内容を、' : '無料会員登録を、'}
-            <br />
-            {isConsentUpdate ? '更新します。' : '完了します。'}
+          <h1 className="sr-only">
+            {isProfileEdit ? '学び方の変更' : '無料会員登録'}
           </h1>
-          <ol className="mt-10 grid gap-5 text-sm text-white/70">
-            <li className="border-t border-white/15 pt-4">
-              01　お名前とメールを確認
-            </li>
-            <li className="border-t border-white/15 pt-4">
-              02　利用目的と規約を確認
-            </li>
-            <li className="border-t border-white/15 pt-4">
-              03　マイページで学びを続ける
-            </li>
-          </ol>
-        </section>
-
-        <section className="p-7 sm:p-10 lg:p-12">
-          <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
-            ACCOUNT SETUP
-          </p>
-          <h2 className="mt-4 font-mincho text-3xl">
-            {isConsentUpdate ? '現行規約の確認' : '登録内容の確認'}
-          </h2>
-          <p className="mt-4 text-sm leading-7 text-quiet">
-            {isConsentUpdate
-              ? 'ブックマーク、完了記録、AI実学パスポートに対応した現行版を確認し、同意日時を更新します。'
-              : 'ここで無料会員が成立します。気になる課題と完了した課題を保存できます。有料受講は希望する場合だけ、登録後に選びます。'}
-          </p>
-          <MembershipOnboardingForm
+          <MemberOnboardingForm
+            authMethod={user.authMethod}
             defaultName={defaultName}
             email={user.email}
+            initialFirstOutcome={onboardingProfile?.firstOutcome ?? ''}
+            initialInterestKeys={onboardingProfile?.interestKeys ?? []}
+            initialLearningGoal={onboardingProfile?.learningGoal ?? ''}
+            initialStartMode={onboardingProfile?.startMode ?? ''}
             isConsentUpdate={isConsentUpdate}
+            isProfileEdit={isProfileEdit}
+            needsInitialCredential={!authAccount}
             returnTo={returnTo}
           />
+        </section>
+
+        <section className="aurora-shell relative isolate overflow-hidden p-8 text-white sm:p-10 lg:flex lg:min-h-[820px] lg:flex-col lg:p-12">
+          <div
+            className="soft-grid pointer-events-none absolute inset-0 -z-10"
+            aria-hidden="true"
+          />
+          <Link
+            className="hidden items-center gap-3 font-mincho text-xl lg:flex"
+            href="/"
+          >
+            <BrandMark framed />
+            藤本実学塾
+          </Link>
+          <p className="mt-14 text-xs font-semibold tracking-[0.16em] text-future-mint lg:mt-auto">
+            FREE MEMBERSHIP
+          </p>
+          <h2 className="text-soft-glow mt-5 font-mincho text-4xl leading-tight">
+            {isProfileEdit
+              ? '今の自分に、'
+              : isConsentUpdate
+                ? '学び方を、'
+                : 'あなたらしい、'}
+            <br />
+            {isProfileEdit
+              ? '学び方を合わせよう。'
+              : isConsentUpdate
+                ? '整えなおそう。'
+                : '学びの入り口へ。'}
+          </h2>
+          <p className="mt-5 text-sm leading-7 text-white/65">
+            一律の順番ではなく、あなたが作りたい変化から学び方を組み立てます。
+          </p>
+          <ol className="mt-10 grid gap-4 text-xs text-white/70 lg:mb-auto">
+            <li className="border-t border-white/15 pt-4">
+              01　マイページのお名前
+            </li>
+            <li className="border-t border-white/15 pt-4">
+              02　AIで作りたい変化
+            </li>
+            <li className="border-t border-white/15 pt-4">
+              03　自分に合う始め方
+            </li>
+            <li className="border-t border-white/15 pt-4">
+              04　最初に作りたいもの
+            </li>
+            <li className="border-t border-white/15 pt-4">
+              05　
+              {isProfileEdit ? '変更内容を保存' : '安全なログインの準備'}
+            </li>
+          </ol>
         </section>
       </div>
     </main>

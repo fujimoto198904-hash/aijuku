@@ -1,0 +1,1696 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "84321896-3a93-4f98-96a1-a8826d4c8316",
+  "prevId": "cf38694d-89d1-4aa1-96c2-889d2d2e549b",
+  "tables": {
+    "application_status_events": {
+      "name": "application_status_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "from_status": {
+          "name": "from_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "to_status": {
+          "name": "to_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_type": {
+          "name": "actor_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_name": {
+          "name": "actor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "member_message": {
+          "name": "member_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "operation_snapshot": {
+          "name": "operation_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "application_status_events_application_created_idx": {
+          "name": "application_status_events_application_created_idx",
+          "columns": ["application_id", "created_at"],
+          "isUnique": false
+        },
+        "application_status_events_created_idx": {
+          "name": "application_status_events_created_idx",
+          "columns": ["created_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "application_status_events_application_id_applications_id_fk": {
+          "name": "application_status_events_application_id_applications_id_fk",
+          "tableFrom": "application_status_events",
+          "tableTo": "applications",
+          "columnsFrom": ["application_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "application_status_events_from_status_check": {
+          "name": "application_status_events_from_status_check",
+          "value": "\"application_status_events\".\"from_status\" in ('received', 'reviewing', 'confirmed', 'cancelled')"
+        },
+        "application_status_events_to_status_check": {
+          "name": "application_status_events_to_status_check",
+          "value": "\"application_status_events\".\"to_status\" in ('received', 'reviewing', 'confirmed', 'cancelled')"
+        },
+        "application_status_events_actor_type_check": {
+          "name": "application_status_events_actor_type_check",
+          "value": "\"application_status_events\".\"actor_type\" in ('member', 'owner')"
+        }
+      }
+    },
+    "applications": {
+      "name": "applications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_request_id": {
+          "name": "client_request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "service_type": {
+          "name": "service_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "goal": {
+          "name": "goal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "preferred_schedule": {
+          "name": "preferred_schedule",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "participants": {
+          "name": "participants",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "offer_snapshot": {
+          "name": "offer_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        },
+        "terms_version": {
+          "name": "terms_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'legacy'"
+        },
+        "privacy_version": {
+          "name": "privacy_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'legacy'"
+        },
+        "member_message": {
+          "name": "member_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "assigned_instructor": {
+          "name": "assigned_instructor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scheduled_at": {
+          "name": "scheduled_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "delivery_details": {
+          "name": "delivery_details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "internal_note": {
+          "name": "internal_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "applications_member_request_unique": {
+          "name": "applications_member_request_unique",
+          "columns": ["member_id", "client_request_id"],
+          "isUnique": true
+        },
+        "applications_member_created_idx": {
+          "name": "applications_member_created_idx",
+          "columns": ["member_id", "created_at"],
+          "isUnique": false
+        },
+        "applications_status_created_idx": {
+          "name": "applications_status_created_idx",
+          "columns": ["status", "created_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "applications_member_id_members_id_fk": {
+          "name": "applications_member_id_members_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "members",
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "applications_service_type_check": {
+          "name": "applications_service_type_check",
+          "value": "\"applications\".\"service_type\" in ('in-person-tutor', 'online-tutor', 'self-study')"
+        },
+        "applications_status_check": {
+          "name": "applications_status_check",
+          "value": "\"applications\".\"status\" in ('received', 'reviewing', 'confirmed', 'cancelled')"
+        },
+        "applications_participants_check": {
+          "name": "applications_participants_check",
+          "value": "\"applications\".\"participants\" between 1 and 5"
+        }
+      }
+    },
+    "external_review_moderation_events": {
+      "name": "external_review_moderation_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review_id": {
+          "name": "review_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "from_status": {
+          "name": "from_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "to_status": {
+          "name": "to_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "moderator_user_id": {
+          "name": "moderator_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "moderator_name": {
+          "name": "moderator_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "external_review_moderation_events_review_created_idx": {
+          "name": "external_review_moderation_events_review_created_idx",
+          "columns": ["review_id", "created_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "external_review_moderation_events_review_id_external_reviews_id_fk": {
+          "name": "external_review_moderation_events_review_id_external_reviews_id_fk",
+          "tableFrom": "external_review_moderation_events",
+          "tableTo": "external_reviews",
+          "columnsFrom": ["review_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "external_review_moderation_events_from_status_check": {
+          "name": "external_review_moderation_events_from_status_check",
+          "value": "\"external_review_moderation_events\".\"from_status\" in ('pending', 'approved', 'rejected')"
+        },
+        "external_review_moderation_events_to_status_check": {
+          "name": "external_review_moderation_events_to_status_check",
+          "value": "\"external_review_moderation_events\".\"to_status\" in ('approved', 'rejected')"
+        }
+      }
+    },
+    "external_review_requests": {
+      "name": "external_review_requests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "evidence_id": {
+          "name": "evidence_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "used_at": {
+          "name": "used_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "external_review_requests_token_hash_unique": {
+          "name": "external_review_requests_token_hash_unique",
+          "columns": ["token_hash"],
+          "isUnique": true
+        },
+        "external_review_requests_evidence_status_idx": {
+          "name": "external_review_requests_evidence_status_idx",
+          "columns": ["evidence_id", "status"],
+          "isUnique": false
+        },
+        "external_review_requests_member_created_idx": {
+          "name": "external_review_requests_member_created_idx",
+          "columns": ["member_id", "created_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "external_review_requests_evidence_id_skill_evidence_id_fk": {
+          "name": "external_review_requests_evidence_id_skill_evidence_id_fk",
+          "tableFrom": "external_review_requests",
+          "tableTo": "skill_evidence",
+          "columnsFrom": ["evidence_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "external_review_requests_member_id_members_id_fk": {
+          "name": "external_review_requests_member_id_members_id_fk",
+          "tableFrom": "external_review_requests",
+          "tableTo": "members",
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "external_review_requests_status_check": {
+          "name": "external_review_requests_status_check",
+          "value": "\"external_review_requests\".\"status\" in ('open', 'submitted', 'revoked')"
+        }
+      }
+    },
+    "external_reviews": {
+      "name": "external_reviews",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_id": {
+          "name": "request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "evidence_id": {
+          "name": "evidence_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer_user_id": {
+          "name": "reviewer_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer_name": {
+          "name": "reviewer_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer_affiliation": {
+          "name": "reviewer_affiliation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "relationship": {
+          "name": "relationship",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rating": {
+          "name": "rating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "observations": {
+          "name": "observations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "consent_public": {
+          "name": "consent_public",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "terms_version": {
+          "name": "terms_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "privacy_version": {
+          "name": "privacy_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "policy_accepted_at": {
+          "name": "policy_accepted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "moderation_status": {
+          "name": "moderation_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "moderation_note": {
+          "name": "moderation_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "moderated_by": {
+          "name": "moderated_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "moderated_at": {
+          "name": "moderated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "external_reviews_request_unique": {
+          "name": "external_reviews_request_unique",
+          "columns": ["request_id"],
+          "isUnique": true
+        },
+        "external_reviews_evidence_reviewer_unique": {
+          "name": "external_reviews_evidence_reviewer_unique",
+          "columns": ["evidence_id", "reviewer_user_id"],
+          "isUnique": true
+        },
+        "external_reviews_evidence_status_idx": {
+          "name": "external_reviews_evidence_status_idx",
+          "columns": ["evidence_id", "moderation_status"],
+          "isUnique": false
+        },
+        "external_reviews_moderation_created_idx": {
+          "name": "external_reviews_moderation_created_idx",
+          "columns": ["moderation_status", "created_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "external_reviews_request_id_external_review_requests_id_fk": {
+          "name": "external_reviews_request_id_external_review_requests_id_fk",
+          "tableFrom": "external_reviews",
+          "tableTo": "external_review_requests",
+          "columnsFrom": ["request_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "external_reviews_evidence_id_skill_evidence_id_fk": {
+          "name": "external_reviews_evidence_id_skill_evidence_id_fk",
+          "tableFrom": "external_reviews",
+          "tableTo": "skill_evidence",
+          "columnsFrom": ["evidence_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "external_reviews_relationship_check": {
+          "name": "external_reviews_relationship_check",
+          "value": "\"external_reviews\".\"relationship\" in ('manager', 'colleague', 'client', 'teacher', 'project-member', 'other')"
+        },
+        "external_reviews_rating_check": {
+          "name": "external_reviews_rating_check",
+          "value": "\"external_reviews\".\"rating\" between 1 and 4"
+        },
+        "external_reviews_consent_public_check": {
+          "name": "external_reviews_consent_public_check",
+          "value": "\"external_reviews\".\"consent_public\" in (0, 1)"
+        },
+        "external_reviews_policy_accepted_check": {
+          "name": "external_reviews_policy_accepted_check",
+          "value": "\"external_reviews\".\"policy_accepted_at\" is null or \"external_reviews\".\"policy_accepted_at\" > 0"
+        },
+        "external_reviews_moderation_status_check": {
+          "name": "external_reviews_moderation_status_check",
+          "value": "\"external_reviews\".\"moderation_status\" in ('pending', 'approved', 'rejected')"
+        }
+      }
+    },
+    "member_auth_accounts": {
+      "name": "member_auth_accounts",
+      "columns": {
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "login_id": {
+          "name": "login_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contact_email": {
+          "name": "contact_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "password_digest": {
+          "name": "password_digest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "password_state": {
+          "name": "password_state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_kind": {
+          "name": "account_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "temporary_password_expires_at": {
+          "name": "temporary_password_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "password_changed_at": {
+          "name": "password_changed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "member_auth_accounts_login_id_unique": {
+          "name": "member_auth_accounts_login_id_unique",
+          "columns": ["login_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "member_auth_accounts_password_state_check": {
+          "name": "member_auth_accounts_password_state_check",
+          "value": "\"member_auth_accounts\".\"password_state\" in ('temporary', 'personal')"
+        },
+        "member_auth_accounts_kind_check": {
+          "name": "member_auth_accounts_kind_check",
+          "value": "\"member_auth_accounts\".\"account_kind\" in ('member', 'demo')"
+        },
+        "member_auth_accounts_status_check": {
+          "name": "member_auth_accounts_status_check",
+          "value": "\"member_auth_accounts\".\"status\" in ('active', 'disabled')"
+        },
+        "member_auth_accounts_temporary_expiry_check": {
+          "name": "member_auth_accounts_temporary_expiry_check",
+          "value": "(\"member_auth_accounts\".\"password_state\" = 'temporary' and \"member_auth_accounts\".\"temporary_password_expires_at\" is not null) or (\"member_auth_accounts\".\"password_state\" = 'personal' and \"member_auth_accounts\".\"temporary_password_expires_at\" is null)"
+        }
+      }
+    },
+    "member_auth_rate_limits": {
+      "name": "member_auth_rate_limits",
+      "columns": {
+        "key_hash": {
+          "name": "key_hash",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "window_started_at": {
+          "name": "window_started_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_count": {
+          "name": "request_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "blocked_until": {
+          "name": "blocked_until",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "member_auth_rate_limits_updated_idx": {
+          "name": "member_auth_rate_limits_updated_idx",
+          "columns": ["updated_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "member_auth_rate_limits_action_check": {
+          "name": "member_auth_rate_limits_action_check",
+          "value": "\"member_auth_rate_limits\".\"action\" in ('login-id', 'login-ip', 'password-change', 'bootstrap')"
+        },
+        "member_auth_rate_limits_count_check": {
+          "name": "member_auth_rate_limits_count_check",
+          "value": "\"member_auth_rate_limits\".\"request_count\" between 1 and 100"
+        }
+      }
+    },
+    "member_auth_sessions": {
+      "name": "member_auth_sessions",
+      "columns": {
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "session_kind": {
+          "name": "session_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "member_auth_sessions_account_expiry_idx": {
+          "name": "member_auth_sessions_account_expiry_idx",
+          "columns": ["account_id", "expires_at"],
+          "isUnique": false
+        },
+        "member_auth_sessions_expiry_idx": {
+          "name": "member_auth_sessions_expiry_idx",
+          "columns": ["expires_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "member_auth_sessions_account_id_member_auth_accounts_member_id_fk": {
+          "name": "member_auth_sessions_account_id_member_auth_accounts_member_id_fk",
+          "tableFrom": "member_auth_sessions",
+          "tableTo": "member_auth_accounts",
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["member_id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "member_auth_sessions_kind_check": {
+          "name": "member_auth_sessions_kind_check",
+          "value": "\"member_auth_sessions\".\"session_kind\" in ('member', 'password-change')"
+        },
+        "member_auth_sessions_expiry_check": {
+          "name": "member_auth_sessions_expiry_check",
+          "value": "\"member_auth_sessions\".\"expires_at\" > \"member_auth_sessions\".\"created_at\""
+        }
+      }
+    },
+    "member_lesson_progress": {
+      "name": "member_lesson_progress",
+      "columns": {
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bookmarked": {
+          "name": "bookmarked",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "completed": {
+          "name": "completed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "member_lesson_progress_member_task_unique": {
+          "name": "member_lesson_progress_member_task_unique",
+          "columns": ["member_id", "task_id"],
+          "isUnique": true
+        },
+        "member_lesson_progress_member_updated_idx": {
+          "name": "member_lesson_progress_member_updated_idx",
+          "columns": ["member_id", "updated_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "member_lesson_progress_member_id_members_id_fk": {
+          "name": "member_lesson_progress_member_id_members_id_fk",
+          "tableFrom": "member_lesson_progress",
+          "tableTo": "members",
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "member_lesson_progress_bookmarked_check": {
+          "name": "member_lesson_progress_bookmarked_check",
+          "value": "\"member_lesson_progress\".\"bookmarked\" in (0, 1)"
+        },
+        "member_lesson_progress_completed_check": {
+          "name": "member_lesson_progress_completed_check",
+          "value": "\"member_lesson_progress\".\"completed\" in (0, 1)"
+        },
+        "member_lesson_progress_state_check": {
+          "name": "member_lesson_progress_state_check",
+          "value": "not (\"member_lesson_progress\".\"bookmarked\" = 1 and \"member_lesson_progress\".\"completed\" = 1)"
+        },
+        "member_lesson_progress_completed_at_check": {
+          "name": "member_lesson_progress_completed_at_check",
+          "value": "(\"member_lesson_progress\".\"completed\" = 1 and \"member_lesson_progress\".\"completed_at\" is not null) or (\"member_lesson_progress\".\"completed\" = 0 and \"member_lesson_progress\".\"completed_at\" is null)"
+        }
+      }
+    },
+    "member_lesson_rate_limits": {
+      "name": "member_lesson_rate_limits",
+      "columns": {
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "window_started_at": {
+          "name": "window_started_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_count": {
+          "name": "request_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "member_lesson_rate_limits_member_id_members_id_fk": {
+          "name": "member_lesson_rate_limits_member_id_members_id_fk",
+          "tableFrom": "member_lesson_rate_limits",
+          "tableTo": "members",
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "member_lesson_rate_limits_count_check": {
+          "name": "member_lesson_rate_limits_count_check",
+          "value": "\"member_lesson_rate_limits\".\"request_count\" between 1 and 30"
+        }
+      }
+    },
+    "member_onboarding_profiles": {
+      "name": "member_onboarding_profiles",
+      "columns": {
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "learning_goal": {
+          "name": "learning_goal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_mode": {
+          "name": "start_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "interest_keys": {
+          "name": "interest_keys",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "first_outcome": {
+          "name": "first_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "member_onboarding_profiles_member_id_members_id_fk": {
+          "name": "member_onboarding_profiles_member_id_members_id_fk",
+          "tableFrom": "member_onboarding_profiles",
+          "tableTo": "members",
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "member_onboarding_profiles_goal_check": {
+          "name": "member_onboarding_profiles_goal_check",
+          "value": "\"member_onboarding_profiles\".\"learning_goal\" in ('daily-life', 'work-efficiency', 'creative', 'build', 'team', 'explore')"
+        },
+        "member_onboarding_profiles_start_mode_check": {
+          "name": "member_onboarding_profiles_start_mode_check",
+          "value": "\"member_onboarding_profiles\".\"start_mode\" in ('level-zero', 'quick-win', 'build-now', 'focus-area', 'recommend')"
+        }
+      }
+    },
+    "members": {
+      "name": "members",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "terms_version": {
+          "name": "terms_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "terms_accepted_at": {
+          "name": "terms_accepted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "privacy_version": {
+          "name": "privacy_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "privacy_accepted_at": {
+          "name": "privacy_accepted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "members_status_check": {
+          "name": "members_status_check",
+          "value": "\"members\".\"status\" in ('active', 'suspended', 'withdrawn')"
+        }
+      }
+    },
+    "skill_evidence": {
+      "name": "skill_evidence",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_request_id": {
+          "name": "client_request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_type": {
+          "name": "source_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "task_title": {
+          "name": "task_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "task_outcome": {
+          "name": "task_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "track": {
+          "name": "track",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "course_title": {
+          "name": "course_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "skill_keys": {
+          "name": "skill_keys",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "evidence_url": {
+          "name": "evidence_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rights_confirmed_at": {
+          "name": "rights_confirmed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "instructor_status": {
+          "name": "instructor_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "instructor_note": {
+          "name": "instructor_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verified_by": {
+          "name": "verified_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verified_by_name": {
+          "name": "verified_by_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "skill_evidence_member_created_idx": {
+          "name": "skill_evidence_member_created_idx",
+          "columns": ["member_id", "created_at"],
+          "isUnique": false
+        },
+        "skill_evidence_status_created_idx": {
+          "name": "skill_evidence_status_created_idx",
+          "columns": ["instructor_status", "created_at"],
+          "isUnique": false
+        },
+        "skill_evidence_member_request_unique": {
+          "name": "skill_evidence_member_request_unique",
+          "columns": ["member_id", "client_request_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "skill_evidence_member_id_members_id_fk": {
+          "name": "skill_evidence_member_id_members_id_fk",
+          "tableFrom": "skill_evidence",
+          "tableTo": "members",
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "skill_evidence_source_type_check": {
+          "name": "skill_evidence_source_type_check",
+          "value": "\"skill_evidence\".\"source_type\" in ('curriculum', 'prior-work')"
+        },
+        "skill_evidence_track_check": {
+          "name": "skill_evidence_track_check",
+          "value": "\"skill_evidence\".\"track\" in ('common', 'department', 'industry', 'generation', 'other')"
+        },
+        "skill_evidence_visibility_check": {
+          "name": "skill_evidence_visibility_check",
+          "value": "\"skill_evidence\".\"visibility\" in ('private', 'shared')"
+        },
+        "skill_evidence_rights_confirmed_check": {
+          "name": "skill_evidence_rights_confirmed_check",
+          "value": "\"skill_evidence\".\"rights_confirmed_at\" > 0"
+        },
+        "skill_evidence_instructor_status_check": {
+          "name": "skill_evidence_instructor_status_check",
+          "value": "\"skill_evidence\".\"instructor_status\" in ('pending', 'verified', 'changes_requested')"
+        }
+      }
+    },
+    "skill_evidence_review_events": {
+      "name": "skill_evidence_review_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "evidence_id": {
+          "name": "evidence_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "from_status": {
+          "name": "from_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "to_status": {
+          "name": "to_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer_user_id": {
+          "name": "reviewer_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer_name": {
+          "name": "reviewer_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "skill_evidence_review_events_evidence_created_idx": {
+          "name": "skill_evidence_review_events_evidence_created_idx",
+          "columns": ["evidence_id", "created_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "skill_evidence_review_events_evidence_id_skill_evidence_id_fk": {
+          "name": "skill_evidence_review_events_evidence_id_skill_evidence_id_fk",
+          "tableFrom": "skill_evidence_review_events",
+          "tableTo": "skill_evidence",
+          "columnsFrom": ["evidence_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "skill_evidence_review_events_from_status_check": {
+          "name": "skill_evidence_review_events_from_status_check",
+          "value": "\"skill_evidence_review_events\".\"from_status\" in ('pending', 'verified', 'changes_requested')"
+        },
+        "skill_evidence_review_events_to_status_check": {
+          "name": "skill_evidence_review_events_to_status_check",
+          "value": "\"skill_evidence_review_events\".\"to_status\" in ('verified', 'changes_requested')"
+        }
+      }
+    },
+    "skill_profiles": {
+      "name": "skill_profiles",
+      "columns": {
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "public_slug": {
+          "name": "public_slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "headline": {
+          "name": "headline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_role": {
+          "name": "target_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "share_enabled": {
+          "name": "share_enabled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "skill_profiles_public_slug_unique": {
+          "name": "skill_profiles_public_slug_unique",
+          "columns": ["public_slug"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "skill_profiles_member_id_members_id_fk": {
+          "name": "skill_profiles_member_id_members_id_fk",
+          "tableFrom": "skill_profiles",
+          "tableTo": "members",
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "skill_profiles_share_enabled_check": {
+          "name": "skill_profiles_share_enabled_check",
+          "value": "\"skill_profiles\".\"share_enabled\" in (0, 1)"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

@@ -99,8 +99,8 @@ type RawAdminApplication = Omit<AdminApplication, 'offerSnapshot'> & {
   offerSnapshot: string;
 };
 
-export const membershipTermsVersion = '2026-09-03-portal-v5';
-export const privacyPolicyVersion = '2026-09-03-portal-v4';
+export const membershipTermsVersion = '2026-09-03-portal-v6';
+export const privacyPolicyVersion = '2026-09-03-portal-v5';
 
 export function hasCurrentMembershipConsent(
   member: Pick<MemberProfile, 'termsVersion' | 'privacyVersion'>,

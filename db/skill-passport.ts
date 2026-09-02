@@ -414,7 +414,17 @@ export async function ensureSkillProfile(
     .bind(memberId, `p_${crypto.randomUUID().replaceAll('-', '')}`, now, now)
     .run();
 
-  const profile = await db
+  const profile = await getMemberSkillProfile(memberId);
+
+  if (!profile) throw new Error('Skill profile could not be initialized.');
+  return profile;
+}
+
+export async function getMemberSkillProfile(
+  memberId: string,
+): Promise<SkillProfile | null> {
+  await ensureSkillPassportSchema();
+  const profile = await getD1()
     .prepare(
       `
       SELECT
@@ -434,8 +444,7 @@ export async function ensureSkillProfile(
     .bind(memberId)
     .first<RawSkillProfile>();
 
-  if (!profile) throw new Error('Skill profile could not be initialized.');
-  return hydrateProfile(profile);
+  return profile ? hydrateProfile(profile) : null;
 }
 
 export async function updateSkillProfile(input: {

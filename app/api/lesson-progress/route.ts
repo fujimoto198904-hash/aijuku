@@ -4,6 +4,7 @@ import {
   updateMemberLessonProgress,
 } from '@/db/lesson-progress';
 import { getMember, hasCurrentMembershipConsent } from '@/db/membership';
+import { rejectDemoWrite } from '@/lib/demo-access';
 import { findTextbookTask } from '@/lib/textbook-catalog';
 import { cleanRequestText, isSameOriginRequest } from '@/lib/request-security';
 import { isVercelRuntime } from '@/lib/site-runtime';
@@ -80,6 +81,8 @@ export async function PATCH(request: Request) {
   if (!user) {
     return Response.json({ error: 'ログインが必要です。' }, { status: 401 });
   }
+  const demoResponse = rejectDemoWrite(user);
+  if (demoResponse) return demoResponse;
 
   const parsedBody = await readLimitedJson(request, maxRequestBodyBytes);
   if (!parsedBody.ok) {
