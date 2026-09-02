@@ -2,14 +2,7 @@
 
 /* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- 読み取り専用のpreをキーボードでスクロールできるようにする */
 
-import {
-  ChevronDown,
-  Clipboard,
-  Download,
-  Paperclip,
-  RefreshCcw,
-  Smartphone,
-} from 'lucide-react';
+import { ChevronDown, Clipboard, Download, RefreshCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { demoDataCatalog, type DemoIndustry } from '@/lib/demo-data-catalog';
@@ -190,15 +183,15 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
         <span>
           {textFiles.length > 0
             ? hasFilesToAttach
-              ? 'TXTはここでコピー／資料はZIPから取得'
-              : 'このTXTを開いて、そのままコピー'
-            : '指定資料をZIPから取得'}
+              ? 'この課題のTXTと練習用ZIP'
+              : 'この課題のTXTをコピー'
+            : 'この課題の練習用ZIP'}
         </span>
         <ChevronDown className="size-4 shrink-0" aria-hidden="true" />
       </summary>
       <div className="flex flex-col border-t border-success/25 p-4">
         <p className="text-xs leading-5 text-quiet">
-          練習する架空会社を選ぶと、その会社の教材に切り替わります。TXTは下のボタンでコピーし、ChatGPTへそのまま貼れます。
+          練習する架空会社を選ぶと、表示する材料が切り替わります。
         </p>
         <fieldset
           className="mt-3 flex flex-wrap gap-2 border-0 p-0"
@@ -302,7 +295,7 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
               {industryLabels[industry]}の練習用ZIP
             </p>
             <p className="mt-2 text-xs leading-6 text-quiet">
-              すべて架空の練習データです。ZIPを取得し、表示された「展開」「解凍」またはファイルアプリで開きます。
+              すべて架空の練習データです。必要な資料名は上の「今回使う材料」で確認できます。
             </p>
             <a
               className="soft-button mt-3 inline-flex min-h-11 items-center justify-center gap-2 bg-success px-4 text-xs font-semibold text-white"
@@ -312,31 +305,6 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
               <Download className="size-4" aria-hidden="true" />
               {industryLabels[industry]}のZIPを取得
             </a>
-          </div>
-        ) : null}
-
-        {hasFilesToAttach ? (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="border-l-2 border-sapphire bg-white/70 p-4">
-              <p className="flex items-center gap-2 text-xs font-semibold text-sapphire">
-                <Paperclip className="size-4" aria-hidden="true" />
-                パソコン
-              </p>
-              <p className="mt-2 text-xs leading-6 text-quiet">
-                ZIPを展開 →
-                指定のPDF・Word・Excel・画像をChatGPTの入力欄へドラッグ。無理な時はクリップまたはファイル選択を使います。
-              </p>
-            </div>
-            <div className="border-l-2 border-human-coral bg-white/70 p-4">
-              <p className="flex items-center gap-2 text-xs font-semibold text-human-coral">
-                <Smartphone className="size-4" aria-hidden="true" />
-                スマホ
-              </p>
-              <p className="mt-2 text-xs leading-6 text-quiet">
-                ZIPを「ファイル」で展開 →
-                資料を共有してChatGPTで開くか、ChatGPTの入力欄からファイルを選びます。
-              </p>
-            </div>
           </div>
         ) : null}
       </div>

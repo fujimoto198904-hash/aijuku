@@ -8,6 +8,7 @@ import {
   BookmarkCheck,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clipboard,
@@ -28,6 +29,7 @@ import { TextbookAccessBadges } from '@/components/textbook/access-badges';
 import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
 import type { TextbookLesson } from '@/lib/textbook-lessons/types';
 import { getTextbookAccessProfile } from '@/lib/textbook-access';
+import { getTextbookMaterialGuide } from '@/lib/textbook-material-guide';
 import {
   textbookExplorePath,
   textbookLessonPath,
@@ -36,10 +38,7 @@ import {
 import { MaterialPreview } from '@/components/textbook/material-preview';
 import {
   humanFileName,
-  inputGuides,
-  inputMethodLabels,
   lessonSections,
-  modeGuides,
   readStoredChecks,
   writeStoredChecks,
 } from '@/components/textbook/lesson-shared';
@@ -197,12 +196,10 @@ export function LessonReader({
     });
   }
 
-  const inputGuide = inputGuides[lesson.inputMethod];
+  const materialGuide = getTextbookMaterialGuide(lesson);
   const accessProfile = getTextbookAccessProfile(task);
   const modeLabel =
     lesson.recommendedMode === 'chat' ? '作業画面：Chat' : '作業画面：Work';
-  const inputMethodLabel = inputMethodLabels[lesson.inputMethod];
-  const modeGuide = modeGuides[lesson.recommendedMode];
   const materialSummary =
     lesson.files.length > 0
       ? lesson.files.map(humanFileName).join('、')
@@ -226,18 +223,27 @@ export function LessonReader({
   );
 
   const manualSaveCard = (
-    <div
-      className={`soft-card border-l-4 p-5 sm:p-6 ${
+    <details
+      className={`soft-control group border px-4 py-1.5 ${
         lesson.recommendedMode === 'chat'
-          ? 'border-rust bg-paper-white'
+          ? 'border-rust/55 bg-paper-white'
           : 'border-rule bg-paper'
       }`}
     >
-      <p className="text-sm font-semibold">返答欄にできた物は、自分で残す</p>
-      <p className="mt-2 text-xs leading-6 text-quiet">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 text-xs [&::-webkit-details-marker]:hidden">
+        <span className="soft-badge shrink-0 bg-white px-2 py-1 font-semibold text-rust">
+          共通の保存メモ
+        </span>
+        <span className="font-semibold">Chatでできた物は、自分で保存</span>
+        <ChevronDown
+          className="ml-auto size-4 shrink-0 transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      <p className="mt-3 border-t border-rule pt-3 text-xs leading-6 text-quiet">
         Chatの返答欄にファイルができたらダウンロードして「完成」フォルダへ移します。文章だけなら、全文をコピーしてテキストやWordへ貼って保存します。保存した物をもう一度開けた時に「残せた」とします。
       </p>
-    </div>
+    </details>
   );
 
   const workSaveCard = (
@@ -441,39 +447,11 @@ export function LessonReader({
                       {modeLabel}
                     </span>
                     <span className="soft-badge border border-success/30 bg-future-mint-soft px-3 py-1.5 text-xs font-semibold text-success">
-                      {inputMethodLabel}
+                      {materialGuide.badge}
                     </span>
                   </div>
-                  <h4 className="mt-5 font-mincho text-2xl leading-relaxed">
-                    {inputGuide.title}
-                  </h4>
-                  <p className="mt-3 text-sm leading-7 text-quiet">
-                    {inputGuide.description}
-                  </p>
-                  <p className="mt-5 border-l-2 border-sapphire/35 pl-4 text-xs leading-6 text-quiet">
-                    {modeGuide}
-                  </p>
-                  <div className="soft-control mt-5 border border-rule bg-paper p-4">
-                    <TextbookAccessBadges profile={accessProfile} compact />
-                    <p className="mt-3 text-xs leading-6 text-quiet">
-                      {accessProfile.planReason}
-                    </p>
-                    {accessProfile.codexReason ? (
-                      <p className="mt-2 text-xs leading-6 text-quiet">
-                        {accessProfile.codexReason}
-                      </p>
-                    ) : null}
-                    <Link
-                      className="mt-3 inline-flex text-xs font-semibold text-sapphire underline decoration-sapphire/30 underline-offset-4"
-                      href={textbookSetupPath}
-                    >
-                      ChatGPTの設定とプランを確認する
-                    </Link>
-                  </div>
-                  <p className="mt-6 text-xs font-semibold text-rust">
-                    今回使う材料
-                  </p>
-                  <div className="mt-3 grid gap-3">
+                  <h4 className="mt-6 font-mincho text-2xl">今回使う材料</h4>
+                  <div className="mt-4 grid gap-3">
                     {lesson.files.map((file) => (
                       <p
                         key={file}
@@ -500,32 +478,69 @@ export function LessonReader({
                   ) : null}
                   <MaterialPreview key={task.id} files={lesson.files} />
                 </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  {inputGuide.steps.map((item, index) => (
-                    <div
-                      key={item}
-                      className="soft-card border border-rule bg-white p-5"
+                <details className="soft-control group mt-4 border border-rule bg-paper-white px-4 py-1.5">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 text-xs [&::-webkit-details-marker]:hidden">
+                    <span className="soft-badge shrink-0 bg-paper px-2 py-1 font-semibold text-rust">
+                      共通操作メモ
+                    </span>
+                    <span className="min-w-0 font-semibold">
+                      {materialGuide.summary}
+                    </span>
+                    <span className="ml-auto hidden shrink-0 text-quiet sm:inline">
+                      必要な時だけ開く
+                    </span>
+                    <ChevronDown
+                      className="size-4 shrink-0 transition-transform group-open:rotate-180"
+                      aria-hidden="true"
+                    />
+                  </summary>
+                  <div className="mt-3 border-t border-rule pt-3 text-xs leading-6 text-quiet">
+                    <ol className="grid gap-2">
+                      {materialGuide.steps.map((item, index) => (
+                        <li className="flex gap-3" key={item}>
+                          <span className="numeric-text shrink-0 text-rust">
+                            {index + 1}
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ol>
+                    <p className="mt-3 border-l-2 border-sapphire/30 pl-3">
+                      {materialGuide.modeNote}
+                    </p>
+                    {materialGuide.alternative ? (
+                      <p className="mt-2">{materialGuide.alternative}</p>
+                    ) : null}
+                    {materialGuide.failureNote ? (
+                      <p className="mt-2">{materialGuide.failureNote}</p>
+                    ) : null}
+                    <Link
+                      className="mt-3 inline-flex font-semibold text-sapphire underline decoration-sapphire/30 underline-offset-4"
+                      href={textbookSetupPath}
                     >
-                      <span className="numeric-text text-xs text-rust">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <p className="mt-3 text-sm font-semibold leading-6">
-                        {item}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <div className="soft-card mt-5 border border-rule bg-paper p-5">
-                  <p className="text-xs font-semibold text-deep-green">
-                    材料の別の渡し方でもOK
-                  </p>
+                      ChatGPTの設定と詳しい使い方
+                    </Link>
+                  </div>
+                </details>
+                <div className="soft-control mt-3 border border-rule bg-paper px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <TextbookAccessBadges profile={accessProfile} compact />
+                    <Link
+                      className="text-xs font-semibold text-sapphire underline decoration-sapphire/30 underline-offset-4"
+                      href={textbookSetupPath}
+                    >
+                      利用プランを確認
+                    </Link>
+                  </div>
                   <p className="mt-2 text-xs leading-6 text-quiet">
-                    {inputGuide.alternative}
+                    {accessProfile.planReason}
                   </p>
+                  {accessProfile.codexReason ? (
+                    <p className="mt-1 text-xs leading-6 text-quiet">
+                      {accessProfile.codexReason}
+                    </p>
+                  ) : null}
                 </div>
-                <p className="mt-5 border-l-4 border-human-coral bg-human-coral-soft p-4 text-xs leading-6 text-quiet">
-                  AIが資料を読めないと言ったら、設定で粘らなくて大丈夫です。短い文章は必要部分を貼り、PDF・Word・Excelは添付へ切り替えます。読めない内容を推測して進めさせません。
-                </p>
               </div>
             </div>
           </section>
@@ -543,13 +558,7 @@ export function LessonReader({
                   まずこう言ってみる
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-quiet">
-                  {lesson.inputMethod === 'paste'
-                    ? '先にメモの中身を貼り、その下にこの一言を続けます。'
-                    : lesson.inputMethod === 'attach'
-                      ? 'ファイル名が入力欄に表示されたのを見てから、この一言を送ります。'
-                      : lesson.inputMethod === 'mixed'
-                        ? 'メモの中身を貼り、添付した資料名が表示されたのを見てから、この一言を送ります。'
-                        : '材料はいりません。この一言をそのまま送ります。'}
+                  {materialGuide.promptLead}
                 </p>
               </div>
               <button

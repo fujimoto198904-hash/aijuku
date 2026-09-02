@@ -11,6 +11,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { getTextbookMaterialGuide } from '../lib/textbook-material-guide';
 import { allChapters } from '../lib/textbook-lessons/all';
 import { chapterLoaderKeys } from '../lib/textbook-lessons/loader';
 import {
@@ -308,6 +309,24 @@ for (const [lessonId, lesson] of targetLessons) {
   if (lesson.carryIn !== undefined && !lesson.carryIn.trim()) {
     fail(`${lessonId}: carryInが空文字です`);
   }
+  const materialGuide = getTextbookMaterialGuide(lesson);
+  const hasTextFiles = lesson.files.some(
+    (file) => file.startsWith('課題/') && file.endsWith('.txt'),
+  );
+  const hasFilesToAttach = lesson.files.some(
+    (file) => !(file.startsWith('課題/') && file.endsWith('.txt')),
+  );
+  if (materialGuide.summary.includes('ZIP') !== hasFilesToAttach) {
+    fail(`${lessonId}: 共通操作メモのZIP案内が実際の添付資料と一致しません`);
+  }
+  if (materialGuide.summary.includes('TXT') !== hasTextFiles) {
+    fail(`${lessonId}: 共通操作メモのTXT案内が実際の短文材料と一致しません`);
+  }
+  if (
+    materialGuide.summary.includes('前の完成物') !== Boolean(lesson.carryIn)
+  ) {
+    fail(`${lessonId}: 共通操作メモの引継ぎ案内がcarryInと一致しません`);
+  }
 
   // 完成条件
   if ('completion' in lesson && lesson.completion) {
@@ -517,21 +536,6 @@ if (!chapterFilter) {
 // サンプル10文書の生成・同期検査
 // ---------------------------------------------------------------------------
 
-const inputGuides: Record<TextbookLesson['inputMethod'], string> = {
-  paste:
-    '短いメモなので、ファイルを開いて中身を全部コピーし、入力欄へそのまま貼ります。きれいに書き直さなくて大丈夫です。ファイル自体を添付しても進められます。',
-  attach:
-    '見た目や表の形も使う資料です。必要なファイルだけを入力欄へ添付し、ファイル名が表示されたことを確かめます。文章部分だけを見てもらう場合は、その部分を貼っても構いません。',
-  mixed:
-    'TXTなどの短いメモは開いて中身を貼り、PDF・Word・Excelなど書式が大事な資料だけを添付します。全部をファイルで渡す必要はありません。',
-  none: 'この課題は、デモフォルダの材料を渡さずに始められます。入力欄へ最初の一言だけ送ります。',
-};
-
-const modeGuides: Record<TextbookLesson['recommendedMode'], string> = {
-  chat: '`Chat`の入力欄へ上の方法で材料を渡します。新しいチャットでも、続きのチャットでも構いません。',
-  work: '`Work`が表示される場合は、先に展開したデモフォルダを開き、その入力欄へ上の方法で材料を渡します。`Work`がない場合は、`Chat`へ同じように貼る・添付する方法で進め、できたファイルを自分でダウンロードします。',
-};
-
 function codeBlock(value: string) {
   return `\`\`\`text\n${value}\n\`\`\``;
 }
@@ -562,6 +566,7 @@ function renderNextPrompts(lesson: TextbookLesson) {
 }
 
 function renderMaterials(lesson: TextbookLesson) {
+  const guide = getTextbookMaterialGuide(lesson);
   const parts: string[] = [];
   if (lesson.files.length > 0) {
     parts.push('展開したデモフォルダから、次の材料を使います。');
@@ -570,8 +575,7 @@ function renderMaterials(lesson: TextbookLesson) {
   if (lesson.carryIn) {
     parts.push(`**前の課題から引き継ぐ物:** ${lesson.carryIn}`);
   }
-  parts.push(inputGuides[lesson.inputMethod]);
-  parts.push(modeGuides[lesson.recommendedMode]);
+  parts.push(`> **共通操作メモ:** ${guide.summary}。${guide.modeNote}`);
   return parts.join('\n\n');
 }
 
