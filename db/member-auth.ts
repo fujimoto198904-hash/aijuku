@@ -3,7 +3,6 @@ import { env } from 'cloudflare:workers';
 import {
   createSessionToken,
   hashPassword,
-  isPlausibleMemberEmail,
   isValidInitialPassword,
   normalizeLoginId,
   protectedIdentifierHash,
@@ -814,95 +813,6 @@ export async function createVerifiedMemberPasswordAccount(input: {
     )
     .run();
   return publicAccount(account);
-}
-
-export async function bootstrapPasswordAccount(input: {
-  loginId: string;
-  contactEmail: string | null;
-  initialPassword: string;
-  accountKind: 'member' | 'demo';
-}): Promise<{ account: MemberAuthAccount; created: boolean }> {
-  const loginId = normalizeLoginId(input.loginId);
-  if (!loginId) throw new Error('Bootstrap login ID is invalid.');
-  const contactEmail = input.contactEmail
-    ? normalizeLoginId(input.contactEmail)
-    : null;
-  if (
-    input.accountKind === 'member' &&
-    (!isPlausibleMemberEmail(loginId) ||
-      (contactEmail !== null && contactEmail !== loginId))
-  ) {
-    throw new Error('Bootstrap member email is invalid.');
-  }
-  if (
-    !isValidInitialPassword({
-      accountKind: input.accountKind,
-      password: input.initialPassword,
-    })
-  ) {
-    throw new Error('Bootstrap initial password is invalid.');
-  }
-  const existing = await getStoredAccountByLoginId(loginId);
-  if (existing) return { account: publicAccount(existing), created: false };
-  const now = Date.now();
-  const personal = input.accountKind === 'demo';
-  const account: StoredMemberAuthAccount = {
-    memberId: crypto.randomUUID(),
-    loginId,
-    contactEmail,
-    passwordDigest: await hashPassword(input.initialPassword, passwordPepper()),
-    passwordState: personal ? 'personal' : 'temporary',
-    accountKind: input.accountKind,
-    status: 'active',
-    temporaryPasswordExpiresAt: personal
-      ? null
-      : now + temporaryPasswordLifetimeMs,
-    passwordChangedAt: personal ? now : null,
-    lastLoginAt: null,
-  };
-  await getD1()
-    .prepare(
-      `
-      INSERT INTO member_auth_accounts (
-        member_id,
-        login_id,
-        contact_email,
-        password_digest,
-        password_state,
-        account_kind,
-        status,
-        temporary_password_expires_at,
-        password_changed_at,
-        last_login_at,
-        created_at,
-        updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?, NULL, ?, ?)
-    `,
-    )
-    .bind(
-      account.memberId,
-      account.loginId,
-      account.contactEmail,
-      account.passwordDigest,
-      account.passwordState,
-      account.accountKind,
-      account.temporaryPasswordExpiresAt,
-      account.passwordChangedAt,
-      now,
-      now,
-    )
-    .run();
-  return { account: publicAccount(account), created: true };
-}
-
-export async function consumeBootstrapRateLimit(
-  clientAddress: string,
-): Promise<{ allowed: boolean; retryAfterSeconds: number }> {
-  return consumeRateLimit({
-    action: 'bootstrap',
-    value: clientAddress || 'unknown',
-    limit: 5,
-  });
 }
 
 export function passwordAuthEmail(account: MemberAuthAccount): string {

@@ -6,6 +6,5 @@ export const env = {
   ADMIN_EMAILS: undefined,
   INSTRUCTOR_EMAILS: undefined,
   AUTH_PASSWORD_PEPPER: undefined,
-  AUTH_BOOTSTRAP_TOKEN: undefined,
   AUTH_OWNER_LOGIN_ID: undefined,
 } as unknown as Cloudflare.Env;

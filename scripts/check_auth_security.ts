@@ -184,6 +184,21 @@ assert.match(
 );
 assert.match(loginRouteSource, /verificationRequired/);
 
+const bootstrapRouteSource = await readFile(
+  'app/api/auth/bootstrap/route.ts',
+  'utf8',
+);
+assert.match(
+  bootstrapRouteSource,
+  /export async function POST\(\) \{\s*return noStoreJson\(\{ error: 'Not found\.' \}, \{ status: 404 \}\);\s*\}/,
+  'the retired bootstrap endpoint must unconditionally return 404',
+);
+assert.doesNotMatch(
+  bootstrapRouteSource,
+  /AUTH_BOOTSTRAP_TOKEN|member-auth|request\.json|authorization/,
+  'the retired bootstrap endpoint must not read secrets, databases, or requests',
+);
+
 const membershipRouteSource = await readFile(
   'app/api/membership/route.ts',
   'utf8',
