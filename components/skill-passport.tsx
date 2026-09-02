@@ -546,7 +546,7 @@ export function SkillPassport({
                 className="grid gap-2 text-sm font-semibold"
                 htmlFor="skill-task-search"
               >
-                730課題から探す
+                教科書の課題から探す
                 <span className="relative">
                   <Search
                     className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-quiet"

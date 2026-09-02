@@ -3,12 +3,14 @@
 import {
   BookOpenText,
   ChevronDown,
+  ExternalLink,
   Filter,
   Search,
   Sparkles,
 } from 'lucide-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 
+import Link from '@/components/site-link';
 import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
 import type {
   TextbookTrack,
@@ -18,6 +20,7 @@ import { trackDescriptions } from '@/lib/textbook-catalog';
 import { chapterKeyForTaskId } from '@/lib/textbook-lessons/registry';
 import lessonMetaJson from '@/lib/textbook-lesson-meta.generated.json';
 import { normalizeSearch } from '@/components/textbook/lesson-shared';
+import { textbookLessonPath } from '@/lib/textbook-routes';
 
 type LessonMaterial = 'paste' | 'attach' | 'mixed' | 'none';
 type LessonMode = 'chat' | 'work';
@@ -152,15 +155,13 @@ export function TaskExplorer({
   tasks,
   tracks,
   chapters,
-  selectedTask,
-  onSelect,
+  layout = 'sidebar',
   className = '',
 }: {
   tasks: ClientTextbookTask[];
   tracks: TextbookTrackSummary[];
   chapters: ChapterSummaryLite[];
-  selectedTask: ClientTextbookTask;
-  onSelect: (taskId: string) => void;
+  layout?: 'sidebar' | 'page';
   className?: string;
 }) {
   const [view, setView] = useState<'search' | 'courses'>('search');
@@ -224,23 +225,22 @@ export function TaskExplorer({
     track,
   ]);
 
-  const visibleTasks = useMemo(() => {
-    const firstTasks = filteredTasks.slice(0, visibleCount);
-    if (firstTasks.some((task) => task.id === selectedTask.id)) {
-      return firstTasks;
-    }
-
-    const selectedFilteredTask = filteredTasks.find(
-      (task) => task.id === selectedTask.id,
-    );
-    return selectedFilteredTask
-      ? [selectedFilteredTask, ...firstTasks]
-      : firstTasks;
-  }, [filteredTasks, selectedTask.id, visibleCount]);
+  const visibleTasks = useMemo(
+    () => filteredTasks.slice(0, visibleCount),
+    [filteredTasks, visibleCount],
+  );
   const activeFilterCount =
     Number(mode !== 'all') +
     Number(material !== 'all') +
     Number(minutes !== 'all');
+  const hasActiveCriteria =
+    deferredQuery.trim().length > 0 ||
+    track !== 'all' ||
+    purpose !== null ||
+    mode !== 'all' ||
+    material !== 'all' ||
+    minutes !== 'all' ||
+    courseFilter !== null;
 
   function resetPaging() {
     setVisibleCount(30);
@@ -249,22 +249,21 @@ export function TaskExplorer({
   const courseFilterChapter = courseFilter
     ? chapters.find((chapter) => chapter.key === courseFilter)
     : null;
+  const pageLayout = layout === 'page';
 
   return (
     <aside
       id="task-explorer"
       tabIndex={-1}
-      className={`border-r border-rule bg-paper-white lg:min-h-[calc(100vh-78px)] ${className}`}
+      className={`${pageLayout ? 'soft-card overflow-hidden border border-rule bg-paper-white' : 'border-r border-rule bg-paper-white lg:min-h-[calc(100vh-78px)]'} ${className}`}
       aria-labelledby="task-explorer-heading"
     >
       <div className="border-b border-rule p-5 sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 id="task-explorer-heading" className="font-mincho text-2xl">
-            今日作る一個を選ぶ
+            学びたいことを探す
           </h2>
-          <span className="numeric-text text-sm text-quiet">
-            {tasks.length}
-          </span>
+          <span className="text-xs text-quiet">検索・絞り込み</span>
         </div>
 
         <fieldset className="mt-5 grid grid-cols-2 gap-2 border-0 p-0">
@@ -285,7 +284,7 @@ export function TaskExplorer({
             onClick={() => setView('courses')}
           >
             <BookOpenText className="mr-2 inline size-3.5" aria-hidden="true" />
-            73章から
+            コースから
           </button>
         </fieldset>
 
@@ -296,6 +295,7 @@ export function TaskExplorer({
               <span className="soft-control flex min-h-12 items-center gap-3 border border-rule bg-white px-4 shadow-[0_8px_24px_rgba(16,42,54,0.055)] focus-within:border-rust">
                 <Search className="size-4 text-quiet" aria-hidden="true" />
                 <input
+                  id="task-search"
                   className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-quiet"
                   type="search"
                   value={query}
@@ -366,7 +366,7 @@ export function TaskExplorer({
                         resetPaging();
                       }}
                     >
-                      すべて見る（{tasks.length}）
+                      すべて見る
                     </button>
                     {tracks.map((item) => (
                       <button
@@ -379,7 +379,7 @@ export function TaskExplorer({
                           resetPaging();
                         }}
                       >
-                        {item.label}（{item.count}）
+                        {item.label}
                       </button>
                     ))}
                   </div>
@@ -496,85 +496,91 @@ export function TaskExplorer({
               </p>
             ) : null}
 
-            <p className="mt-4 text-xs text-quiet" aria-live="polite">
-              {filteredTasks.length}個あります
-            </p>
+            {hasActiveCriteria ? (
+              <p className="mt-4 text-xs text-quiet" aria-live="polite">
+                検索結果：{filteredTasks.length}件
+              </p>
+            ) : null}
           </>
         ) : (
           <p className="mt-4 text-xs leading-6 text-quiet">
-            73章は、10課題で一つの旗艦作品を育てるコースです。章を選ぶと最初の課題から始められます。
+            仕事や作りたい物に近いコースを選ぶと、その中の課題だけに絞って見られます。
           </p>
         )}
       </div>
 
       {view === 'search' ? (
         <>
-          <div className="lg:max-h-[calc(100vh-430px)] lg:overflow-y-auto">
+          <div
+            id="task-explorer-results"
+            className={
+              pageLayout
+                ? ''
+                : 'lg:max-h-[calc(100vh-430px)] lg:overflow-y-auto'
+            }
+          >
             {visibleTasks.length > 0 ? (
-              <ol>
+              <ol
+                className={
+                  pageLayout ? 'grid md:grid-cols-2 xl:grid-cols-3' : ''
+                }
+              >
                 {visibleTasks.map((task) => {
-                  const selected = task.id === selectedTask.id;
                   const meta = lessonMeta[task.id];
                   return (
-                    <li key={task.id} className="border-b border-rule">
-                      <button
-                        type="button"
-                        onClick={() => onSelect(task.id)}
-                        aria-current={selected ? 'page' : undefined}
-                        className={`group w-full px-5 py-4 text-left transition-colors ${selected ? 'bg-deep-green text-white' : 'hover:bg-paper'}`}
+                    <li
+                      key={task.id}
+                      className={`border-b border-rule ${pageLayout ? 'md:border-r' : ''}`}
+                    >
+                      <Link
+                        href={textbookLessonPath(task.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${task.id} ${task.title}を新しいタブで開く`}
+                        className="group block w-full px-5 py-4 text-left transition-colors hover:bg-paper"
                       >
                         <span className="flex items-center justify-between gap-3">
-                          <span
-                            className={`numeric-text text-xs font-semibold ${selected ? 'text-white/70' : 'text-rust'}`}
-                          >
+                          <span className="numeric-text text-xs font-semibold text-rust">
                             {task.id}
                           </span>
-                          <span
-                            className={`text-xs ${selected ? 'text-white/70' : 'text-quiet'}`}
-                          >
-                            {task.trackLabel}
+                          <span className="flex items-center gap-1.5 text-xs text-quiet">
+                            新しいタブで読む
+                            <ExternalLink
+                              className="size-3"
+                              aria-hidden="true"
+                            />
                           </span>
                         </span>
                         <span className="mt-2 block text-sm font-semibold leading-6">
                           {task.title}
                         </span>
-                        <span
-                          className={`mt-1.5 line-clamp-2 block text-xs leading-5 ${selected ? 'text-white/80' : 'text-ink/80'}`}
-                        >
+                        <span className="mt-1.5 line-clamp-2 block text-xs leading-5 text-ink/80">
                           <span className="font-semibold">
                             できあがるもの：
                           </span>
                           {task.outcome}
                         </span>
-                        <span
-                          className={`mt-1.5 block text-xs leading-5 ${selected ? 'text-white/70' : 'text-quiet'}`}
-                        >
-                          {task.courseTitle}
+                        <span className="mt-1.5 block text-xs leading-5 text-quiet">
+                          {task.trackLabel} / {task.courseTitle}
                         </span>
                         <span className="mt-2 flex flex-wrap gap-1.5">
                           {typeof meta?.[2] === 'number' ? (
-                            <span
-                              className={`soft-badge border px-2 py-1 text-xs ${selected ? 'border-white/30 text-white/85' : 'border-rule text-quiet'}`}
-                            >
+                            <span className="soft-badge border border-rule px-2 py-1 text-xs text-quiet">
                               時間：〜{meta[2]}分
                             </span>
                           ) : null}
                           {meta?.[0] ? (
-                            <span
-                              className={`soft-badge border px-2 py-1 text-xs ${selected ? 'border-white/30 text-white/85' : 'border-rule text-quiet'}`}
-                            >
+                            <span className="soft-badge border border-rule px-2 py-1 text-xs text-quiet">
                               材料：{materialFilterLabels[meta[0]]}
                             </span>
                           ) : null}
-                          <span
-                            className={`soft-badge border px-2 py-1 text-xs font-semibold ${selected ? 'border-white/30 text-white' : task.hasLessonDraft ? 'border-sapphire/30 text-sapphire' : 'border-rule text-quiet'}`}
-                          >
+                          <span className="soft-badge border border-sapphire/30 px-2 py-1 text-xs font-semibold text-sapphire">
                             {task.hasLessonDraft
-                              ? '詳しい本文あり'
-                              : '本文準備中'}
+                              ? '詳しい手順を読む'
+                              : '概要を見る'}
                           </span>
                         </span>
-                      </button>
+                      </Link>
                     </li>
                   );
                 })}
@@ -596,17 +602,21 @@ export function TaskExplorer({
                 className="soft-control min-h-11 w-full border border-deep-green px-4 text-sm font-semibold text-deep-green hover:bg-deep-green hover:text-white"
                 onClick={() => setVisibleCount((count) => count + 30)}
               >
-                次の30件を表示（残り{filteredTasks.length - visibleCount}件）
+                次の30件を表示
               </button>
             </div>
           ) : null}
         </>
       ) : (
-        <div className="lg:max-h-[calc(100vh-330px)] lg:overflow-y-auto">
+        <div
+          className={
+            pageLayout ? '' : 'lg:max-h-[calc(100vh-330px)] lg:overflow-y-auto'
+          }
+        >
           {tracks.map((trackSummary) => (
             <section key={trackSummary.id} className="border-b border-rule">
               <h3 className="bg-paper px-5 py-3 text-xs font-semibold tracking-[0.1em] text-quiet">
-                {trackSummary.label}（{trackSummary.count}課題）
+                {trackSummary.label}
               </h3>
               <ol>
                 {chapters
@@ -615,6 +625,7 @@ export function TaskExplorer({
                     <li key={chapter.key} className="border-t border-rule">
                       <button
                         type="button"
+                        aria-controls="task-explorer-results"
                         className="group w-full px-5 py-4 text-left hover:bg-paper"
                         onClick={() => {
                           setView('search');
@@ -622,7 +633,9 @@ export function TaskExplorer({
                           setPurpose(null);
                           setTrack('all');
                           resetPaging();
-                          onSelect(chapter.firstTaskId);
+                          window.requestAnimationFrame(() => {
+                            document.getElementById('task-search')?.focus();
+                          });
                         }}
                       >
                         <span className="block text-sm font-semibold leading-6">

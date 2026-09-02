@@ -19,7 +19,6 @@ import {
   type DemoIndustry,
 } from '@/lib/demo-data-catalog';
 import { withSiteBasePath } from '@/lib/site-paths';
-import { textbookCatalog } from '@/lib/textbook-catalog';
 import { DemoDownloadLink } from '@/components/textbook/demo-download-link';
 
 const industryDetails: Record<
@@ -169,8 +168,7 @@ export function DemoDataLibrary() {
               このサイトを教科書に、今日からAIを学び始められます。
             </p>
             <p className="mt-3 text-sm leading-7 text-quiet">
-              全{textbookCatalog.stats.lessonDrafts}
-              課題に詳しい手順があり、資料を自分で用意しなくても大丈夫です。
+              公開中のすべての課題に詳しい手順があり、資料を自分で用意しなくても大丈夫です。
               顧客、社員、取引先、売上、仕入、経理、電話、会議まで入っています。好きな業種を一つダウンロードすれば、以後の課題は同じ会社の続きとして進みます。
             </p>
           </div>

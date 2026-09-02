@@ -1,15 +1,16 @@
-import { BrandMark } from "@/components/brand-mark";
-import { MobileSiteNav } from "@/components/mobile-site-nav";
-import Link from "@/components/site-link";
+import { BrandMark } from '@/components/brand-mark';
+import { MobileSiteNav } from '@/components/mobile-site-nav';
+import Link from '@/components/site-link';
+import { textbookGuidePath } from '@/lib/textbook-routes';
 
 const navItems = [
-  { href: "/#philosophy", label: "理念" },
-  { href: "/#goals", label: "学んだ先" },
-  { href: "/#curriculum", label: "カリキュラム" },
-  { href: "/textbook", label: "Web教科書" },
-  { href: "/textbook#demo-data", label: "練習データ" },
-  { href: "/#services", label: "受講方法" },
-  { href: "/#faq", label: "よくある質問" },
+  { href: '/#philosophy', label: '理念' },
+  { href: '/#goals', label: '学んだ先' },
+  { href: '/#curriculum', label: 'カリキュラム' },
+  { href: textbookGuidePath, label: 'Web教科書' },
+  { href: `${textbookGuidePath}#demo-data`, label: '練習データ' },
+  { href: '/#services', label: '受講方法' },
+  { href: '/#faq', label: 'よくある質問' },
 ] as const;
 
 export function SiteHeader() {

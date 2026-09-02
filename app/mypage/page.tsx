@@ -41,6 +41,7 @@ import {
 } from '@/lib/member-service-plans';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 import { textbookCatalog } from '@/lib/textbook-catalog';
+import { textbookExplorePath, textbookGuidePath } from '@/lib/textbook-routes';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,7 +107,7 @@ export default async function MyPage() {
       ? {
           title: '最初の課題を一つ選ぶ',
           body: 'Web教科書から今の仕事や暮らしに近い課題を一つ選び、完成物を作ってみましょう。',
-          href: '/textbook',
+          href: textbookExplorePath,
           label: 'Web教科書から選ぶ',
         }
       : {
@@ -161,7 +162,7 @@ export default async function MyPage() {
             </a>
             <Link
               className="border-b border-white/10 py-4 text-white/60 hover:text-white"
-              href="/textbook"
+              href={textbookGuidePath}
             >
               Web教科書
             </Link>
@@ -211,7 +212,7 @@ export default async function MyPage() {
               <div className="flex items-center gap-2">
                 <Link
                   className="soft-control border border-rule px-3 py-2 text-xs font-semibold hover:border-sapphire hover:text-sapphire"
-                  href="/textbook"
+                  href={textbookGuidePath}
                 >
                   Web教科書
                 </Link>
@@ -272,9 +273,9 @@ export default async function MyPage() {
                   <p className="mt-4 text-[11px] text-quiet">Web教科書</p>
                   <Link
                     className="mt-2 inline-flex items-center gap-2 font-semibold text-sapphire"
-                    href="/textbook"
+                    href={textbookExplorePath}
                   >
-                    730課題から探す{' '}
+                    学びたいことから探す{' '}
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
                 </div>

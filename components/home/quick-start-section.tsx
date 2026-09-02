@@ -2,6 +2,7 @@ import { ArrowRight, ClipboardList, ShieldCheck } from 'lucide-react';
 
 import Link from '@/components/site-link';
 import { PromptCopyButton } from '@/components/home/prompt-copy-button';
+import { textbookLessonPath } from '@/lib/textbook-routes';
 
 const prompt = `下の「届いたメール」を読んで、返信文の草案を作って。
 - 相手の質問へ順番に答える
@@ -106,9 +107,11 @@ export function QuickStartSection() {
             </p>
             <Link
               className="button-glow group inline-flex min-h-11 shrink-0 items-center justify-center gap-3 px-5 text-xs font-semibold text-white"
-              href="/textbook?task=Lv.05"
+              href={textbookLessonPath('Lv.05')}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              この教材を開く
+              この教材を新しいタブで開く
               <ArrowRight
                 aria-hidden="true"
                 className="size-4 transition-transform group-hover:translate-x-1"

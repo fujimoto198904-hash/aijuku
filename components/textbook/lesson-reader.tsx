@@ -25,6 +25,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from '@/components/site-link';
 import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
 import type { TextbookLesson } from '@/lib/textbook-lessons/types';
+import { textbookExplorePath, textbookLessonPath } from '@/lib/textbook-routes';
 import { MaterialPreview } from '@/components/textbook/material-preview';
 import {
   humanFileName,
@@ -62,7 +63,6 @@ type LessonReaderProps = {
   stepUpTargetTask?: ClientTextbookTask;
   formalNextTask?: ClientTextbookTask;
   previousTask?: ClientTextbookTask;
-  onSelectTask: (taskId: string) => void;
 };
 
 export function LessonReader({
@@ -71,7 +71,6 @@ export function LessonReader({
   stepUpTargetTask,
   formalNextTask,
   previousTask,
-  onSelectTask,
 }: LessonReaderProps) {
   const taskMistakes = lesson.mistakes;
   const completionGroups = lesson.completionGroups ?? [
@@ -178,18 +177,17 @@ export function LessonReader({
     setCurrentSection(bounded);
     if (focusIndex !== null) {
       setFocusIndex(bounded);
-      articleRef.current?.querySelector('#lesson-body')?.scrollIntoView({
-        behavior: preferredScrollBehavior(),
-        block: 'start',
-      });
-      return;
     }
-    articleRef.current
-      ?.querySelector(`#${lessonSections[bounded].id}`)
-      ?.scrollIntoView({
+    window.requestAnimationFrame(() => {
+      const target = articleRef.current?.querySelector<HTMLElement>(
+        `#${lessonSections[bounded].id}`,
+      );
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView({
         behavior: preferredScrollBehavior(),
         block: 'start',
       });
+    });
   }
 
   const inputGuide = inputGuides[lesson.inputMethod];
@@ -288,13 +286,13 @@ export function LessonReader({
             {startBadge}
           </span>
         </div>
-        <h2
+        <h1
           id="lesson-title"
           tabIndex={-1}
           className="text-soft-glow mt-6 max-w-4xl font-mincho text-[clamp(2rem,4.6vw,4.4rem)] font-medium leading-[1.18] tracking-[-0.04em] outline-none"
         >
           {task.title}
-        </h2>
+        </h1>
 
         <div className="soft-panel soft-panel-clip mt-8 grid border border-rule bg-paper-white px-6 sm:grid-cols-3">
           <div className="border-b border-rule py-5 sm:border-b-0 sm:border-r sm:pr-6">
@@ -325,6 +323,7 @@ export function LessonReader({
               <button
                 key={section.id}
                 type="button"
+                aria-controls={section.id}
                 className="flex min-h-9 items-center gap-3 text-left text-xs text-quiet hover:text-rust"
                 onClick={() => goToSection(index)}
               >
@@ -373,6 +372,7 @@ export function LessonReader({
 
           <section
             id="goal"
+            tabIndex={-1}
             hidden={!sectionVisible[0]}
             className="scroll-mt-24 border-t-2 border-deep-green pt-7"
           >
@@ -410,6 +410,7 @@ export function LessonReader({
 
           <section
             id="start"
+            tabIndex={-1}
             hidden={!sectionVisible[1]}
             className="mt-16 scroll-mt-24 border-t border-rule pt-7"
           >
@@ -505,6 +506,7 @@ export function LessonReader({
 
           <section
             id="prompt"
+            tabIndex={-1}
             hidden={!sectionVisible[2]}
             className="mt-16 scroll-mt-24 border-t border-rule pt-7"
           >
@@ -550,6 +552,7 @@ export function LessonReader({
 
           <section
             id="compare"
+            tabIndex={-1}
             hidden={!sectionVisible[3]}
             className="mt-16 scroll-mt-24 border-t border-rule pt-7"
           >
@@ -664,6 +667,7 @@ export function LessonReader({
 
           <section
             id="improve"
+            tabIndex={-1}
             hidden={!sectionVisible[4]}
             className="mt-16 scroll-mt-24 border-t border-rule pt-7"
           >
@@ -690,6 +694,7 @@ export function LessonReader({
 
           <section
             id="check"
+            tabIndex={-1}
             hidden={!sectionVisible[5]}
             className="mt-16 scroll-mt-24 border-t border-rule pt-7"
           >
@@ -752,6 +757,7 @@ export function LessonReader({
 
           <section
             id="complete"
+            tabIndex={-1}
             hidden={!sectionVisible[6]}
             className="mt-16 scroll-mt-24 border-t border-rule pt-7"
           >
@@ -820,6 +826,7 @@ export function LessonReader({
 
           <section
             id="application"
+            tabIndex={-1}
             hidden={!sectionVisible[7]}
             className="mt-16 scroll-mt-24 border-t border-rule pt-7"
           >
@@ -841,6 +848,7 @@ export function LessonReader({
 
           <section
             id="ask"
+            tabIndex={-1}
             hidden={!sectionVisible[8]}
             className="mt-16 scroll-mt-24 border-t-2 border-deep-green pt-7"
           >
@@ -902,6 +910,7 @@ export function LessonReader({
 
           <section
             id="stepup"
+            tabIndex={-1}
             hidden={!sectionVisible[9]}
             className="mt-16 scroll-mt-24 border-t-2 border-sapphire pt-7"
           >
@@ -996,14 +1005,13 @@ export function LessonReader({
                     {stepUpCopyStatus}
                   </p>
                   {stepUpTargetTask ? (
-                    <button
-                      type="button"
+                    <Link
+                      href={textbookLessonPath(stepUpTargetTask.id)}
                       className="soft-control mt-2 inline-flex min-h-11 items-center gap-2 border border-sapphire px-4 text-xs font-semibold text-sapphire hover:bg-sapphire hover:text-white"
-                      onClick={() => onSelectTask(stepUpTargetTask.id)}
                     >
                       詳しい手順を開く
                       <ArrowRight className="size-3.5" aria-hidden="true" />
-                    </button>
+                    </Link>
                   ) : null}
                   <a
                     className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-quiet hover:text-sapphire"
@@ -1019,10 +1027,9 @@ export function LessonReader({
 
           <div className="mt-16 grid gap-3 border-t border-rule pt-7 sm:grid-cols-2">
             {previousTask ? (
-              <button
-                type="button"
+              <Link
+                href={textbookLessonPath(previousTask.id)}
                 className="soft-control flex min-h-14 min-w-0 items-center justify-between gap-3 overflow-hidden border border-rule bg-paper-white px-5 py-3 text-left hover:border-sapphire"
-                onClick={() => onSelectTask(previousTask.id)}
               >
                 <span className="flex shrink-0 items-center gap-2 text-xs text-quiet">
                   <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
@@ -1031,15 +1038,14 @@ export function LessonReader({
                 <span className="min-w-0 truncate text-xs font-semibold">
                   {previousTask.id} {previousTask.title}
                 </span>
-              </button>
+              </Link>
             ) : (
               <span aria-hidden="true" />
             )}
             {formalNextTask ? (
-              <button
-                type="button"
+              <Link
+                href={textbookLessonPath(formalNextTask.id)}
                 className="soft-control flex min-h-14 min-w-0 items-center justify-between gap-3 overflow-hidden border border-deep-green bg-paper-white px-5 py-3 text-left hover:bg-deep-green hover:text-white"
-                onClick={() => onSelectTask(formalNextTask.id)}
               >
                 <span className="min-w-0 truncate text-xs font-semibold">
                   {formalNextTask.id} {formalNextTask.title}
@@ -1048,7 +1054,7 @@ export function LessonReader({
                   次の課題
                   <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
                 </span>
-              </button>
+              </Link>
             ) : null}
           </div>
         </div>
@@ -1063,6 +1069,7 @@ export function LessonReader({
                 <button
                   key={section.id}
                   type="button"
+                  aria-controls={section.id}
                   className={`group flex min-h-9 items-center gap-3 text-left text-xs hover:text-rust ${
                     currentSection === index
                       ? 'font-semibold text-rust'
@@ -1107,6 +1114,7 @@ export function LessonReader({
                 <button
                   key={section.id}
                   type="button"
+                  aria-controls={section.id}
                   className={`flex min-h-11 w-full items-center gap-3 border-b border-rule px-5 text-left text-xs last:border-b-0 ${
                     currentSection === index
                       ? 'bg-sapphire-soft font-semibold text-sapphire'
@@ -1123,14 +1131,14 @@ export function LessonReader({
                   {section.label}
                 </button>
               ))}
-              <a
+              <Link
                 className="flex min-h-11 w-full items-center gap-3 px-5 text-xs font-semibold text-deep-green"
-                href="#task-explorer"
+                href={textbookExplorePath}
                 onClick={() => setTocOpen(false)}
               >
                 <ListOrdered className="size-4" aria-hidden="true" />
                 他の課題を選ぶ（課題一覧へ）
-              </a>
+              </Link>
             </nav>
           ) : null}
           <div className="mx-auto flex min-h-14 w-full max-w-[720px] items-stretch justify-between px-1">

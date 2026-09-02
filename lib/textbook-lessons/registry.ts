@@ -159,6 +159,22 @@ export function formalNextTaskIdFor(taskId: string): string | null {
   return `${prefix}-${String(number + 1).padStart(2, '0')}`;
 }
 
+/** コース内の直前課題ID。コース先頭ではnull。 */
+export function previousTaskIdFor(taskId: string): string | null {
+  const levelMatch = taskId.match(/^Lv\.(\d{2,3})$/);
+  if (levelMatch) {
+    const level = Number(levelMatch[1]);
+    if (level <= 1 || level > 200) return null;
+    return `Lv.${String(level - 1).padStart(2, '0')}`;
+  }
+  const prefixMatch = taskId.match(/^([A-Z]{2,5})-(\d{2})$/);
+  if (!prefixMatch) return null;
+  const [, prefix, numberText] = prefixMatch;
+  const number = Number(numberText);
+  if (!prefixTracks.has(prefix) || number <= 1 || number > 10) return null;
+  return `${prefix}-${String(number - 1).padStart(2, '0')}`;
+}
+
 /** コース終端(総仕上げ=terminal分岐)を置ける課題か。 */
 export function isCourseTerminalTaskId(taskId: string): boolean {
   return formalNextTaskIdFor(taskId) === null;

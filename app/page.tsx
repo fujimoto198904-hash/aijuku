@@ -31,6 +31,11 @@ import { memberServicePlans, sharedFees } from '@/lib/member-service-plans';
 import { canonicalPublicPath } from '@/lib/site-paths';
 import { faqItems } from '@/lib/site-content';
 import { textbookCatalog } from '@/lib/textbook-catalog';
+import {
+  textbookExplorePath,
+  textbookGuidePath,
+  textbookLessonPath,
+} from '@/lib/textbook-routes';
 import heroFutureImage from '@/sozai/kazoku-sougen.jpg';
 import onlineImage from '@/sozai/zaitaku-pc.jpg';
 
@@ -103,7 +108,7 @@ const featuredTextbookSample = {
   body: '殴り書きの商談メモを、お礼メール、担当と期限つきのToDo、次回予定候補へ。一つの記録から、確認すべきことまでまとめます。',
   input: '商談後の雑なメモ',
   outputs: ['お礼メール', '担当別ToDo', '次回予定候補'],
-  href: '/textbook?task=SLS-05',
+  href: textbookLessonPath('SLS-05'),
   Icon: CalendarCheck2,
 } as const;
 
@@ -114,7 +119,7 @@ const textbookSampleCards = [
     body: '合計・税・印刷まで整え、あとから自分で直せる見積書を作ります。',
     deliverable: '見積書.xlsx／商品マスター／計算照合表',
     note: '発行前に、金額・税・宛先を人が確認',
-    href: '/textbook?task=XLS-03',
+    href: textbookLessonPath('XLS-03'),
     Icon: FileSpreadsheet,
   },
   {
@@ -123,7 +128,7 @@ const textbookSampleCards = [
     body: 'サービス、料金、FAQ、相談への入口を整理し、お客様が迷わない画面にします。',
     deliverable: 'スマホ対応の会社ホームページ',
     note: 'まず手元で確認。公開は内容確認後の別工程',
-    href: '/textbook?task=Lv.80',
+    href: textbookLessonPath('Lv.80'),
     Icon: Smartphone,
   },
   {
@@ -132,7 +137,7 @@ const textbookSampleCards = [
     body: '課題、解決策、効果、お願いを、あとから編集できる資料へまとめます。',
     deliverable: '編集できるPowerPoint／3分説明原稿',
     note: '開いて文字を直し、保存できる所まで確認',
-    href: '/textbook?task=SLD-03',
+    href: textbookLessonPath('SLD-03'),
     Icon: Presentation,
   },
   {
@@ -141,7 +146,7 @@ const textbookSampleCards = [
     body: '一つの企画から、横長・縦長・文字入り・文字なしを作り、発信の見た目をそろえます。',
     deliverable: '主画像4版／レイアウト指示／修正履歴',
     note: '文字・権利・不自然な箇所を人が確認',
-    href: '/textbook?task=IMG-03',
+    href: textbookLessonPath('IMG-03'),
     Icon: Images,
   },
   {
@@ -150,7 +155,7 @@ const textbookSampleCards = [
     body: '登録、保存、編集、完了、削除まで動く、小さなルーティン管理アプリを作ります。',
     deliverable: 'スマホで使えるローカル保存アプリ',
     note: '全ボタンと、閉じた後の保存まで試す',
-    href: '/textbook?task=APP-04',
+    href: textbookLessonPath('APP-04'),
     Icon: AppWindow,
   },
 ] as const;
@@ -197,7 +202,7 @@ export default function Home() {
 
                 <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                   <Link
-                    href="/textbook"
+                    href={textbookGuidePath}
                     className="button-glow group inline-flex min-h-14 items-center justify-between gap-8 px-6 text-sm font-semibold text-white"
                   >
                     WEB教科書で学ぶ（無料）
@@ -394,7 +399,7 @@ export default function Home() {
             </p>
             <Link
               className="soft-outline-button mt-8 inline-flex min-h-12 items-center gap-6 border border-white/35 px-5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-brand-dark"
-              href="/textbook"
+              href={textbookExplorePath}
             >
               作りたいものから教材を探す
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -491,9 +496,11 @@ export default function Home() {
                       </p>
                       <Link
                         href={featuredTextbookSample.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="button-glow group inline-flex min-h-11 shrink-0 items-center justify-center gap-3 px-5 text-xs font-semibold text-white"
                       >
-                        この教材を開く
+                        この教材を新しいタブで開く
                         <ArrowRight
                           className="size-4 transition-transform group-hover:translate-x-1"
                           aria-hidden="true"
@@ -508,6 +515,9 @@ export default function Home() {
                     <Link
                       key={sample.href}
                       href={sample.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${sample.title}（新しいタブで開く）`}
                       className="group flex min-h-[310px] flex-col p-7 transition-colors hover:bg-paper sm:p-8"
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -547,6 +557,9 @@ export default function Home() {
                   <Link
                     key={sample.href}
                     href={sample.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${sample.title}（新しいタブで開く）`}
                     className="group flex min-h-[360px] flex-col p-7 transition-colors hover:bg-paper sm:p-8"
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -597,7 +610,7 @@ export default function Home() {
                 各章は、前の課題の完成品を育てて一つの成果物へ届く構成です。正式な修了条件・修了証は別途案内します。
               </p>
               <Link
-                href="/textbook"
+                href={textbookExplorePath}
                 className="soft-outline-button group inline-flex min-h-11 shrink-0 items-center justify-center gap-3 border border-white/35 px-5 text-xs font-semibold text-white transition-colors hover:border-white hover:bg-white hover:text-brand-dark"
               >
                 教材テーマを見る
@@ -846,7 +859,7 @@ export default function Home() {
 
             <div className="flex w-full flex-col gap-3 sm:min-w-[280px] lg:w-auto">
               <Link
-                href="/textbook"
+                href={textbookGuidePath}
                 className="button-glow group inline-flex min-h-14 items-center justify-between px-6 text-sm font-semibold text-white"
               >
                 0円で教科書を始める
