@@ -1,9 +1,4 @@
-import {
-  ArrowRight,
-  CheckCircle2,
-  ClipboardList,
-  ShieldCheck,
-} from 'lucide-react';
+import { ArrowRight, ClipboardList, ShieldCheck } from 'lucide-react';
 
 import Link from '@/components/site-link';
 import { PromptCopyButton } from '@/components/home/prompt-copy-button';
@@ -94,14 +89,13 @@ export function QuickStartSection() {
                 className="soft-control flex items-start gap-3 border border-rule bg-paper p-4 leading-6"
                 key={step}
               >
-                <CheckCircle2
+                <span
                   aria-hidden="true"
-                  className="mt-0.5 size-4 shrink-0 text-[#2d746f]"
-                />
-                <span>
-                  <span className="sr-only">手順{index + 1}：</span>
-                  {step}
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-sapphire text-[11px] font-bold leading-none text-white"
+                >
+                  {index + 1}
                 </span>
+                <span>{step}</span>
               </li>
             ))}
           </ol>
