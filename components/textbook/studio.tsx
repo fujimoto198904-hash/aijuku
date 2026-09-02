@@ -455,8 +455,8 @@ export function TextbookStudio({
       <div className="mx-auto grid w-full max-w-[1440px] gap-4 sm:grid-cols-3">
         {[
           {
-            title: '順番は気にしない',
-            body: '作ってみたい完成物から選んで大丈夫です。',
+            title: 'どこからでもOK',
+            body: '最初から一段ずつでも、作りたいもの・学びたい領域からでも大丈夫です。',
           },
           {
             title: '雑な一言でOK',
