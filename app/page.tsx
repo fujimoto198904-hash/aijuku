@@ -339,24 +339,24 @@ export default function Home() {
               <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
                 <div className="border-b border-white/20 p-7 sm:p-10 lg:border-b-0 lg:border-r lg:p-12">
                   <p className="text-xs font-semibold tracking-[0.14em] text-future-mint">
-                    全体を支える運用 / LEARNING SYSTEM
+                    学びをつなげる / KEEP BUILDING
                   </p>
                   <p className="mt-5 font-mincho text-2xl leading-9">
-                    保存場所・会話・版・証拠・費用・引き継ぎ
+                    学んだ分だけ、作品が育っていく。
                   </p>
                   <p className="mt-4 text-sm leading-7 text-white/55">
-                    作ったものを毎回白紙へ戻さず、講師や教材が変わっても続きから進めるための共通ルールです。
+                    前回つくった文章や資料を持ち帰り、次はそこへ新しい工夫を一つ足します。講師が変わっても、続きから進めます。
                   </p>
                 </div>
                 <div className="p-7 sm:p-10 lg:p-12">
                   <p className="text-xs font-semibold tracking-[0.14em] text-white/65">
-                    たとえば、美容室の予約サイトなら
+                    たとえば、お店の予約サイトなら
                   </p>
                   <p className="mt-5 font-mincho text-2xl leading-10 sm:text-3xl sm:leading-[1.55]">
-                    「業界ごとの実践」から美容を選び、「AIを使う技術」からWebと受付を加え、見た目を磨く時だけ「作品づくり」を使います。
+                    まず予約できるページをつくり、次に写真や文章を整え、必要になったら便利な機能を一つ足します。
                   </p>
                   <p className="mt-5 text-sm leading-7 text-white/55">
-                    三つのサイトを作るのではなく、一つのサイトを完成させます。
+                    毎回ゼロから作り直さず、自分のお店で本当に使えるサイトへ育てます。
                   </p>
                 </div>
               </div>
