@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { Check, Copy } from "lucide-react";
-import { useState } from "react";
+import { Check, Copy } from 'lucide-react';
+import { useState } from 'react';
 
 export function PromptCopyButton({ prompt }: { prompt: string }) {
-  const [status, setStatus] = useState<"idle" | "copied" | "error">("idle");
+  const [status, setStatus] = useState<'idle' | 'copied' | 'error'>('idle');
 
   async function copyPrompt() {
     try {
       await navigator.clipboard.writeText(prompt);
-      setStatus("copied");
-      window.setTimeout(() => setStatus("idle"), 2400);
+      setStatus('copied');
+      window.setTimeout(() => setStatus('idle'), 2400);
     } catch {
-      setStatus("error");
+      setStatus('error');
     }
   }
 
   const label =
-    status === "copied"
-      ? "コピーしました"
-      : status === "error"
-        ? "コピーできませんでした"
-        : "頼み方をコピー";
+    status === 'copied'
+      ? 'コピーしました'
+      : status === 'error'
+        ? 'コピーできませんでした'
+        : 'プロンプトをコピー';
 
   return (
     <div className="flex flex-col items-start gap-2 sm:items-end">
@@ -30,15 +30,18 @@ export function PromptCopyButton({ prompt }: { prompt: string }) {
         onClick={copyPrompt}
         type="button"
       >
-        {status === "copied" ? (
+        {status === 'copied' ? (
           <Check aria-hidden="true" className="size-4 text-success" />
         ) : (
           <Copy aria-hidden="true" className="size-4" />
         )}
         {label}
       </button>
+      <span className="text-[11px] leading-5 text-quiet">
+        ChatGPTにそのまま貼る指示文
+      </span>
       <span aria-live="polite" className="sr-only">
-        {status === "idle" ? "" : label}
+        {status === 'idle' ? '' : label}
       </span>
     </div>
   );
