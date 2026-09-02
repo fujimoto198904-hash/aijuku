@@ -222,8 +222,6 @@ async function main() {
     dataBuilder,
     documentBuilder,
     directory,
-    lessonMaterials,
-    publicLessonMaterials,
   ] = await Promise.all([
     fs.readFile(path.join(PUBLIC_ROOT, 'catalog.json'), 'utf8'),
     fs.readFile(
@@ -237,22 +235,12 @@ async function main() {
       'utf8',
     ),
     fs.readdir(PUBLIC_ROOT, { withFileTypes: true }),
-    fs.readFile(
-      path.join(REPO_ROOT, 'lib', 'demo-task-materials.generated.json'),
-    ),
-    fs.readFile(path.join(PUBLIC_ROOT, 'task-materials.generated.json')),
   ]);
 
   assertEqual(
     generatedCatalogText,
     catalogText,
     'generated app catalog matches public catalog',
-  );
-
-  assertEqual(
-    publicLessonMaterials.equals(lessonMaterials),
-    true,
-    'public task materials match generated lesson materials',
   );
 
   const catalog = JSON.parse(catalogText);

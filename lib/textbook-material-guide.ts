@@ -59,8 +59,8 @@ export function getTextbookMaterialGuide(
     steps.push('TXTはこのページで中身をコピーし、入力欄へ貼る');
   }
   if (hasFilesToAttach) {
-    summaryParts.push('資料はZIPから添付');
-    steps.push('ZIPを展開し、上で指定された資料だけを添付する');
+    summaryParts.push('資料はこのページから取得');
+    steps.push('上の一覧から指定された資料だけを取得し、入力欄へ添付する');
   }
   steps.push('材料がそろったら「まずこう言ってみる」を送る');
 
@@ -80,10 +80,10 @@ export function getTextbookMaterialGuide(
       : hasCarryIn
         ? '上に書かれた前の完成物と今回の材料をそろえてから、この一言を送ります。'
         : hasTextFiles && hasFilesToAttach
-          ? 'TXTを貼り、指定資料の添付名を確認してから、この一言を送ります。'
+          ? 'TXTを貼り、このページから取得した指定資料を添付してから、この一言を送ります。'
           : hasTextFiles
             ? 'TXTの中身を貼り、その下にこの一言を続けます。'
-            : '指定資料の添付名を確認してから、この一言を送ります。';
+            : 'このページから取得した指定資料を添付してから、この一言を送ります。';
 
   return {
     badge,

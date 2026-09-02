@@ -29,6 +29,7 @@ import { TextbookAccessBadges } from '@/components/textbook/access-badges';
 import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
 import type { TextbookLesson } from '@/lib/textbook-lessons/types';
 import { getTextbookAccessProfile } from '@/lib/textbook-access';
+import type { TaskDemoDownloadPlan } from '@/lib/textbook-demo-industry';
 import { getTextbookMaterialGuide } from '@/lib/textbook-material-guide';
 import {
   textbookExplorePath,
@@ -69,6 +70,7 @@ type LessonReaderProps = {
   stepUpTargetTask?: ClientTextbookTask;
   formalNextTask?: ClientTextbookTask;
   previousTask?: ClientTextbookTask;
+  downloadPlan: TaskDemoDownloadPlan;
 };
 
 export function LessonReader({
@@ -77,6 +79,7 @@ export function LessonReader({
   stepUpTargetTask,
   formalNextTask,
   previousTask,
+  downloadPlan,
 }: LessonReaderProps) {
   const taskMistakes = lesson.mistakes;
   const completionGroups = lesson.completionGroups ?? [
@@ -452,14 +455,6 @@ export function LessonReader({
                   </div>
                   <h4 className="mt-6 font-mincho text-2xl">今回使う材料</h4>
                   <div className="mt-4 grid gap-3">
-                    {lesson.files.map((file) => (
-                      <p
-                        key={file}
-                        className="break-words text-sm font-semibold leading-7"
-                      >
-                        {humanFileName(file)}
-                      </p>
-                    ))}
                     {lesson.carryIn ? (
                       <p className="break-words border-l-2 border-success/40 pl-3 text-sm font-semibold leading-7">
                         {lesson.carryIn}
@@ -473,10 +468,10 @@ export function LessonReader({
                   </div>
                   {lesson.files.length > 0 ? (
                     <p className="mt-5 border-t border-rule pt-4 text-xs leading-6 text-quiet">
-                      ファイル名は探す場所の案内です。正確に入力できることは、完成条件に含めません。
+                      必要なファイルは下から直接取得できます。自分で業種や保存場所を探す必要はありません。
                     </p>
                   ) : null}
-                  <MaterialPreview key={task.id} files={lesson.files} />
+                  <MaterialPreview key={task.id} downloadPlan={downloadPlan} />
                 </div>
                 <details className="soft-control group mt-4 border border-rule bg-paper-white px-4 py-1.5">
                   <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 text-xs [&::-webkit-details-marker]:hidden">

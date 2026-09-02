@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { getTextbookMaterialGuide } from '../lib/textbook-material-guide';
+import { getTaskDemoDownloadPlan } from '../lib/textbook-demo-download-plan';
 import { allChapters } from '../lib/textbook-lessons/all';
 import { chapterLoaderKeys } from '../lib/textbook-lessons/loader';
 import {
@@ -297,6 +298,23 @@ for (const [lessonId, lesson] of targetLessons) {
       fail(`${lessonId}: 「${file}」は課題の材料にできません`);
     }
   }
+  const downloadPlan = getTaskDemoDownloadPlan(lessonId);
+  if (!downloadPlan) {
+    fail(`${lessonId}: 課題別の練習データ割当がありません`);
+  } else {
+    const plannedFiles = downloadPlan.files.map((file) => file.originalPath);
+    if (plannedFiles.join('\n') !== lesson.files.join('\n')) {
+      fail(`${lessonId}: 直接取得ファイルが教科書正本と一致しません`);
+    }
+    for (const file of downloadPlan.files) {
+      if (!/^\/[\x20-\x7e]+$/.test(file.publicUrl)) {
+        fail(`${lessonId}: 公開URLがASCIIではありません: ${file.publicUrl}`);
+      }
+      if (!file.publicUrl.endsWith(`/${file.publicFile}`)) {
+        fail(`${lessonId}: 公開URLと公開ファイル名が一致しません`);
+      }
+    }
+  }
   if (lesson.inputMethod === 'none') {
     if (lesson.files.length > 0) {
       fail(`${lessonId}: 材料不要(none)なのにfilesが指定されています`);
@@ -316,8 +334,12 @@ for (const [lessonId, lesson] of targetLessons) {
   const hasFilesToAttach = lesson.files.some(
     (file) => !(file.startsWith('課題/') && file.endsWith('.txt')),
   );
-  if (materialGuide.summary.includes('ZIP') !== hasFilesToAttach) {
-    fail(`${lessonId}: 共通操作メモのZIP案内が実際の添付資料と一致しません`);
+  if (
+    materialGuide.summary.includes('このページから取得') !== hasFilesToAttach
+  ) {
+    fail(
+      `${lessonId}: 共通操作メモの直接取得案内が実際の添付資料と一致しません`,
+    );
   }
   if (materialGuide.summary.includes('TXT') !== hasTextFiles) {
     fail(`${lessonId}: 共通操作メモのTXT案内が実際の短文材料と一致しません`);
@@ -678,13 +700,13 @@ const introduction = `# 藤本実学塾 ChatGPT実践教科書 本文サンプ�
 
 ## いちばん最初に、これだけ準備します
 
-### 1｜練習する会社を一つ選ぶ
+### 1｜開いた課題の資料だけ取得する
 
-サイトから、美容室、建設業、不動産会社のどれか一つのデモデータをダウンロードします。Windowsは右クリックして「すべて展開」、MacはZIPをダブルクリックします。中身はすべて架空で、実在する会社、人物、金額、契約ではありません。
+課題に必要な架空の練習データは、各教科書ページの「この課題で使うファイル」に並びます。自分で業種を選んだり、大きなZIPを展開したりする必要はありません。TXTはその場でコピーでき、PDF・Word・Excelなどは必要なファイルだけ1件ずつ取得できます。
 
 ### 2｜練習場所は一つ、会話は作る物ごとに分ける
 
-展開したフォルダを一つの練習場所にします。ChatGPTのプロジェクトを使える場合も、練習用を一つ作れば十分です。ただし10課題を一つの長い会話へ詰め込まず、準備・試作、制作、確認・完成など、作る物や工程が変わる所で新しいChatを開きます。次のChatへは、完成品と短い引き継ぎメモだけを渡します。
+各課題ページを練習の入り口にします。ChatGPTのプロジェクトを使える場合も、練習用を一つ作れば十分です。ただし10課題を一つの長い会話へ詰め込まず、準備・試作、制作、確認・完成など、作る物や工程が変わる所で新しいChatを開きます。次のChatへは、完成品と短い引き継ぎメモだけを渡します。
 
 ### 3｜素材は、仕事に合う方法で渡す
 

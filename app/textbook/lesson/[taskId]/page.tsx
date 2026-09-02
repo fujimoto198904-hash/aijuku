@@ -9,6 +9,7 @@ import { LessonReader } from '@/components/textbook/lesson-reader';
 import { TextbookSubnav } from '@/components/textbook/textbook-subnav';
 import { findTextbookTask } from '@/lib/textbook-catalog';
 import { toClientTask } from '@/lib/textbook-catalog-client';
+import { getTaskDemoDownloadPlan } from '@/lib/textbook-demo-download-plan';
 import { loadLesson } from '@/lib/textbook-lessons/loader';
 import {
   formalNextTaskIdFor,
@@ -58,6 +59,8 @@ export default async function TextbookLessonPage({ params }: LessonPageProps) {
 
   const lesson = await loadLesson(task.id);
   if (!lesson) notFound();
+  const downloadPlan = getTaskDemoDownloadPlan(task.id);
+  if (!downloadPlan) notFound();
 
   const previousId = previousTaskIdFor(task.id);
   const formalNextId = formalNextTaskIdFor(task.id);
@@ -105,6 +108,7 @@ export default async function TextbookLessonPage({ params }: LessonPageProps) {
           <LessonReader
             task={toClientTask(task)}
             lesson={lesson}
+            downloadPlan={downloadPlan}
             previousTask={previousTask ? toClientTask(previousTask) : undefined}
             formalNextTask={
               formalNextTask ? toClientTask(formalNextTask) : undefined

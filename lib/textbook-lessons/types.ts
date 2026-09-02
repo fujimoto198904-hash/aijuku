@@ -52,8 +52,9 @@ export type TextbookLesson = {
   /** 今回手元に残る物。ファイル名・画面・動作が浮かぶ言い方 */
   deliverable: string;
   /**
-   * 使う材料。デモZIP内の業種フォルダ直下からの相対パス
-   * (lib/demo-data-files.generated.json に実在するもののみ)。
+   * 使う材料。生成元の3業種デモに共通する相対パス
+   * (lib/demo-data-files.generated.json に実在するもののみ)。公開時は
+   * 課題に割り当てた1業種の必要ファイルだけを直接配信する。
    * 材料不要(inputMethod: 'none')または前課題の完成品だけ(carryIn)なら空配列。
    */
   files: readonly string[];
@@ -84,7 +85,11 @@ export type TextbookLesson = {
   stepUp: TextbookLessonStepUp;
 } & TextbookLessonCompletion;
 
-export type TextbookTrackId = 'common' | 'department' | 'industry' | 'generation';
+export type TextbookTrackId =
+  | 'common'
+  | 'department'
+  | 'industry'
+  | 'generation';
 
 /** 10問後に到達する旗艦作品の完成イメージ(1章に最低1つ) */
 export type TextbookChapterFlagship = {

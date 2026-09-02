@@ -1,0 +1,9 @@
+﻿列名,意味,例,主なファイル
+EMPLOYEE_ID,社員,EMP-0001,01_会社_社員_勤怠.xlsx
+CUSTOMER_ID,お客様,CUS-000001,02_顧客_営業.xlsx
+VENDOR_ID,取引先,VEN-0001,04_仕入_取引先_在庫.xlsx
+PROJECT_ID,契約・管理案件,REALESTATE-PRJ-00001,07_会議_案件_進捗.xlsx
+INQUIRY_ID,問い合わせ,INQ-0000001,06_問い合わせ_電話_ToDo.xlsx
+SALES_ID,売上,SAL-0000001,03_売上_請求_入金.xlsx
+INVOICE_ID,請求,INV-0000001,03_売上_請求_入金.xlsx
+PURCHASE_ORDER_ID,発注,PO-0000001,04_仕入_取引先_在庫.xlsx

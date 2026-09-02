@@ -4,3 +4,4 @@
 *.jpg binary
 *.jpeg binary
 *.webp binary
+public/downloads/demo-data/files/** binary

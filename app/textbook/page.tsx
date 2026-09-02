@@ -16,7 +16,6 @@ import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import Link from '@/components/site-link';
 import { TextbookAccessLegend } from '@/components/textbook/access-badges';
-import { DemoQuickPick } from '@/components/textbook/demo-quick-pick';
 import { TextbookSubnav } from '@/components/textbook/textbook-subnav';
 import { MemberLearningPromo } from '@/components/textbook/member-learning-promo';
 import { canonicalPublicPath } from '@/lib/site-paths';
@@ -253,7 +252,6 @@ export default async function TextbookPage({
           </div>
         </section>
 
-        <DemoQuickPick />
         <DemoDataLibrary />
 
         <section className="border-t border-rule bg-paper px-5 py-14 sm:px-8 sm:py-20 lg:px-10">

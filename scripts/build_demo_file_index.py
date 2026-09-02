@@ -22,10 +22,6 @@ ZIPS = {
     "realestate": ROOT / "public/downloads/demo-data/real-estate-demo-data-full-v1.zip",
 }
 OUTPUT = ROOT / "lib/demo-data-files.generated.json"
-MATERIALS_OUTPUT = ROOT / "lib/demo-task-materials.generated.json"
-MATERIALS_PUBLIC_OUTPUT = (
-    ROOT / "public/downloads/demo-data/task-materials.generated.json"
-)
 
 
 def relative_names(zip_path: Path) -> tuple[str, set[str]]:
@@ -73,37 +69,6 @@ def main() -> int:
     )
     print(f"Generated {len(baseline)} shared demo file paths at {OUTPUT}")
 
-    # スマホでZIPを展開しなくても始められるよう、課題/*.txt の本文をWeb表示用に抽出する
-    materials: dict[str, dict[str, str]] = {}
-    for industry, zip_path in ZIPS.items():
-        archive = zipfile.ZipFile(zip_path)
-        per: dict[str, str] = {}
-        for info in archive.infolist():
-            raw = info.filename
-            if not (info.flag_bits & 0x800):
-                raw = raw.encode("cp437").decode("utf-8", errors="strict")
-            _, _, rest = raw.partition("/")
-            if rest.startswith("課題/") and rest.endswith(".txt"):
-                per[rest] = archive.read(info).decode("utf-8")
-        materials[industry] = per
-    materials_text = (
-        json.dumps(
-            {
-                "note": "課題/*.txt の本文。スマホ等でZIPを展開しなくても貼り付けを試せるようにWebへ出す。scripts/build_demo_file_index.py が生成する。",
-                "materials": materials,
-            },
-            ensure_ascii=False,
-            indent=1,
-        )
-        + "\n"
-    )
-    MATERIALS_OUTPUT.write_text(materials_text, encoding="utf-8")
-    MATERIALS_PUBLIC_OUTPUT.write_text(materials_text, encoding="utf-8")
-    total = sum(len(per) for per in materials.values())
-    print(
-        f"Generated {total} task memo texts at {MATERIALS_OUTPUT} "
-        f"and {MATERIALS_PUBLIC_OUTPUT}"
-    )
     return 0
 
 

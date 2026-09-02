@@ -16,14 +16,14 @@
     "check:catalog": "node scripts/build_textbook_catalog.mjs --check",
     "check:lessons": "tsx scripts/check_textbook_lessons.ts && tsx scripts/build_lesson_meta.ts --check",
     "check:access": "tsx scripts/check_textbook_access.ts",
-    "check:demo-data": "node scripts/check_demo_data.mjs",
+    "check:demo-data": "node scripts/check_demo_data.mjs && tsx scripts/build_demo_task_download_plan.ts --check && python3 scripts/extract_demo_direct_files.py --check",
     "build:guide": "python3 scripts/build_start_guide.py",
     "build:brand-og": "node scripts/build_brand_og.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "node scripts/apply_local_migrations.mjs",
     "lint": "oxlint",
     "format": "oxfmt",
-    "build:demo-index": "python3 scripts/build_demo_file_index.py",
+    "build:demo-index": "python3 scripts/build_demo_file_index.py && tsx scripts/build_demo_task_download_plan.ts && python3 scripts/extract_demo_direct_files.py",
     "check:docs": "node scripts/check_docs.mjs"
   },
   "dependencies": {
