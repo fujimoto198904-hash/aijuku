@@ -39,7 +39,11 @@ export const memberServicePlans: ReadonlyArray<{
 ];
 
 export const sharedFees = {
-  entrance: '10,000円',
+  entrance: '0円',
+  entranceCampaign: 'OPEN記念・先着1,000名まで',
+  entranceRegular: '通常10,000円',
+  entranceCondition:
+    '有料受講の入会申込受付順に適用し、定員に達し次第終了します。',
   webTextbook: 'Web教科書は完全無料',
   printedTextbook: '希望者のみ・1冊2,000円前後',
 } as const;

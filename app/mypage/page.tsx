@@ -37,6 +37,7 @@ import {
   applicationStatusLabels,
   findMemberServicePlan,
   memberServicePlans,
+  sharedFees,
 } from '@/lib/member-service-plans';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 import { textbookCatalog } from '@/lib/textbook-catalog';
@@ -352,7 +353,10 @@ export default async function MyPage() {
                 ))}
               </div>
               <p className="mt-4 text-xs leading-6 text-quiet">
-                いずれも初回の有料受講時に入会金10,000円が必要です。税込区分、支払方法、変更・取消条件は、確定前に必ず提示します。
+                {sharedFees.entranceCampaign}は入会金
+                {sharedFees.entrance}（{sharedFees.entranceRegular}）です。
+                {sharedFees.entranceCondition}
+                税込区分、支払方法、変更・取消条件は、確定前に必ず提示します。
               </p>
             </section>
 

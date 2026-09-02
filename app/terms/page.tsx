@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
+import { sharedFees } from '@/lib/member-service-plans';
 import { canonicalPublicPath } from '@/lib/site-paths';
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ const sections = [
   ],
   [
     '2. 無料会員登録',
-    '会員登録自体は無料です。登録には本人のChatGPTアカウントを使用します。有料受講を申し込み、当塾が内容を確認して別途案内するまでは、入会金・受講料は発生しません。',
+    `会員登録自体は無料です。登録には本人のChatGPTアカウントを使用します。${sharedFees.entranceCampaign}は入会金${sharedFees.entrance}（${sharedFees.entranceRegular}）です。${sharedFees.entranceCondition}キャンペーンの適用可否と受講料は申込前に案内します。`,
   ],
   [
     '3. アカウント管理',

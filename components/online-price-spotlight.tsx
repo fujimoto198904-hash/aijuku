@@ -1,13 +1,14 @@
-import { BookOpenText, Video } from "lucide-react";
+import { BookOpenText, Video } from 'lucide-react';
 
-import { cn } from "@/lib/utils";
+import { sharedFees } from '@/lib/member-service-plans';
+import { cn } from '@/lib/utils';
 
 export function OnlinePriceSpotlight({ className }: { className?: string }) {
   return (
     <aside
       aria-label="無料Web教科書と全国オンライン受講の案内"
       className={cn(
-        "soft-card soft-dark-glow relative isolate overflow-hidden border border-white/15 bg-brand-dark p-5 text-white sm:p-6",
+        'soft-card soft-dark-glow relative isolate overflow-hidden border border-white/15 bg-brand-dark p-5 text-white sm:p-6',
         className,
       )}
     >
@@ -56,7 +57,9 @@ export function OnlinePriceSpotlight({ className }: { className?: string }) {
         </div>
 
         <p className="mt-4 text-xs leading-6 text-white/70">
-          実践にはPC・ChatGPT等を使用します。講師受講は別途入会金10,000円と受講料が必要です。税区分等は申込前に案内します。
+          実践にはPC・ChatGPT等を使用します。{sharedFees.entranceCampaign}
+          は入会金{sharedFees.entrance}（{sharedFees.entranceRegular}
+          ）。定員に達し次第終了します。受講料と税区分等は申込前に案内します。
         </p>
       </div>
     </aside>

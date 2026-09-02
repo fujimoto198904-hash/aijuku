@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { type SubmitEvent, useRef, useState } from "react";
+import { type SubmitEvent, useRef, useState } from 'react';
 
-import { memberServicePlans } from "@/lib/member-service-plans";
-import { withSiteBasePath } from "@/lib/site-paths";
+import { memberServicePlans, sharedFees } from '@/lib/member-service-plans';
+import { withSiteBasePath } from '@/lib/site-paths';
 
 export function MemberApplicationForm({
   initialService,
@@ -18,50 +18,50 @@ export function MemberApplicationForm({
   const [serviceType, setServiceType] = useState(defaultService);
   const [participants, setParticipants] = useState(1);
   const [status, setStatus] = useState<
-    "idle" | "sending" | "success" | "error"
-  >("idle");
-  const [message, setMessage] = useState("");
-  const requestId = useRef("");
+    'idle' | 'sending' | 'success' | 'error'
+  >('idle');
+  const [message, setMessage] = useState('');
+  const requestId = useRef('');
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("sending");
-    setMessage("");
+    setStatus('sending');
+    setMessage('');
     if (!requestId.current) requestId.current = crypto.randomUUID();
 
     const form = new FormData(event.currentTarget);
     try {
-      const response = await fetch(withSiteBasePath("/api/applications"), {
-        method: "POST",
-        headers: { "content-type": "application/json" },
+      const response = await fetch(withSiteBasePath('/api/applications'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           clientRequestId: requestId.current,
           serviceType,
-          goal: form.get("goal"),
-          preferredSchedule: form.get("preferredSchedule"),
+          goal: form.get('goal'),
+          preferredSchedule: form.get('preferredSchedule'),
           participants,
-          notes: form.get("notes"),
+          notes: form.get('notes'),
         }),
       });
       const body = (await response.json()) as { error?: string };
       if (!response.ok)
-        throw new Error(body.error ?? "申込を保存できませんでした。");
+        throw new Error(body.error ?? '申込を保存できませんでした。');
 
-      setStatus("success");
+      setStatus('success');
       setMessage(
-        "申込希望を受け付けました。日程・料金・支払いはまだ確定していません。運営確認後、登録メールへご案内します。",
+        '申込希望を受け付けました。日程・料金・支払いはまだ確定していません。運営確認後、登録メールへご案内します。',
       );
-      requestId.current = "";
+      requestId.current = '';
       window.setTimeout(
-        () => window.location.assign(withSiteBasePath("/mypage#applications")),
+        () => window.location.assign(withSiteBasePath('/mypage#applications')),
         900,
       );
     } catch (error) {
-      setStatus("error");
+      setStatus('error');
       setMessage(
         error instanceof Error
           ? error.message
-          : "申込を保存できませんでした。時間をおいて再度お試しください。",
+          : '申込を保存できませんでした。時間をおいて再度お試しください。',
       );
     }
   }
@@ -73,7 +73,7 @@ export function MemberApplicationForm({
         <div className="mt-4 grid gap-3 lg:grid-cols-3">
           {memberServicePlans.map((plan) => (
             <label
-              className={`soft-card soft-interactive cursor-pointer border p-5 transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sapphire ${serviceType === plan.id ? "border-sapphire bg-sapphire-soft" : "border-rule bg-white hover:border-sapphire/60"}`}
+              className={`soft-card soft-interactive cursor-pointer border p-5 transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sapphire ${serviceType === plan.id ? 'border-sapphire bg-sapphire-soft' : 'border-rule bg-white hover:border-sapphire/60'}`}
               key={plan.id}
             >
               <input
@@ -82,7 +82,7 @@ export function MemberApplicationForm({
                 name="serviceType"
                 onChange={() => {
                   setServiceType(plan.id);
-                  if (plan.id !== "in-person-tutor") setParticipants(1);
+                  if (plan.id !== 'in-person-tutor') setParticipants(1);
                 }}
                 type="radio"
                 value={plan.id}
@@ -134,7 +134,7 @@ export function MemberApplicationForm({
             onChange={(event) => setParticipants(Number(event.target.value))}
             value={participants}
           >
-            {(serviceType === "in-person-tutor" ? [1, 2, 3, 4, 5] : [1]).map(
+            {(serviceType === 'in-person-tutor' ? [1, 2, 3, 4, 5] : [1]).map(
               (count) => (
                 <option key={count} value={count}>
                   {count}名
@@ -143,9 +143,9 @@ export function MemberApplicationForm({
             )}
           </select>
           <span className="text-xs font-normal leading-5 text-quiet">
-            {serviceType === "in-person-tutor"
-              ? "対面は企業受講を含め、1回5名まで同時受講できます。"
-              : "オンライン・教科書自習式は1申込につき1名です。"}
+            {serviceType === 'in-person-tutor'
+              ? '対面は企業受講を含め、1回5名まで同時受講できます。'
+              : 'オンライン・教科書自習式は1申込につき1名です。'}
           </span>
         </label>
 
@@ -161,12 +161,15 @@ export function MemberApplicationForm({
       </div>
 
       <div className="soft-control border-l-4 border-future-mint bg-future-mint-soft p-5 text-xs leading-6 text-brand-dark">
-        これは申込希望の受付です。送信だけでは予約・契約・決済は確定しません。入会金10,000円と受講料は、内容・日程・取引条件を確認した後にご案内します。
+        これは申込希望の受付です。送信だけでは予約・契約・決済は確定しません。
+        {sharedFees.entranceCampaign}は入会金{sharedFees.entrance}（
+        {sharedFees.entranceRegular}）です。{sharedFees.entranceCondition}
+        受講料は、内容・日程・取引条件を確認した後にご案内します。
       </div>
 
-      {status === "success" || status === "error" ? (
+      {status === 'success' || status === 'error' ? (
         <output
-          className={`soft-control border p-4 text-sm leading-7 ${status === "success" ? "border-future-mint bg-future-mint-soft text-brand-dark" : "border-human-coral bg-human-coral-soft text-brand-dark"}`}
+          className={`soft-control border p-4 text-sm leading-7 ${status === 'success' ? 'border-future-mint bg-future-mint-soft text-brand-dark' : 'border-human-coral bg-human-coral-soft text-brand-dark'}`}
         >
           {message}
         </output>
@@ -174,10 +177,10 @@ export function MemberApplicationForm({
 
       <button
         className="button-glow min-h-14 px-6 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60"
-        disabled={status === "sending" || status === "success"}
+        disabled={status === 'sending' || status === 'success'}
         type="submit"
       >
-        {status === "sending" ? "受付しています…" : "この内容で申込希望を送る"}
+        {status === 'sending' ? '受付しています…' : 'この内容で申込希望を送る'}
       </button>
     </form>
   );

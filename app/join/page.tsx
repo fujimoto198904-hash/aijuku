@@ -14,6 +14,7 @@ import { OnlinePriceSpotlight } from '@/components/online-price-spotlight';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import Link from '@/components/site-link';
+import { sharedFees } from '@/lib/member-service-plans';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 
 export const dynamic = 'force-dynamic';
@@ -42,8 +43,8 @@ const benefits = [
   },
   {
     Icon: CircleDollarSign,
-    title: '登録だけなら0円',
-    body: '有料受講を申し込み、条件を確認するまでは入会金・受講料は発生しません。',
+    title: 'OPEN記念、入会金0円',
+    body: `${sharedFees.entranceCampaign}。${sharedFees.entranceRegular}の入会金が無料です。定員に達し次第終了します。`,
   },
 ] as const;
 
@@ -130,7 +131,9 @@ export default async function JoinPage() {
                 />
               </Link>
               <p className="mt-5 text-center text-xs leading-6 text-quiet">
-                登録は無料です。有料受講の申込時には、入会金10,000円と各受講料を別途確認します。
+                登録は無料です。{sharedFees.entranceCampaign}は入会金
+                {sharedFees.entrance}（{sharedFees.entranceRegular}）。
+                受講料は申込前に確認します。
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs">
                 <Link

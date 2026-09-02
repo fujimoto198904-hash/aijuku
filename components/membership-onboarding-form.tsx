@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { type SubmitEvent, useState } from "react";
+import { type SubmitEvent, useState } from 'react';
 
-import Link from "@/components/site-link";
-import { withSiteBasePath } from "@/lib/site-paths";
+import Link from '@/components/site-link';
+import { sharedFees } from '@/lib/member-service-plans';
+import { withSiteBasePath } from '@/lib/site-paths';
 
 export function MembershipOnboardingForm({
   defaultName,
@@ -17,18 +18,18 @@ export function MembershipOnboardingForm({
   const [displayName, setDisplayName] = useState(defaultName);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
-  const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<'idle' | 'sending' | 'error'>('idle');
+  const [message, setMessage] = useState('');
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("sending");
-    setMessage("");
+    setStatus('sending');
+    setMessage('');
 
     try {
-      const response = await fetch(withSiteBasePath("/api/membership"), {
-        method: "POST",
-        headers: { "content-type": "application/json" },
+      const response = await fetch(withSiteBasePath('/api/membership'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           displayName,
           termsAccepted,
@@ -36,15 +37,15 @@ export function MembershipOnboardingForm({
         }),
       });
       const body = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(body.error ?? "登録できませんでした。");
+      if (!response.ok) throw new Error(body.error ?? '登録できませんでした。');
 
-      window.location.assign(withSiteBasePath("/mypage"));
+      window.location.assign(withSiteBasePath('/mypage'));
     } catch (error) {
-      setStatus("error");
+      setStatus('error');
       setMessage(
         error instanceof Error
           ? error.message
-          : "登録できませんでした。時間をおいて再度お試しください。",
+          : '登録できませんでした。時間をおいて再度お試しください。',
       );
     }
   }
@@ -117,7 +118,7 @@ export function MembershipOnboardingForm({
         </label>
       </div>
 
-      {status === "error" ? (
+      {status === 'error' ? (
         <p
           className="soft-control border-l-4 border-human-coral bg-human-coral-soft p-4 text-sm text-brand-dark"
           role="alert"
@@ -128,20 +129,20 @@ export function MembershipOnboardingForm({
 
       <button
         className="button-glow min-h-14 px-6 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60"
-        disabled={status === "sending"}
+        disabled={status === 'sending'}
         type="submit"
       >
-        {status === "sending"
-          ? "保存しています…"
+        {status === 'sending'
+          ? '保存しています…'
           : isConsentUpdate
-            ? "同意内容を更新する"
-            : "無料会員登録を完了する"}
+            ? '同意内容を更新する'
+            : '無料会員登録を完了する'}
       </button>
 
       <p className="text-center text-xs leading-6 text-quiet">
         {isConsentUpdate
-          ? "更新だけで料金は発生しません。公開設定や学習記録の内容は引き継がれます。"
-          : "登録は無料です。有料受講を申し込むまで、入会金・受講料は発生しません。"}
+          ? '更新だけで料金は発生しません。公開設定や学習記録の内容は引き継がれます。'
+          : `登録は無料です。${sharedFees.entranceCampaign}は入会金${sharedFees.entrance}（${sharedFees.entranceRegular}）。受講料は申込前に案内します。`}
       </p>
     </form>
   );

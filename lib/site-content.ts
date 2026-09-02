@@ -6,6 +6,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
+import { sharedFees } from '@/lib/member-service-plans';
 import { textbookCatalog } from '@/lib/textbook-catalog';
 
 const allLessonDetailsPublished =
@@ -147,8 +148,7 @@ export const faqItems = [
   },
   {
     question: '料金はいくらですか？',
-    answer:
-      '入会金は全方式共通で10,000円です。家庭教師型の対面は東京23区内・10,000円 / 60分で、企業も1回5人まで受講できます。オンラインは全国対応・4,000円 / 50分です。対面・教科書自習式は通い放題・月額10,000円です。税込・税別、支払い、変更・キャンセル条件は確定後に案内します。',
+    answer: `${sharedFees.entranceCampaign}、入会金は${sharedFees.entrance}です（${sharedFees.entranceRegular}）。${sharedFees.entranceCondition}家庭教師型の対面は東京23区内・10,000円 / 60分で、企業も1回5人まで受講できます。オンラインは全国対応・4,000円 / 50分です。対面・教科書自習式は通い放題・月額10,000円です。税込・税別、支払い、変更・キャンセル条件は確定後に案内します。`,
   },
   {
     question: '会場はどこですか？',

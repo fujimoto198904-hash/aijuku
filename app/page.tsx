@@ -654,12 +654,14 @@ export default function Home() {
 
             <div className="soft-panel soft-panel-clip mt-14 grid border border-rule bg-paper-white px-6 sm:grid-cols-3 sm:px-8">
               <div className="border-b border-rule py-5 sm:border-b-0 sm:border-r sm:pr-6">
-                <p className="text-xs text-quiet">共通の入会金</p>
+                <p className="text-xs font-semibold text-human-coral">
+                  {sharedFees.entranceCampaign}
+                </p>
                 <p className="numeric-text mt-2 text-2xl">
-                  {sharedFees.entrance}
+                  入会金 {sharedFees.entrance}
                 </p>
                 <p className="mt-2 text-xs text-quiet">
-                  いずれの受講方法にも必要です
+                  {sharedFees.entranceRegular}。定員に達し次第終了します
                 </p>
               </div>
               <div className="border-b border-rule py-5 sm:border-b-0 sm:border-r sm:px-6">
