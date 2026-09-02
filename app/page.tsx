@@ -299,9 +299,9 @@ export default function Home() {
                       CURRENT PROJECT
                     </p>
                     <p className="mt-7 font-mincho text-3xl leading-[1.45] sm:text-4xl">
-                      いま作るものは、
+                      つくりたい一つから、
                       <br />
-                      いつも一つ。
+                      未来が動き出す。
                     </p>
                   </div>
                   <p className="mt-10 max-w-md text-sm leading-7 text-white/60">
