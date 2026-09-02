@@ -29,7 +29,7 @@ const benefits = [
   {
     Icon: CalendarCheck,
     title: '3つの受講方法へ申し込める',
-    body: '対面、Google Meet、対面・教科書自習式から、自分に合う学び方を選べます。',
+    body: '対面、Google Meet、対面・教科書自習式のすべてを、同じWeb教科書に沿って進めます。',
   },
   {
     Icon: BookOpenText,
