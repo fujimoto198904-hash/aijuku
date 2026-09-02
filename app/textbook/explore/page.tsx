@@ -5,6 +5,7 @@ import { BrandMark } from '@/components/brand-mark';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import Link from '@/components/site-link';
+import { TextbookAccessLegend } from '@/components/textbook/access-badges';
 import { TextbookSubnav } from '@/components/textbook/textbook-subnav';
 import {
   TaskExplorer,
@@ -217,12 +218,13 @@ export default function TextbookExplorePage() {
             <p className="mt-5 max-w-3xl text-sm leading-8 text-quiet">
               「メール」「見積もり」「画像」のように入力するか、仕事の悩みやコースで絞ってください。どの課題から始めても、教科書の順番に沿って授業を受けられます。
             </p>
+            <TextbookAccessLegend className="mt-9" />
             <TaskExplorer
               tasks={textbookCatalog.tasks.map(toClientTask)}
               tracks={textbookCatalog.tracks}
               chapters={chapters}
               layout="page"
-              className="mt-9"
+              className="mt-5"
             />
           </div>
         </section>

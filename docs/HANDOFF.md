@@ -82,6 +82,7 @@ npm run dev
 - `/join`
 - `/reserve`
 - `/textbook`
+- `/textbook/setup`
 - `/textbook/explore`
 - `/textbook/lesson/Lv.01`
 - `/textbook?task=Lv.01`（本文ページへの互換リダイレクト）
@@ -108,6 +109,7 @@ npm run dev
 | `app/mypage/onboarding/page.tsx`                   | 初回プロフィールと規約・プライバシー同意                                           |
 | `app/reserve/page.tsx`                             | ログイン会員向けの3方式の受講申込                                                  |
 | `app/textbook/page.tsx`                            | Web教科書の使い方、練習データ、旧`?task=ID`の互換リダイレクト                      |
+| `app/textbook/setup/page.tsx`                      | ChatGPTの設定、無料・有料、Chat・Work・Codexの入門                                 |
 | `app/textbook/explore/page.tsx`                    | 目的・時間・作業画面・材料・コースから教材を探すページ                             |
 | `app/textbook/lesson/[taskId]/page.tsx`            | 1課題の本文と前後・ステップアップ先を表示する動的ページ                            |
 | `app/mypage/page.tsx`                              | 本人の申込とAI実学パスポートを表示するマイページ                                   |
@@ -135,6 +137,7 @@ npm run dev
 | `lib/textbook-lessons/registry.ts`                 | 全73章、課題ID、正本ファイル、正式次課題の対応                                     |
 | `lib/textbook-lessons/loader.ts`                   | 選択課題の章だけを遅延読込みするクライアント用ローダー                             |
 | `lib/textbook-lessons/all.ts`                      | 検査・生成・サーバー用の全73章静的集約。クライアントから直接importしない           |
+| `lib/textbook-access.ts`                           | 全730課題の料金目安とCodex向き範囲の決定ルール                                     |
 | `lib/textbook-lesson-meta.generated.json`          | 時間・作業画面・材料の絞り込み用730件メタ。手編集しない                            |
 | `lib/demo-task-materials.generated.json`           | 教材内で軽量表示する短文素材の生成元。手編集しない                                 |
 | `lib/textbook-catalog-client.ts`                   | 管理用項目を除いてブラウザへ渡す軽量カタログ型                                     |
@@ -154,6 +157,7 @@ npm run dev
 | `scripts/doctor.mjs`                               | 別Mac移行・公開前の環境確認                                                        |
 | `scripts/build_textbook_catalog.mjs`               | 4冊の原稿を検査し、Web用730課題カタログを生成                                      |
 | `scripts/check_textbook_lessons.ts`                | 全730本文の項目、素材、次課題、章末、重複、生成物同期を検査し品質見本10件を生成    |
+| `scripts/check_textbook_access.ts`                 | 料金・Codexマークの全730課題網羅、件数、代替経路を検査                             |
 | `scripts/build_lesson_meta.ts`                     | 全730本文からブラウザ絞り込み用の軽量メタを生成・同期確認                          |
 | `scripts/check_docs.mjs`                           | Markdownの相対リンク切れとコードフェンス開閉を検査                                 |
 | `scripts/check_demo_data.mjs`                      | 3業種ZIP、公開用目録、SHA-256、実シート数・データ行をnpm標準検査で照合             |
@@ -211,6 +215,10 @@ npm run dev
 | 基礎理解チェック                  | `/level-test`のURL互換を保った4択10問の画面デモ。正式な到達判定ではなく、`noindex, nofollow`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | マイページ                        | 認証済み会員の表示名・メール、表示名変更、3方式の申込、本人の申込履歴、未確定申込の取消、AI実学パスポート、本人記録、講師確認、共有設定を表示。空き枠、決済、読了位置、確定後の予約変更・取消は未接続。ローカル実装・未公開                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 管理ページ                        | `ADMIN_EMAILS`のオーナーだけが申込者情報を閲覧し、状態、会員向け案内、担当講師、JST実施日時、会場またはGoogle Meet、内部メモを更新可能。オーナー専用の最近の申込操作履歴では、内部メモや会場・Meet案内本文を取得せず、状態、会員、サービス、操作者、日本時間だけを表示する。講師は申込者メールを取得せず、成果物の確認キューだけ操作する。比較更新と申込・講師確認の追記型履歴を実装。空き枠との自動連動、決済、通知は未接続。ローカル実装・未公開                                                                                                                                                                                                                                           |
+
+### ChatGPTプラン・作業環境マーク（2026年9月3日）
+
+`/textbook/setup`に、ChatGPTの初期設定、無料・有料の違い、Chat・Work・Codexの使い分け、秘密情報を入れない練習方法、無料上限に達した時の代替手順を追加しました。料金の目安と作業画面は別軸です。全730課題は「無料で始めやすい」400件と「有料版推奨」330件に分け、Workでも進められる課題のうち、実ファイル・コード・テストを直接扱う時にCodexが特に向く157件に「Codex向き」を併記します。現時点でCodexだけに限定した課題はありません。「有料版推奨」は有料限定の断定ではなく、反復生成、複数ファイルのコード制作、外部接続等で利用量・プラン・接続先の確認が必要な目安です。現在の利用可否と上限はChatGPT画面とOpenAI公式情報を優先します。判定正本は`lib/textbook-access.ts`、網羅検査は`npm run check:access`です。
 
 ### 正式運用前に未実装のもの
 

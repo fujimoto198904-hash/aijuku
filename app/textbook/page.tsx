@@ -15,6 +15,7 @@ import { DemoDataLibrary } from '@/components/demo-data-library';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import Link from '@/components/site-link';
+import { TextbookAccessLegend } from '@/components/textbook/access-badges';
 import { DemoQuickPick } from '@/components/textbook/demo-quick-pick';
 import { TextbookSubnav } from '@/components/textbook/textbook-subnav';
 import { canonicalPublicPath } from '@/lib/site-paths';
@@ -148,6 +149,12 @@ export default async function TextbookPage({
                 ))}
               </ul>
             </aside>
+          </div>
+        </section>
+
+        <section className="border-b border-rule bg-paper px-5 py-10 sm:px-8 sm:py-12 lg:px-10">
+          <div className="mx-auto w-full max-w-[1240px]">
+            <TextbookAccessLegend />
           </div>
         </section>
 

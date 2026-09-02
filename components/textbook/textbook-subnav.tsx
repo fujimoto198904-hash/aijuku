@@ -1,13 +1,21 @@
-import { BookOpenText, Check, ExternalLink, Map, Search } from 'lucide-react';
+import {
+  BookOpenText,
+  Check,
+  ExternalLink,
+  Map,
+  Search,
+  Settings2,
+} from 'lucide-react';
 
 import Link from '@/components/site-link';
 import {
   textbookExplorePath,
   textbookGuidePath,
   textbookLessonPath,
+  textbookSetupPath,
 } from '@/lib/textbook-routes';
 
-export type TextbookSubnavCurrent = 'guide' | 'explore' | 'lesson';
+export type TextbookSubnavCurrent = 'guide' | 'setup' | 'explore' | 'lesson';
 
 type TextbookSubnavProps = {
   current: TextbookSubnavCurrent;
@@ -16,15 +24,23 @@ type TextbookSubnavProps = {
 const items = [
   {
     id: 'guide',
-    number: '01',
+    eyebrow: 'STEP 01',
     label: '使い方',
     hint: 'はじめにここ',
     href: textbookGuidePath,
     Icon: Map,
   },
   {
+    id: 'setup',
+    eyebrow: '参考',
+    label: 'ChatGPT準備',
+    hint: '無料・有料・Codex',
+    href: textbookSetupPath,
+    Icon: Settings2,
+  },
+  {
     id: 'explore',
-    number: '02',
+    eyebrow: 'STEP 02',
     label: '学ぶことを探す',
     hint: '目的から選ぶ',
     href: textbookExplorePath,
@@ -32,7 +48,7 @@ const items = [
   },
   {
     id: 'lesson',
-    number: '03',
+    eyebrow: 'STEP 03',
     label: '教科書を読む',
     hint: '1課題を別タブで',
     href: textbookLessonPath('Lv.01'),
@@ -46,8 +62,8 @@ export function TextbookSubnav({ current }: TextbookSubnavProps) {
       className="border-b border-rule bg-paper-white px-4 py-4 sm:px-8"
       aria-label="Web教科書の進み方"
     >
-      <ol className="mx-auto grid w-full max-w-[1240px] gap-2 sm:grid-cols-3">
-        {items.map(({ id, number, label, hint, href, Icon }) => {
+      <ol className="mx-auto grid w-full max-w-[1240px] gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {items.map(({ id, eyebrow, label, hint, href, Icon }) => {
           const isCurrent = current === id;
           const opensNewTab = id === 'lesson' && !isCurrent;
           const content = (
@@ -67,7 +83,7 @@ export function TextbookSubnav({ current }: TextbookSubnavProps) {
                     isCurrent ? 'text-future-mint' : 'text-quiet'
                   }`}
                 >
-                  STEP {number}
+                  {eyebrow}
                 </span>
                 <span className="mt-1 block text-sm font-semibold">
                   {label}

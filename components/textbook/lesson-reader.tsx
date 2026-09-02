@@ -23,9 +23,15 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Link from '@/components/site-link';
+import { TextbookAccessBadges } from '@/components/textbook/access-badges';
 import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
 import type { TextbookLesson } from '@/lib/textbook-lessons/types';
-import { textbookExplorePath, textbookLessonPath } from '@/lib/textbook-routes';
+import { getTextbookAccessProfile } from '@/lib/textbook-access';
+import {
+  textbookExplorePath,
+  textbookLessonPath,
+  textbookSetupPath,
+} from '@/lib/textbook-routes';
 import { MaterialPreview } from '@/components/textbook/material-preview';
 import {
   humanFileName,
@@ -191,6 +197,7 @@ export function LessonReader({
   }
 
   const inputGuide = inputGuides[lesson.inputMethod];
+  const accessProfile = getTextbookAccessProfile(task);
   const modeLabel =
     lesson.recommendedMode === 'chat' ? '作業画面：Chat' : '作業画面：Work';
   const inputMethodLabel = inputMethodLabels[lesson.inputMethod];
@@ -285,6 +292,7 @@ export function LessonReader({
           <span className="soft-badge border border-sapphire/40 bg-sapphire-soft px-3 py-1.5 text-xs font-semibold text-sapphire">
             {startBadge}
           </span>
+          <TextbookAccessBadges profile={accessProfile} />
         </div>
         <h1
           id="lesson-title"
@@ -444,6 +452,23 @@ export function LessonReader({
                   <p className="mt-5 border-l-2 border-sapphire/35 pl-4 text-xs leading-6 text-quiet">
                     {modeGuide}
                   </p>
+                  <div className="soft-control mt-5 border border-rule bg-paper p-4">
+                    <TextbookAccessBadges profile={accessProfile} compact />
+                    <p className="mt-3 text-xs leading-6 text-quiet">
+                      {accessProfile.planReason}
+                    </p>
+                    {accessProfile.codexReason ? (
+                      <p className="mt-2 text-xs leading-6 text-quiet">
+                        {accessProfile.codexReason}
+                      </p>
+                    ) : null}
+                    <Link
+                      className="mt-3 inline-flex text-xs font-semibold text-sapphire underline decoration-sapphire/30 underline-offset-4"
+                      href={textbookSetupPath}
+                    >
+                      ChatGPTの設定とプランを確認する
+                    </Link>
+                  </div>
                   <p className="mt-6 text-xs font-semibold text-rust">
                     今回使う材料
                   </p>

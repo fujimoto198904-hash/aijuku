@@ -120,6 +120,7 @@ app/                     各ページ
   mypage/onboarding/     初回プロフィール・規約同意
   reserve/page.tsx       ログイン会員向けの受講申込
   textbook/page.tsx      Web教科書の使い方と旧直リンクの互換入口
+  textbook/setup/        ChatGPTの設定・プラン・作業画面の入門
   textbook/explore/      目的・時間・材料・コースから教材を探すページ
   textbook/lesson/       1課題の本文を読む動的ページ
   mypage/page.tsx        本人の申込とAI実学パスポートを表示するマイページ
@@ -138,6 +139,7 @@ lib/demo-data-catalog.generated.json
 lib/textbook-catalog.generated.json
                          原稿4冊から決定的に生成した730課題カタログ
 lib/textbook-lessons/    73章・全730課題の受講者向け本文正本と章単位ローダー
+lib/textbook-access.ts   730課題の料金目安とCodex向き範囲
 lib/member-service-plans.ts
                          3方式の申込種別・共通料金・表示条件の正本
 lib/skill-taxonomy.ts   730課題を人の順位ではない職能分類へ対応づける規則
@@ -179,6 +181,10 @@ vercel.json              Vercel用のNitroビルド設定
 `db/schema.ts`と`drizzle/0001`〜`0003`には、提供を取りやめた第三者評価のテーブル定義が過去の適用履歴として残っています。既存DBのマイグレーション順序と互換性を守るため、過去のSQLは削除・書き換えしません。現行の画面とAPIは、これらのテーブルへ評価データを作成・読取・表示せず、第三者評価を提供済みと案内しません。旧リンクには非提供の案内を表示し、旧評価APIはHTTP 410を返します。
 
 `sozai/fujimoto-profile.webp`は、ユーザー本人から提供された藤本亮志のプロフィール写真をWeb表示用に軽量化したものです。独立した講師紹介セクションを外したため、現在の公開ページでは使用していません。その他の`sozai/`内の写真は、実際の講師・受講者ではなく、暮らし・仕事でAIを使う場面を示すイメージ素材です。継続公開や再利用の前に、各素材の取得元とWeb掲載を含む利用条件を確認してください。
+
+## ChatGPTのプラン・作業環境表示
+
+`/textbook/setup`でChatGPTの初期設定、無料・有料の違い、Chat・Work・Codexの使い分けを案内します。全730課題に「無料で始めやすい」または「有料版推奨」を表示し、Workでも進められる課題のうち、実ファイル・コード・テストを直接扱う時にCodexが特に向く課題には「Codex向き」を併記します。Codexは料金プラン名ではなく、現時点でCodexだけに限定した課題はありません。判定ルールは`lib/textbook-access.ts`、網羅検査は`npm run check:access`を正とします。
 
 ## 変更を保存する基本手順
 

@@ -1,6 +1,7 @@
 /** Web教科書の画面構成を一か所で管理する。 */
 
 export const textbookGuidePath = '/textbook';
+export const textbookSetupPath = '/textbook/setup';
 export const textbookExplorePath = '/textbook/explore';
 
 export function textbookLessonPath(taskId: string): string {

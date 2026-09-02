@@ -11,6 +11,12 @@ import {
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import Link from '@/components/site-link';
+import {
+  TextbookAccessBadges,
+  textbookAccessLabel,
+} from '@/components/textbook/access-badges';
+import { getTextbookAccessProfile } from '@/lib/textbook-access';
+import type { TextbookPlanAccess } from '@/lib/textbook-access';
 import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
 import type {
   TextbookTrack,
@@ -143,6 +149,8 @@ export const purposePresets: readonly PurposePreset[] = [
 type ModeFilter = 'all' | LessonMode;
 type MaterialFilter = 'all' | LessonMaterial;
 type MinutesFilter = 'all' | 'short' | 'medium' | 'long';
+type PlanFilter = 'all' | TextbookPlanAccess;
+type WorkModeFilter = ModeFilter | 'codex';
 
 const materialFilterLabels: Record<Exclude<MaterialFilter, 'all'>, string> = {
   paste: '中身を貼る',
@@ -168,7 +176,8 @@ export function TaskExplorer({
   const [query, setQuery] = useState('');
   const [track, setTrack] = useState<TextbookTrack | 'all'>('all');
   const [purpose, setPurpose] = useState<string | null>(null);
-  const [mode, setMode] = useState<ModeFilter>('all');
+  const [planFilter, setPlanFilter] = useState<PlanFilter>('all');
+  const [modeFilter, setModeFilter] = useState<WorkModeFilter>('all');
   const [material, setMaterial] = useState<MaterialFilter>('all');
   const [minutes, setMinutes] = useState<MinutesFilter>('all');
   const [courseFilter, setCourseFilter] = useState<string | null>(null);
@@ -190,8 +199,17 @@ export function TaskExplorer({
       if (courseFilter && chapterKey !== courseFilter) return false;
       if (track !== 'all' && task.track !== track) return false;
       if (activePreset && !activePreset.matches(task, chapterKey)) return false;
+      const accessProfile = getTextbookAccessProfile(task);
       const meta = lessonMeta[task.id];
-      if (mode !== 'all' && meta?.[1] !== mode) return false;
+      if (planFilter !== 'all' && accessProfile.plan !== planFilter)
+        return false;
+      if (modeFilter === 'codex' && !accessProfile.codexRecommended)
+        return false;
+      if (
+        (modeFilter === 'chat' || modeFilter === 'work') &&
+        meta?.[1] !== modeFilter
+      )
+        return false;
       if (material !== 'all' && meta?.[0] !== material) return false;
       if (minutes !== 'all') {
         const upper = meta?.[2];
@@ -220,7 +238,8 @@ export function TaskExplorer({
     deferredQuery,
     material,
     minutes,
-    mode,
+    modeFilter,
+    planFilter,
     tasks,
     track,
   ]);
@@ -230,14 +249,16 @@ export function TaskExplorer({
     [filteredTasks, visibleCount],
   );
   const activeFilterCount =
-    Number(mode !== 'all') +
+    Number(planFilter !== 'all') +
+    Number(modeFilter !== 'all') +
     Number(material !== 'all') +
     Number(minutes !== 'all');
   const hasActiveCriteria =
     deferredQuery.trim().length > 0 ||
     track !== 'all' ||
     purpose !== null ||
-    mode !== 'all' ||
+    planFilter !== 'all' ||
+    modeFilter !== 'all' ||
     material !== 'all' ||
     minutes !== 'all' ||
     courseFilter !== null;
@@ -344,7 +365,7 @@ export function TaskExplorer({
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-4 text-xs font-semibold [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center gap-2">
                   <Filter className="size-3.5 text-rust" aria-hidden="true" />
-                  コース・時間・作業画面で絞る
+                  プラン・作業環境・時間で絞る
                   {activeFilterCount > 0 || track !== 'all' ? (
                     <span className="soft-badge numeric-text border border-sapphire px-2 py-0.5 text-xs text-sapphire">
                       {activeFilterCount + Number(track !== 'all')}
@@ -354,6 +375,57 @@ export function TaskExplorer({
                 <ChevronDown className="size-4 text-quiet" aria-hidden="true" />
               </summary>
               <div className="grid gap-4 border-t border-rule p-4">
+                <div>
+                  <p className="text-xs font-semibold text-quiet">料金プラン</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(
+                      [
+                        ['all', 'すべて'],
+                        ['free', '無料で始めやすい'],
+                        ['paid-recommended', '有料版推奨'],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={planFilter === value}
+                        className={`soft-badge border px-3 py-1.5 text-xs font-semibold ${planFilter === value ? 'border-deep-green bg-deep-green text-white' : 'border-rule bg-white text-quiet'}`}
+                        onClick={() => {
+                          setPlanFilter(value);
+                          resetPaging();
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-quiet">作業環境</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(
+                      [
+                        ['all', 'すべて'],
+                        ['chat', 'Chat'],
+                        ['work', 'Work'],
+                        ['codex', 'Codex向き'],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={modeFilter === value}
+                        className={`soft-badge border px-3 py-1.5 text-xs font-semibold ${modeFilter === value ? 'border-deep-green bg-deep-green text-white' : 'border-rule bg-white text-quiet'}`}
+                        onClick={() => {
+                          setModeFilter(value);
+                          resetPaging();
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div>
                   <p className="text-xs font-semibold text-quiet">系統</p>
                   <div className="mt-2 grid gap-1">
@@ -407,31 +479,6 @@ export function TaskExplorer({
                         className={`soft-badge border px-3 py-1.5 text-xs font-semibold ${minutes === value ? 'border-deep-green bg-deep-green text-white' : 'border-rule bg-white text-quiet'}`}
                         onClick={() => {
                           setMinutes(value);
-                          resetPaging();
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-quiet">作業画面</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {(
-                      [
-                        ['all', 'どちらでも'],
-                        ['chat', 'Chatだけで進む'],
-                        ['work', 'Workで実ファイル'],
-                      ] as const
-                    ).map(([value, label]) => (
-                      <button
-                        key={value}
-                        type="button"
-                        aria-pressed={mode === value}
-                        className={`soft-badge border px-3 py-1.5 text-xs font-semibold ${mode === value ? 'border-deep-green bg-deep-green text-white' : 'border-rule bg-white text-quiet'}`}
-                        onClick={() => {
-                          setMode(value);
                           resetPaging();
                         }}
                       >
@@ -527,6 +574,7 @@ export function TaskExplorer({
               >
                 {visibleTasks.map((task) => {
                   const meta = lessonMeta[task.id];
+                  const accessProfile = getTextbookAccessProfile(task);
                   return (
                     <li
                       key={task.id}
@@ -536,7 +584,7 @@ export function TaskExplorer({
                         href={textbookLessonPath(task.id)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label={`${task.id} ${task.title}を新しいタブで開く`}
+                        aria-label={`${task.id} ${task.title}、${textbookAccessLabel(accessProfile)}、新しいタブで開く`}
                         className="group block w-full px-5 py-4 text-left transition-colors hover:bg-paper"
                       >
                         <span className="flex items-center justify-between gap-3">
@@ -553,6 +601,12 @@ export function TaskExplorer({
                         </span>
                         <span className="mt-2 block text-sm font-semibold leading-6">
                           {task.title}
+                        </span>
+                        <span className="mt-2 block">
+                          <TextbookAccessBadges
+                            profile={accessProfile}
+                            compact
+                          />
                         </span>
                         <span className="mt-1.5 line-clamp-2 block text-xs leading-5 text-ink/80">
                           <span className="font-semibold">
