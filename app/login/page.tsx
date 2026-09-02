@@ -17,6 +17,7 @@ import { BrandMark } from '@/components/brand-mark';
 import { MemberLoginForm } from '@/components/member-login-form';
 import Link from '@/components/site-link';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
+import { configuredOwnerLoginId } from '@/lib/staff-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,6 +85,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     returnTo,
   )}`;
   const verificationPath = chatGPTSignInPath(verificationReturnPath);
+  const initialLoginId = hasVerifiedInitialIdentity
+    ? (configuredOwnerLoginId(user?.email ?? '') ?? user?.email ?? '')
+    : '';
 
   return (
     <main
@@ -115,7 +119,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </div>
 
             <MemberLoginForm
-              initialLoginId={hasVerifiedInitialIdentity ? user?.email : ''}
+              initialLoginId={initialLoginId}
               returnTo={returnTo}
               verificationPath={verificationPath}
               verifiedInitialIdentity={hasVerifiedInitialIdentity}

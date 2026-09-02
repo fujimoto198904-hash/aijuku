@@ -8,6 +8,7 @@ import {
   normalizeLoginId,
   passwordIterations,
   validatePersonalPassword,
+  verifiedIdentityCanClaimTemporaryAccount,
   verifiedIdentityMatchesTemporaryAccount,
   verifyPassword,
 } from '../lib/password-security';
@@ -80,6 +81,28 @@ assert.equal(
   false,
 );
 assert.equal(
+  verifiedIdentityCanClaimTemporaryAccount({
+    identity: { userId: 'owner-chatgpt-id', email: 'owner@example.com' },
+    loginId: 'school-owner@example.com',
+    contactEmail: 'school-owner@example.com',
+    configuredOwnerLoginId: 'school-owner@example.com',
+    identityIsOwner: true,
+  }),
+  true,
+  'a configured owner may verify a separate school login ID',
+);
+assert.equal(
+  verifiedIdentityCanClaimTemporaryAccount({
+    identity: { userId: 'teacher-chatgpt-id', email: 'teacher@example.com' },
+    loginId: 'school-owner@example.com',
+    contactEmail: 'school-owner@example.com',
+    configuredOwnerLoginId: 'school-owner@example.com',
+    identityIsOwner: false,
+  }),
+  false,
+  'a non-owner may not claim the configured owner login ID',
+);
+assert.equal(
   verifiedIdentityMatchesTemporaryAccount({
     identity: null,
     loginId: 'learner@example.com',
@@ -125,8 +148,8 @@ assert.match(
 );
 assert.match(
   memberAuthSource,
-  /verifiedIdentityMatchesTemporaryAccount/,
-  'temporary member sessions must require a matching verified identity',
+  /identityCanClaimTemporaryAccount/,
+  'temporary member sessions must require a matching identity or configured owner',
 );
 assert.match(
   memberAuthSource,
@@ -147,6 +170,11 @@ assert.match(
   memberAuthSource,
   /authenticatePassword[\s\S]+const resolution = await resolveVerifiedMemberAuthAccount[\s\S]+return \{ ok: true, session: await issueSession/,
   'a fresh bootstrap account must be claimed for the verified ChatGPT id before its first session is issued',
+);
+assert.match(
+  memberAuthSource,
+  /resolveVerifiedMemberAuthAccount[\s\S]+candidateLoginId[\s\S]+loginId: account\.loginId/,
+  'the configured owner login ID must be used to find its bootstrap account',
 );
 
 const loginRouteSource = await readFile('app/api/auth/login/route.ts', 'utf8');

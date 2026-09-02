@@ -10,9 +10,10 @@ import {
   requirePasswordPepper,
   sha256Base64Url,
   validatePersonalPassword,
-  verifiedIdentityMatchesTemporaryAccount,
+  verifiedIdentityCanClaimTemporaryAccount,
   verifyPassword,
 } from '@/lib/password-security';
+import { getStaffPermissions } from '@/lib/staff-permissions';
 
 export type MemberAuthAccount = {
   memberId: string;
@@ -68,6 +69,21 @@ function defaultDisplayName(account: MemberAuthAccount): string {
   if (account.accountKind === 'demo') return 'デモ会員';
   const [localPart] = passwordUserEmail(account).split('@');
   return localPart || '会員';
+}
+
+function identityCanClaimTemporaryAccount(input: {
+  identity: { userId: string; email: string } | null;
+  account: Pick<MemberAuthAccount, 'loginId' | 'contactEmail'>;
+}): boolean {
+  return verifiedIdentityCanClaimTemporaryAccount({
+    identity: input.identity,
+    loginId: input.account.loginId,
+    contactEmail: input.account.contactEmail,
+    configuredOwnerLoginId: env.AUTH_OWNER_LOGIN_ID,
+    identityIsOwner: input.identity
+      ? getStaffPermissions(input.identity.email).isOwner
+      : false,
+  });
 }
 
 async function getStoredAccountByLoginId(
@@ -144,14 +160,17 @@ export type VerifiedMemberAuthResolution =
  *
  * Bootstrap creates the owner account before a Sites member id exists, so its
  * temporary account starts with an otherwise-unused UUID. We may re-key only
- * that untouched temporary row after both the verified email and the initial
- * password match. Accounts with a member record, a session, a personal
- * password, demo status, or an expired temporary password are never merged.
+ * that untouched temporary row after the verified identity and initial
+ * password match. A separately configured owner login may also be claimed by
+ * an ADMIN_EMAILS identity. Accounts with a member record, a session, a
+ * personal password, demo status, or an expired temporary password are never
+ * merged.
  */
 export async function resolveVerifiedMemberAuthAccount(input: {
   memberId: string;
   email: string;
   initialPassword: string;
+  loginId?: string;
 }): Promise<VerifiedMemberAuthResolution> {
   const directAccount = await getStoredAccountByMemberId(input.memberId);
   if (directAccount) {
@@ -163,8 +182,9 @@ export async function resolveVerifiedMemberAuthAccount(input: {
   }
 
   const verifiedEmail = normalizeLoginId(input.email);
-  const candidate = verifiedEmail
-    ? await getStoredAccountByLoginId(verifiedEmail)
+  const candidateLoginId = normalizeLoginId(input.loginId ?? verifiedEmail);
+  const candidate = candidateLoginId
+    ? await getStoredAccountByLoginId(candidateLoginId)
     : null;
   if (!candidate) return { kind: 'none' };
 
@@ -177,10 +197,9 @@ export async function resolveVerifiedMemberAuthAccount(input: {
       candidate.temporaryPasswordExpiresAt &&
       candidate.temporaryPasswordExpiresAt > now,
     ) &&
-    verifiedIdentityMatchesTemporaryAccount({
+    identityCanClaimTemporaryAccount({
       identity: { userId: input.memberId, email: verifiedEmail },
-      loginId: candidate.loginId,
-      contactEmail: candidate.contactEmail,
+      account: candidate,
     }) &&
     (await verifyPassword({
       password: input.initialPassword,
@@ -511,10 +530,9 @@ export async function authenticatePassword(input: {
   if (
     account.accountKind === 'member' &&
     account.passwordState === 'temporary' &&
-    !verifiedIdentityMatchesTemporaryAccount({
+    !identityCanClaimTemporaryAccount({
       identity: input.verifiedIdentity ?? null,
-      loginId: account.loginId,
-      contactEmail: account.contactEmail,
+      account,
     })
   ) {
     return {
@@ -533,6 +551,7 @@ export async function authenticatePassword(input: {
       memberId: input.verifiedIdentity.userId,
       email: input.verifiedIdentity.email,
       initialPassword: input.password,
+      loginId: account.loginId,
     });
     if (
       resolution.kind === 'account' &&

@@ -14,8 +14,7 @@ export function isValidInitialPassword(input: {
 }): boolean {
   if (input.accountKind === 'member') return /^\d{8}$/.test(input.password);
   return (
-    input.password.length >= 8 &&
-    input.password.length <= maximumPasswordLength
+    input.password.length >= 8 && input.password.length <= maximumPasswordLength
   );
 }
 
@@ -206,6 +205,26 @@ export function verifiedIdentityMatchesTemporaryAccount(input: {
     isPlausibleMemberEmail(verifiedEmail) &&
     verifiedEmail === loginId &&
     verifiedEmail === contactEmail
+  );
+}
+
+export function verifiedIdentityCanClaimTemporaryAccount(input: {
+  identity: { userId: string; email: string } | null;
+  loginId: string;
+  contactEmail: string | null;
+  configuredOwnerLoginId?: string;
+  identityIsOwner?: boolean;
+}): boolean {
+  if (verifiedIdentityMatchesTemporaryAccount(input)) return true;
+  if (!input.identity?.userId.trim() || !input.identityIsOwner) return false;
+
+  const verifiedEmail = normalizeLoginId(input.identity.email);
+  const loginId = normalizeLoginId(input.loginId);
+  const ownerLoginId = normalizeLoginId(input.configuredOwnerLoginId ?? '');
+  return (
+    isPlausibleMemberEmail(verifiedEmail) &&
+    Boolean(ownerLoginId) &&
+    loginId === ownerLoginId
   );
 }
 

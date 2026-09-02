@@ -5,5 +5,6 @@ declare namespace Cloudflare {
     INSTRUCTOR_EMAILS?: string;
     AUTH_PASSWORD_PEPPER?: string;
     AUTH_BOOTSTRAP_TOKEN?: string;
+    AUTH_OWNER_LOGIN_ID?: string;
   }
 }

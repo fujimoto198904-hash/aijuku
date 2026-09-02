@@ -31,6 +31,7 @@ export function MemberLoginForm({
   const [status, setStatus] = useState<'idle' | 'sending' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [verificationRequired, setVerificationRequired] = useState(false);
+  const lockLoginId = verifiedInitialIdentity && initialLoginId.length > 0;
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -87,7 +88,7 @@ export function MemberLoginForm({
             setVerificationRequired(false);
           }}
           placeholder="name@example.com"
-          readOnly={verifiedInitialIdentity}
+          readOnly={lockLoginId}
           required
           spellCheck={false}
           value={loginId}
@@ -100,7 +101,7 @@ export function MemberLoginForm({
             ChatGPTで初回の本人確認が完了しました
           </span>
           <span className="mt-1 block text-quiet">
-            確認済みのログインIDと、誕生日の8桁（YYYYMMDD）を入力してください。
+            表示されたログインIDと、誕生日の8桁（YYYYMMDD）を入力してください。
           </span>
         </output>
       ) : null}

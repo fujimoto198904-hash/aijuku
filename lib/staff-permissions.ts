@@ -32,3 +32,9 @@ export function getStaffPermissions(email: string): StaffPermissions {
 export function hasStaffAccess(permissions: StaffPermissions): boolean {
   return permissions.canManageApplications || permissions.canReviewEvidence;
 }
+
+export function configuredOwnerLoginId(email: string): string | null {
+  if (!getStaffPermissions(email).isOwner) return null;
+  const loginId = env.AUTH_OWNER_LOGIN_ID?.trim().toLowerCase() ?? '';
+  return loginId || null;
+}
