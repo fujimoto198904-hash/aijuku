@@ -90,13 +90,14 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
   const textFiles = files.filter(
     (file) => file.startsWith('課題/') && file.endsWith('.txt'),
   );
-  const hasFilesToAttach = files.some((file) => !file.endsWith('.txt'));
-  const [materialsState, setMaterialsState] = useState<MaterialsState>({
-    status: 'idle',
-  });
+  const hasTextFiles = textFiles.length > 0;
+  const hasFilesToAttach = files.some((file) => !textFiles.includes(file));
+  const [materialsState, setMaterialsState] = useState<MaterialsState>(() =>
+    hasTextFiles ? { status: 'loading' } : { status: 'idle' },
+  );
   const [industry, setIndustry] = useState<DemoIndustry>('salon');
   const [copyStatus, setCopyStatus] = useState('');
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(hasTextFiles);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +116,22 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
       window.removeEventListener(demoIndustryChangeEvent, handleIndustryChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (!hasTextFiles) return;
+    let cancelled = false;
+    void loadMaterials().then(
+      (data) => {
+        if (!cancelled) setMaterialsState({ status: 'ready', data });
+      },
+      () => {
+        if (!cancelled) setMaterialsState({ status: 'error' });
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [hasTextFiles]);
 
   if (files.length === 0) return null;
 
@@ -167,29 +184,21 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
     <details
       className="soft-control mt-4 overflow-hidden border border-success/40 bg-future-mint-soft"
       open={open}
-      onToggle={(event) => {
-        const nextOpen = event.currentTarget.open;
-        setOpen(nextOpen);
-        if (
-          nextOpen &&
-          textFiles.length > 0 &&
-          materialsState.status === 'idle'
-        ) {
-          requestMaterials();
-        }
-      }}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
     >
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 text-xs font-semibold text-success [&::-webkit-details-marker]:hidden">
         <span>
           {textFiles.length > 0
-            ? '短いメモをコピー、資料はZIPから取得'
+            ? hasFilesToAttach
+              ? 'TXTはここでコピー／資料はZIPから取得'
+              : 'このTXTを開いて、そのままコピー'
             : '指定資料をZIPから取得'}
         </span>
         <ChevronDown className="size-4 shrink-0" aria-hidden="true" />
       </summary>
-      <div className="border-t border-success/25 p-4">
+      <div className="flex flex-col border-t border-success/25 p-4">
         <p className="text-xs leading-5 text-quiet">
-          練習する架空会社を選ぶと、その会社のメモとZIPに切り替わります。
+          練習する架空会社を選ぶと、その会社の教材に切り替わります。TXTは下のボタンでコピーし、ChatGPTへそのまま貼れます。
         </p>
         <fieldset
           className="mt-3 flex flex-wrap gap-2 border-0 p-0"
@@ -207,50 +216,6 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
             </button>
           ))}
         </fieldset>
-
-        {selectedPackage ? (
-          <div className="soft-card mt-4 border border-success/35 bg-white p-4">
-            <p className="text-sm font-semibold">
-              {industryLabels[industry]}の練習用ZIP
-            </p>
-            <p className="mt-2 text-xs leading-6 text-quiet">
-              すべて架空の練習データです。ZIPを取得し、表示された「展開」「解凍」またはファイルアプリで開きます。
-            </p>
-            <a
-              className="soft-button mt-3 inline-flex min-h-11 items-center justify-center gap-2 bg-success px-4 text-xs font-semibold text-white"
-              href={withSiteBasePath(selectedPackage.url)}
-              download={selectedPackage.file}
-            >
-              <Download className="size-4" aria-hidden="true" />
-              {industryLabels[industry]}のZIPを取得
-            </a>
-          </div>
-        ) : null}
-
-        {hasFilesToAttach ? (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="border-l-2 border-sapphire bg-white/70 p-4">
-              <p className="flex items-center gap-2 text-xs font-semibold text-sapphire">
-                <Paperclip className="size-4" aria-hidden="true" />
-                パソコン
-              </p>
-              <p className="mt-2 text-xs leading-6 text-quiet">
-                ZIPを展開 →
-                指定のPDF・Word・Excel・画像をChatGPTの入力欄へドラッグ。無理な時はクリップまたはファイル選択を使います。
-              </p>
-            </div>
-            <div className="border-l-2 border-human-coral bg-white/70 p-4">
-              <p className="flex items-center gap-2 text-xs font-semibold text-human-coral">
-                <Smartphone className="size-4" aria-hidden="true" />
-                スマホ
-              </p>
-              <p className="mt-2 text-xs leading-6 text-quiet">
-                ZIPを「ファイル」で展開 →
-                資料を共有してChatGPTで開くか、ChatGPTの入力欄からファイルを選びます。
-              </p>
-            </div>
-          </div>
-        ) : null}
 
         {textFiles.length > 0 && materialsState.status === 'loading' ? (
           <output className="mt-4 block text-xs leading-6 text-quiet">
@@ -304,12 +269,12 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
                     </p>
                     <button
                       type="button"
-                      className="soft-control inline-flex min-h-9 shrink-0 items-center gap-1.5 border border-success px-3 text-xs font-semibold text-success hover:bg-success hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                      className="soft-control inline-flex min-h-11 shrink-0 items-center gap-1.5 border border-success px-3 text-xs font-semibold text-success hover:bg-success hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => void copyMemo(file)}
                       disabled={!memo}
                     >
                       <Clipboard className="size-3.5" aria-hidden="true" />
-                      中身をコピー
+                      このTXTをコピー
                     </button>
                   </div>
                   <section
@@ -330,6 +295,50 @@ export function MaterialPreview({ files }: { files: readonly string[] }) {
         <p className="mt-2 min-h-4 text-xs text-success" aria-live="polite">
           {copyStatus}
         </p>
+
+        {selectedPackage && hasFilesToAttach ? (
+          <div className="soft-card mt-4 border border-success/35 bg-white p-4">
+            <p className="text-sm font-semibold">
+              {industryLabels[industry]}の練習用ZIP
+            </p>
+            <p className="mt-2 text-xs leading-6 text-quiet">
+              すべて架空の練習データです。ZIPを取得し、表示された「展開」「解凍」またはファイルアプリで開きます。
+            </p>
+            <a
+              className="soft-button mt-3 inline-flex min-h-11 items-center justify-center gap-2 bg-success px-4 text-xs font-semibold text-white"
+              href={withSiteBasePath(selectedPackage.url)}
+              download={selectedPackage.file}
+            >
+              <Download className="size-4" aria-hidden="true" />
+              {industryLabels[industry]}のZIPを取得
+            </a>
+          </div>
+        ) : null}
+
+        {hasFilesToAttach ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="border-l-2 border-sapphire bg-white/70 p-4">
+              <p className="flex items-center gap-2 text-xs font-semibold text-sapphire">
+                <Paperclip className="size-4" aria-hidden="true" />
+                パソコン
+              </p>
+              <p className="mt-2 text-xs leading-6 text-quiet">
+                ZIPを展開 →
+                指定のPDF・Word・Excel・画像をChatGPTの入力欄へドラッグ。無理な時はクリップまたはファイル選択を使います。
+              </p>
+            </div>
+            <div className="border-l-2 border-human-coral bg-white/70 p-4">
+              <p className="flex items-center gap-2 text-xs font-semibold text-human-coral">
+                <Smartphone className="size-4" aria-hidden="true" />
+                スマホ
+              </p>
+              <p className="mt-2 text-xs leading-6 text-quiet">
+                ZIPを「ファイル」で展開 →
+                資料を共有してChatGPTで開くか、ChatGPTの入力欄からファイルを選びます。
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
     </details>
   );
