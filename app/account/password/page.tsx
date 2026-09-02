@@ -7,6 +7,7 @@ import { BrandMark } from '@/components/brand-mark';
 import { PasswordChangeForm } from '@/components/password-change-form';
 import Link from '@/components/site-link';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
+import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,7 +60,13 @@ export default async function PasswordPage({
   const user = await getAuthenticatedUser();
   if (!user) redirect(loginPath);
   if (user.isDemo) redirect('/mypage');
-  if (!user.mustChangePassword && !requestedManagement) redirect(returnTo);
+  const accountReturnTo =
+    getAuthenticatedStaffPermissions(user).isOwner
+      ? '/aikanri'
+      : returnTo;
+  if (!user.mustChangePassword && !requestedManagement) {
+    redirect(accountReturnTo);
+  }
   const isInitialChange = user.mustChangePassword;
 
   return (
@@ -95,7 +102,7 @@ export default async function PasswordPage({
 
           <p className="mt-5 text-sm leading-7 text-quiet">
             {isInitialChange
-              ? '初期パスワードは、登録した誕生日の8桁（YYYYMMDD）で、発行から72時間有効です。ここで自分だけが知っている鍵に変えると、学習を始められます。'
+              ? '初期パスワードは、登録した誕生日の8桁（YYYYMMDD）で、発行から72時間有効です。ここで8文字以上の自分だけが知っている鍵に変えると、学習を始められます。'
               : '現在のパスワードを確認し、新しいパスワードへ更新します。'}
           </p>
 
@@ -129,9 +136,9 @@ export default async function PasswordPage({
 
           <PasswordChangeForm
             isInitialChange={isInitialChange}
-            loginId={user.email}
+            loginId={user.loginId}
             loginPath={loginPath}
-            returnTo={returnTo}
+            returnTo={accountReturnTo}
           />
         </section>
       </div>

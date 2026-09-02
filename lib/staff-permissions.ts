@@ -1,32 +1,30 @@
 import { env } from 'cloudflare:workers';
 
-export type StaffPermissions = {
-  isOwner: boolean;
-  canManageApplications: boolean;
-  canReviewEvidence: boolean;
-};
+import {
+  authenticatedStaffPermissions,
+  emailStaffPermissions,
+  type AuthenticatedStaffIdentity,
+  type StaffPermissions,
+} from '@/lib/staff-permission-policy';
 
-function configuredEmails(value: string | undefined): Set<string> {
-  return new Set(
-    (value ?? '')
-      .split(',')
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
+export type { StaffPermissions } from '@/lib/staff-permission-policy';
 
 export function getStaffPermissions(email: string): StaffPermissions {
-  const normalizedEmail = email.trim().toLowerCase();
-  const isOwner = configuredEmails(env.ADMIN_EMAILS).has(normalizedEmail);
-  const isInstructor = configuredEmails(env.INSTRUCTOR_EMAILS).has(
-    normalizedEmail,
-  );
+  return emailStaffPermissions(email, {
+    adminEmails: env.ADMIN_EMAILS,
+    instructorEmails: env.INSTRUCTOR_EMAILS,
+  });
+}
 
-  return {
-    isOwner,
-    canManageApplications: isOwner,
-    canReviewEvidence: isOwner || isInstructor,
-  };
+export function getAuthenticatedStaffPermissions(
+  user: AuthenticatedStaffIdentity,
+): StaffPermissions {
+  return authenticatedStaffPermissions(user, {
+    adminEmails: env.ADMIN_EMAILS,
+    instructorEmails: env.INSTRUCTOR_EMAILS,
+    ownerLoginId: env.AUTH_OWNER_LOGIN_ID,
+    ownerMemberId: env.AUTH_OWNER_MEMBER_ID,
+  });
 }
 
 export function hasStaffAccess(permissions: StaffPermissions): boolean {

@@ -4,7 +4,10 @@ import { externalReviewUnavailableResponse } from '@/lib/external-review-availab
 import { rejectDemoWrite } from '@/lib/demo-access';
 import { cleanRequestText, isSameOriginRequest } from '@/lib/request-security';
 import { isVercelRuntime } from '@/lib/site-runtime';
-import { getStaffPermissions, hasStaffAccess } from '@/lib/staff-permissions';
+import {
+  getAuthenticatedStaffPermissions,
+  hasStaffAccess,
+} from '@/lib/staff-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +30,7 @@ export async function POST(request: Request) {
   }
   const demoResponse = rejectDemoWrite(user);
   if (demoResponse) return demoResponse;
-  const permissions = getStaffPermissions(user.email);
+  const permissions = getAuthenticatedStaffPermissions(user);
   if (!hasStaffAccess(permissions)) {
     return Response.json({ error: '管理権限がありません。' }, { status: 403 });
   }

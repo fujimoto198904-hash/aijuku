@@ -45,6 +45,7 @@ import {
   sharedFees,
 } from '@/lib/member-service-plans';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
+import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 import { findTextbookTask, textbookCatalog } from '@/lib/textbook-catalog';
 import { textbookExplorePath, textbookGuidePath } from '@/lib/textbook-routes';
 
@@ -108,6 +109,7 @@ async function MemberPageContent({
   returnTo: string;
 }) {
   const user = await requireChatGPTUser(returnTo);
+  if (getAuthenticatedStaffPermissions(user).isOwner) redirect('/aikanri');
   const isDemo = user.isDemo === true;
   const [member, authAccount] = await Promise.all([
     getMember(user.userId),

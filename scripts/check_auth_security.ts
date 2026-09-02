@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 
 import {
@@ -12,6 +13,7 @@ import {
   verifiedIdentityMatchesTemporaryAccount,
   verifyPassword,
 } from '../lib/password-security';
+import { authenticatedStaffPermissions } from '../lib/staff-permission-policy';
 
 const pepper = 'local-auth-check-only-not-a-deployment-secret';
 const password = 'A safe passphrase 2026!';
@@ -124,6 +126,174 @@ assert.equal(
   }),
   null,
 );
+assert.match(
+  validatePersonalPassword({
+    password: 'Abc123!',
+    loginId: 'learner@example.com',
+  }) ?? '',
+  /8文字以上/,
+);
+assert.equal(
+  validatePersonalPassword({
+    password: 'Abc123!x',
+    loginId: 'learner@example.com',
+  }),
+  null,
+);
+assert.match(
+  validatePersonalPassword({
+    password: '        ',
+    loginId: 'learner@example.com',
+  }) ?? '',
+  /空白以外/,
+);
+
+const ownerConfiguration = {
+  adminEmails: 'owner@example.com',
+  instructorEmails: 'teacher@example.com',
+  ownerLoginId: 'aikanri',
+  ownerMemberId: 'owner-member-id',
+};
+assert.equal(
+  authenticatedStaffPermissions(
+    {
+      userId: 'owner-member-id',
+      authMethod: 'password',
+      email: 'owner@example.com',
+      loginId: 'aikanri',
+      isDemo: false,
+    },
+    ownerConfiguration,
+  ).isOwner,
+  true,
+  'the bound password account must receive owner access',
+);
+for (const nonOwner of [
+  {
+    userId: 'another-member-id',
+    authMethod: 'password' as const,
+    email: 'owner@example.com',
+    loginId: 'aikanri',
+    isDemo: false,
+  },
+  {
+    userId: 'owner-member-id',
+    authMethod: 'password' as const,
+    email: 'owner@example.com',
+    loginId: 'old-login',
+    isDemo: false,
+  },
+  {
+    userId: 'owner-member-id',
+    authMethod: 'password' as const,
+    email: 'owner@example.com',
+    loginId: 'aikanri',
+    isDemo: true,
+  },
+]) {
+  assert.deepEqual(
+    authenticatedStaffPermissions(nonOwner, ownerConfiguration),
+    {
+      isOwner: false,
+      canManageApplications: false,
+      canReviewEvidence: false,
+    },
+    'password access must fail closed unless member ID, login ID and non-demo state all match',
+  );
+}
+assert.deepEqual(
+  authenticatedStaffPermissions(
+    {
+      userId: 'teacher-member-id',
+      authMethod: 'password',
+      email: 'teacher@example.com',
+      loginId: 'teacher-login',
+      isDemo: false,
+    },
+    ownerConfiguration,
+  ),
+  {
+    isOwner: false,
+    canManageApplications: false,
+    canReviewEvidence: true,
+  },
+  'a verified instructor account may review evidence without owner access',
+);
+assert.deepEqual(
+  authenticatedStaffPermissions(
+    {
+      userId: 'chatgpt-owner',
+      authMethod: 'chatgpt',
+      email: 'owner@example.com',
+      loginId: 'unrelated-login',
+      isDemo: false,
+    },
+    ownerConfiguration,
+  ),
+  {
+    isOwner: true,
+    canManageApplications: true,
+    canReviewEvidence: true,
+  },
+  'ChatGPT owner access must continue to use the verified ADMIN_EMAILS identity',
+);
+assert.deepEqual(
+  authenticatedStaffPermissions(
+    {
+      userId: 'demo-id',
+      authMethod: 'chatgpt',
+      email: 'owner@example.com',
+      loginId: 'aikanri',
+      isDemo: true,
+    },
+    ownerConfiguration,
+  ),
+  {
+    isOwner: false,
+    canManageApplications: false,
+    canReviewEvidence: false,
+  },
+  'a demo account must never receive staff access',
+);
+
+const ownerLoginMigration = await readFile(
+  'drizzle/0009_aikanri_owner_login.sql',
+  'utf8',
+);
+function migratedLoginId(seedSql: string, memberId: string): string {
+  const schema = `
+    CREATE TABLE member_auth_accounts (
+      member_id TEXT PRIMARY KEY,
+      login_id TEXT NOT NULL UNIQUE,
+      password_state TEXT NOT NULL,
+      account_kind TEXT NOT NULL,
+      status TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `;
+  return execFileSync('sqlite3', ['-batch', ':memory:'], {
+    encoding: 'utf8',
+    input: `${schema}\n${seedSql}\n${ownerLoginMigration}\nSELECT login_id FROM member_auth_accounts WHERE member_id = '${memberId}';`,
+  }).trim();
+}
+const demoSeed =
+  "INSERT INTO member_auth_accounts VALUES ('demo-id', 'demo-login', 'personal', 'demo', 'active', 1);";
+assert.equal(
+  migratedLoginId(
+    `${demoSeed}\nINSERT INTO member_auth_accounts VALUES ('owner-id', 'owner-login', 'personal', 'member', 'active', 1);`,
+    'owner-id',
+  ),
+  'aikanri',
+  'the exact two-account initial production shape must receive the requested login ID',
+);
+assert.equal(
+  migratedLoginId(
+    `${demoSeed}\nINSERT INTO member_auth_accounts VALUES ('first-id', 'first-login', 'personal', 'member', 'active', 1);\nINSERT INTO member_auth_accounts VALUES ('second-id', 'second-login', 'personal', 'member', 'active', 1);`,
+    'first-id',
+  ),
+  'first-login',
+  'multiple active members must make the data migration a no-op',
+);
 
 const authSourcePaths = [
   'db/member-auth.ts',
@@ -145,6 +315,58 @@ assert.match(
   memberAuthSource,
   /ON CONFLICT\(key_hash\) DO UPDATE SET[\s\S]+RETURNING/,
   'rate limiting must update and return its result in one atomic D1 statement',
+);
+
+const staffPermissionSource = await readFile(
+  'lib/staff-permission-policy.ts',
+  'utf8',
+);
+assert.match(
+  staffPermissionSource,
+  /user\.isDemo[\s\S]+authMethod === 'chatgpt'[\s\S]+user\.userId[\s\S]+ownerMemberId[\s\S]+user\.loginId[\s\S]+ownerLoginId/,
+  'password-authenticated owner access must bind the immutable member ID, login ID and non-demo state',
+);
+
+for (const adminSourcePath of [
+  'app/admin/page.tsx',
+  'app/api/admin/applications/route.ts',
+  'app/api/admin/skills/route.ts',
+]) {
+  const adminSource = await readFile(adminSourcePath, 'utf8');
+  assert.match(
+    adminSource,
+    /getAuthenticatedStaffPermissions\(user\)/,
+    `${adminSourcePath} must authorize the password-authenticated owner`,
+  );
+}
+
+const myPageSource = await readFile('app/mypage/page.tsx', 'utf8');
+assert.match(
+  myPageSource,
+  /getAuthenticatedStaffPermissions\(user\)\.isOwner\) redirect\('\/aikanri'\)/,
+  'the owner account must use the management home instead of the member page',
+);
+
+const ownerEntrySource = await readFile('app/aikanri/page.tsx', 'utf8');
+assert.match(
+  ownerEntrySource,
+  /isVercelRuntime\(\)[\s\S]+canonicalMemberUrl\('\/aikanri'\)[\s\S]+redirect\('\/admin'\)/,
+  'the owner entry must hand Vercel traffic to Sites before opening the protected admin page',
+);
+const ownerLoginRouteSource = await readFile(
+  'app/api/auth/login/route.ts',
+  'utf8',
+);
+assert.match(
+  ownerLoginRouteSource,
+  /const accountHome = isOwner \? '\/aikanri' : requestedReturnTo/,
+  'the owner password login must always land on the management entry',
+);
+const nextConfigSource = await readFile('next.config.ts', 'utf8');
+assert.match(
+  nextConfigSource,
+  /privateRouteRoots[\s\S]+['"]\/aikanri['"]/,
+  'the owner entry must receive private no-store and noindex headers',
 );
 assert.match(
   memberAuthSource,

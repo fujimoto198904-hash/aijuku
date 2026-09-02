@@ -114,6 +114,7 @@ export function MemberLoginForm({
             className="min-w-0 flex-1 bg-transparent px-4 font-normal outline-none"
             id="password"
             maxLength={128}
+            minLength={8}
             name="password"
             onChange={(event) => {
               setPassword(event.target.value);

@@ -5,7 +5,7 @@ const passwordDigestVersion = 'pbkdf2-sha256-hmacpepper-v1';
 // The digest also uses a deployment-only HMAC pepper; login throttling and the
 // short-lived, verified-email flow protect the deliberately simple first key.
 export const passwordIterations = 100_000;
-export const minimumPersonalPasswordLength = 10;
+export const minimumPersonalPasswordLength = 8;
 export const maximumPasswordLength = 128;
 
 export function isValidInitialPassword(input: {
@@ -165,6 +165,9 @@ export function validatePersonalPassword(input: {
   }
   if (password.length < minimumPersonalPasswordLength) {
     return `${minimumPersonalPasswordLength}文字以上で入力してください。`;
+  }
+  if (!password.trim()) {
+    return '空白以外の文字を含むパスワードを設定してください。';
   }
   if (password.length > maximumPasswordLength) {
     return `${maximumPasswordLength}文字以内で入力してください。`;

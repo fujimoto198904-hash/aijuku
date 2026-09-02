@@ -13,6 +13,7 @@ export type ChatGPTUser = {
   userId: string;
   displayName: string;
   email: string;
+  loginId: string;
   fullName: string | null;
   authMethod: 'chatgpt' | 'password';
   mustChangePassword: boolean;
@@ -47,6 +48,7 @@ export async function getAuthenticatedUser(): Promise<ChatGPTUser | null> {
         userId: sessionUser.memberId,
         displayName: sessionUser.displayName,
         email: passwordAuthEmail(sessionUser),
+        loginId: sessionUser.loginId,
         fullName: sessionUser.displayName,
         authMethod: 'password',
         mustChangePassword: sessionUser.sessionKind === 'password-change',
@@ -61,6 +63,7 @@ export async function getAuthenticatedUser(): Promise<ChatGPTUser | null> {
 
   return {
     ...identity,
+    loginId: linkedAccount?.loginId ?? identity.email,
     authMethod: 'chatgpt',
     mustChangePassword: linkedAccount?.passwordState === 'temporary',
     isDemo: linkedAccount?.accountKind === 'demo',

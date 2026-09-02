@@ -3,6 +3,7 @@ import { requestClientAddress, noStoreJson } from '@/lib/auth-request';
 import { appendSessionCookie } from '@/lib/member-session-cookie';
 import { cleanRequestText, isSameOriginRequest } from '@/lib/request-security';
 import { isVercelRuntime } from '@/lib/site-runtime';
+import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 import {
   readChatGPTIdentityHeaders,
   safeRelativeReturnPath,
@@ -65,13 +66,21 @@ export async function POST(request: Request) {
       );
     }
 
+    const isOwner = getAuthenticatedStaffPermissions({
+      userId: result.session.user.memberId,
+      authMethod: 'password',
+      email: result.session.user.contactEmail ?? result.session.user.loginId,
+      loginId: result.session.user.loginId,
+      isDemo: result.session.user.accountKind === 'demo',
+    }).isOwner;
     const requestedReturnTo = safeRelativeReturnPath(
       cleanRequestText(body.returnTo, 1_000) || '/mypage',
     );
+    const accountHome = isOwner ? '/aikanri' : requestedReturnTo;
     const next =
       result.session.user.sessionKind === 'password-change'
-        ? `/account/password?return_to=${encodeURIComponent(requestedReturnTo)}`
-        : requestedReturnTo;
+        ? `/account/password?return_to=${encodeURIComponent(accountHome)}`
+        : accountHome;
     const headers = new Headers();
     appendSessionCookie(headers, {
       request,

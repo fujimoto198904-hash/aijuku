@@ -64,6 +64,13 @@
       "when": 1788385138461,
       "tag": "0008_oval_malice",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1788391388326,
+      "tag": "0009_aikanri_owner_login",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@ import {
 import { cleanRequestText, isSameOriginRequest } from '@/lib/request-security';
 import { rejectDemoWrite } from '@/lib/demo-access';
 import { isVercelRuntime } from '@/lib/site-runtime';
-import { getStaffPermissions } from '@/lib/staff-permissions';
+import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +30,7 @@ export async function PATCH(request: Request) {
   }
   const demoResponse = rejectDemoWrite(user);
   if (demoResponse) return demoResponse;
-  if (!getStaffPermissions(user.email).canManageApplications) {
+  if (!getAuthenticatedStaffPermissions(user).canManageApplications) {
     return Response.json(
       { error: '申込管理はオーナーだけが操作できます。' },
       { status: 403 },

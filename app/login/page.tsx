@@ -17,7 +17,10 @@ import { BrandMark } from '@/components/brand-mark';
 import { MemberLoginForm } from '@/components/member-login-form';
 import Link from '@/components/site-link';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
-import { configuredOwnerLoginId } from '@/lib/staff-permissions';
+import {
+  configuredOwnerLoginId,
+  getAuthenticatedStaffPermissions,
+} from '@/lib/staff-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,23 +69,29 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     ? params.initial[0]
     : params.initial;
   const isInitialVerificationReturn = initialValue === '1';
-  const loginQuery = new URLSearchParams();
-  if (isInitialVerificationReturn) loginQuery.set('initial', '1');
-  if (returnTo !== '/mypage') loginQuery.set('return_to', returnTo);
-  const loginPath = `/login${loginQuery.size ? `?${loginQuery}` : ''}`;
-
-  if (isVercelRuntime()) redirect(canonicalMemberUrl(loginPath));
-
+  if (isVercelRuntime()) {
+    const publicQuery = new URLSearchParams();
+    if (isInitialVerificationReturn) publicQuery.set('initial', '1');
+    if (returnTo !== '/mypage') publicQuery.set('return_to', returnTo);
+    redirect(
+      canonicalMemberUrl(`/login${publicQuery.size ? `?${publicQuery}` : ''}`),
+    );
+  }
   const user = await getAuthenticatedUser();
+  const accountReturnTo =
+    user && getAuthenticatedStaffPermissions(user).isOwner
+      ? '/aikanri'
+      : returnTo;
+
   const hasVerifiedInitialIdentity = Boolean(
     isInitialVerificationReturn && user?.authMethod === 'chatgpt',
   );
   if (user?.mustChangePassword && !hasVerifiedInitialIdentity) {
-    redirect(passwordChangePath(returnTo));
+    redirect(passwordChangePath(accountReturnTo));
   }
-  if (user && !hasVerifiedInitialIdentity) redirect(returnTo);
+  if (user && !hasVerifiedInitialIdentity) redirect(accountReturnTo);
   const verificationReturnPath = `/login?initial=1&return_to=${encodeURIComponent(
-    returnTo,
+    accountReturnTo,
   )}`;
   const verificationPath = chatGPTSignInPath(verificationReturnPath);
   const initialLoginId = hasVerifiedInitialIdentity
@@ -120,7 +129,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
             <MemberLoginForm
               initialLoginId={initialLoginId}
-              returnTo={returnTo}
+              returnTo={accountReturnTo}
               verificationPath={verificationPath}
               verifiedInitialIdentity={hasVerifiedInitialIdentity}
             />

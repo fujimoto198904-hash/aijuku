@@ -46,6 +46,7 @@ const privateRouteRoots = [
   '/join',
   '/reserve',
   '/mypage',
+  '/aikanri',
   '/admin',
   '/review',
   '/skills',

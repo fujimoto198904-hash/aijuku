@@ -20,7 +20,10 @@ import {
   listAdminSkillEvidence,
 } from '@/db/skill-passport';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
-import { getStaffPermissions, hasStaffAccess } from '@/lib/staff-permissions';
+import {
+  getAuthenticatedStaffPermissions,
+  hasStaffAccess,
+} from '@/lib/staff-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,7 +45,7 @@ export default async function AdminPage({
 }) {
   if (isVercelRuntime()) redirect(canonicalMemberUrl('/admin'));
   const user = await requireChatGPTUser('/admin');
-  const permissions = getStaffPermissions(user.email);
+  const permissions = getAuthenticatedStaffPermissions(user);
 
   if (!hasStaffAccess(permissions)) {
     return (

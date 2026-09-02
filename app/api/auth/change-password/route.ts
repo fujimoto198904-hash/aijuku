@@ -8,6 +8,7 @@ import { noStoreJson } from '@/lib/auth-request';
 import { appendSessionCookie } from '@/lib/member-session-cookie';
 import { cleanRequestText, isSameOriginRequest } from '@/lib/request-security';
 import { isVercelRuntime } from '@/lib/site-runtime';
+import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,8 +72,9 @@ export async function POST(request: Request) {
     const requestedReturnTo = safeRelativeReturnPath(
       cleanRequestText(body.returnTo, 1_000) || '/mypage',
     );
-    const next =
-      member?.status === 'active' && hasCurrentMembershipConsent(member)
+    const next = getAuthenticatedStaffPermissions(user).isOwner
+      ? '/aikanri'
+      : member?.status === 'active' && hasCurrentMembershipConsent(member)
         ? requestedReturnTo
         : `/mypage/onboarding?return_to=${encodeURIComponent(requestedReturnTo)}`;
     const headers = new Headers();

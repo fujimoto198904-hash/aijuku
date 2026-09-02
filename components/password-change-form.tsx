@@ -40,9 +40,13 @@ export function PasswordChangeForm({
 
   const checks = useMemo(
     () => [
-      { label: '10文字以上', passed: newPassword.length >= 10 },
+      { label: '8文字以上', passed: newPassword.length >= 8 },
       {
-        label: '誕生日の8桁とは異なる',
+        label: '空白以外の文字を含む',
+        passed: newPassword.length > 0 && Boolean(newPassword.trim()),
+      },
+      {
+        label: '数字8桁だけにしない（誕生日を避ける）',
         passed: newPassword.length > 0 && !/^\d{8}$/.test(newPassword),
       },
       {
@@ -257,7 +261,7 @@ function PasswordField({
         className="soft-control min-h-14 border border-rule bg-white px-4 font-normal outline-none transition focus:border-sapphire"
         id={name}
         maxLength={128}
-        minLength={1}
+        minLength={autoComplete === 'new-password' ? 8 : 1}
         name={name}
         onChange={(event) => onChange(event.target.value)}
         required
