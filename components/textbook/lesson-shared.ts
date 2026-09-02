@@ -14,7 +14,7 @@ export const lessonSections = [
   { id: 'complete', number: '07', label: 'ここまでできたら完成' },
   { id: 'application', number: '08', label: '自分の仕事なら' },
   { id: 'ask', number: '09', label: '困ったら藤本に聞く' },
-  { id: 'stepup', number: '10', label: 'ステップアップ' },
+  { id: 'stepup', number: '10', label: 'もう一つできること' },
 ] as const;
 
 export type LessonSectionId = (typeof lessonSections)[number]['id'];

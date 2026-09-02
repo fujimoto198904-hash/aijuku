@@ -654,18 +654,24 @@ function renderLesson(
     .map((tip) => `**${tip.title}**\n\n${codeBlock(tip.say)}`)
     .join('\n\n');
   const nextPrompts = renderNextPrompts(lesson);
-  const stepUpHeading =
-    lesson.stepUp.kind === 'task'
-      ? `${lesson.stepUp.targetTaskId} ${lesson.stepUp.title}`
-      : `総仕上げ ${lesson.stepUp.title}`;
-  const stepUpStatus =
-    lesson.stepUp.kind === 'task'
-      ? `これは今の完成品へ便利を一つ足す任意の発展です。${lesson.stepUp.targetTaskId}を正式に終えた扱いにはなりません。下の一言を今いるChatまたはWorkの続きで試すか、詳しい手順を開いて次の課題として進めます。`
-      : 'これは今の完成品へ便利を一つ足す任意の総仕上げです。ここまでで終わっても大丈夫です。';
-  const formalNext =
-    lesson.stepUp.kind === 'task'
-      ? `**次の正式課題:** ${lesson.stepUp.formalNextTaskId}`
+  const stepUpHeading = lesson.stepUp.title;
+  const stepUpRoute =
+    lesson.stepUp.kind === 'terminal'
+      ? '**このコースに次の課題はありません。** 下の文は、やりたい人だけが試す最後の仕上げです。'
+      : lesson.stepUp.targetTaskId === lesson.stepUp.formalNextTaskId
+        ? `**この内容を詳しく学ぶ教材:** ${lesson.stepUp.targetTaskId}`
+        : `**おすすめ・今の作品を育てる:** ${lesson.stepUp.targetTaskId}\n\n**番号順に学ぶ:** ${lesson.stepUp.formalNextTaskId}`;
+  const stepUpPromptNote =
+    lesson.stepUp.kind === 'task' &&
+    lesson.stepUp.targetTaskId !== lesson.stepUp.formalNextTaskId
+      ? '下の文は「おすすめ・今の作品を育てる」を選ぶ時だけ使います。「番号順に学ぶ」を選ぶ時は、この文を送らず、そちらの教材を開きます。'
       : '';
+  const stepUpIntro =
+    lesson.stepUp.kind === 'terminal'
+      ? 'このコースはここまでで完成です。最後にもう一度試したい人だけ、今作った物を使って総仕上げをします。'
+      : lesson.stepUp.targetTaskId !== lesson.stepUp.formalNextTaskId
+        ? 'この課題はここまでで完成です。さらに続けたい時は、まず下の二つから進み方を一つ選びます。'
+        : 'この課題はここまでで完成です。さらに続けたい時だけ、今作った物を使って下の文を一つ送ります。';
 
   return `## サンプル${index + 1}｜${task.id} ${task.title}
 
@@ -719,15 +725,19 @@ ${lesson.application}
 
 止まった画面のスクショと、「${task.id}で、ここまでできた：＿＿。ここで止まった：＿＿」を藤本へ見せます。うまく説明できなくても大丈夫です。実在する個人情報や秘密は隠します。
 
-### ステップアップ｜${stepUpHeading}
+### もう一つできること（任意）｜${stepUpHeading}
 
-${stepUpStatus}
+${stepUpIntro}
 
-**今回できた物を、そのまま使う:** ${lesson.stepUp.carryOver}
+**今作った物の、ここを使います:** ${lesson.stepUp.carryOver}
 
-**次に増えること:** ${lesson.stepUp.adds}
+**できるようになること:** ${lesson.stepUp.adds}
 
-${formalNext}
+${stepUpRoute}
+
+${stepUpPromptNote}
+
+**次に送る文:**
 
 ${codeBlock(lesson.stepUp.say)}`;
 }
@@ -767,7 +777,7 @@ const introduction = `# 藤本実学塾 ChatGPT実践教科書 本文サンプ�
 
 どの方法でも、**作る → 実際に触る → 気になる所を一つ直す → 保存した物を開く**の順で進めます。メール送信、予定登録、公開、支払い、契約は勝手に進めさせません。
 
-最後のステップアップは任意です。今の完成品へ便利を一つ足す練習で、表示された別課題を正式に修了したことにはなりません。
+最後の「もう一つできること」は任意です。やらなくても今の課題は完成です。続けたい時だけ、今作った物を使って次に送る文を一つ試します。
 
 ---`;
 

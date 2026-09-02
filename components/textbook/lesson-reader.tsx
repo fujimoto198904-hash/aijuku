@@ -53,6 +53,12 @@ const trackColors: Record<ClientTextbookTask['track'], string> = {
   generation: 'border-warning bg-sunrise-soft text-warning',
 };
 
+const stepUpActions = [
+  '今使っているChatまたはWorkを、そのまま続ける',
+  '下の「次に送る文」をコピーして送る',
+  '出てきた物を見て、必要な所だけ一つ直す',
+] as const;
+
 type ChecksStorageStatus = 'checking' | 'saved' | 'not-saved' | 'unavailable';
 
 type ChecksStorageState = {
@@ -201,9 +207,23 @@ export function LessonReader({
     });
   }
 
+  function showStepUpRoutes() {
+    const target =
+      articleRef.current?.querySelector<HTMLElement>('#stepup-route');
+    target?.focus({ preventScroll: true });
+    target?.scrollIntoView({
+      behavior: preferredScrollBehavior(),
+      block: 'center',
+    });
+  }
+
   const materialGuide = getTextbookMaterialGuide(lesson);
   const promptExplanation = getTextbookPromptExplanation(lesson);
   const accessProfile = getTextbookAccessProfile(task);
+  const stepUpTargetMatchesFormal = stepUpTargetTask?.id === formalNextTask?.id;
+  const stepUpHasTwoRoutes = Boolean(
+    stepUpTargetTask && formalNextTask && !stepUpTargetMatchesFormal,
+  );
   const modeLabel =
     lesson.recommendedMode === 'chat' ? '作業画面：Chat' : '作業画面：Work';
   const materialSummary =
@@ -974,113 +994,239 @@ export function LessonReader({
             hidden={!sectionVisible[9]}
             className="mt-16 scroll-mt-24 border-t-2 border-sapphire pt-7"
           >
-            <p className="numeric-text text-xs text-sapphire">10</p>
-            <h3 className="mt-3 font-mincho text-3xl">ステップアップ</h3>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="numeric-text text-xs text-sapphire">10 / 任意</p>
+                <h3 className="mt-3 font-mincho text-3xl">
+                  もう一つ、できること
+                </h3>
+              </div>
+              <span className="soft-badge inline-flex border border-sapphire/35 bg-sapphire-soft px-3 py-1.5 text-xs font-semibold text-sapphire">
+                やりたい人だけ
+              </span>
+            </div>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-              ここまでで終わっても大丈夫です。まだやってみたい人は、最初から作り直さず、今できた物へ便利を一つだけ足します。
+              {lesson.stepUp.kind === 'terminal'
+                ? 'このコースはここまでで完成です。最後にもう一度試したい人だけ、今作った物を使って総仕上げをします。'
+                : stepUpHasTwoRoutes
+                  ? 'この課題はここまでで完成です。さらに続けたい時は、まず下の二つから進み方を一つ選びます。'
+                  : 'この課題はここまでで完成です。さらに続けたい時だけ、今作った物を使って、下の文を一つ送ります。'}
             </p>
             <div className="soft-card soft-panel-clip mt-7 overflow-hidden border border-sapphire bg-sapphire-soft">
-              <div className="grid lg:grid-cols-[0.86fr_1.14fr]">
-                <div className="border-b border-sapphire/25 p-6 lg:border-r lg:border-b-0 sm:p-8">
-                  <span className="soft-badge numeric-text inline-flex border border-sapphire bg-white px-3 py-1.5 text-xs font-semibold text-sapphire">
-                    {lesson.stepUp.kind === 'task'
-                      ? `次におすすめ ${lesson.stepUp.targetTaskId}`
-                      : 'コースの総仕上げ'}
-                  </span>
-                  <h4 className="mt-5 font-mincho text-2xl leading-relaxed">
-                    {lesson.stepUp.title}
-                  </h4>
-                  {stepUpTargetTask ? (
-                    <div className="mt-5 border-l-2 border-sapphire/35 pl-4">
-                      <p className="text-xs font-semibold text-sapphire">
-                        課題カタログの行き先
-                      </p>
-                      <p className="mt-2 text-xs leading-6 text-quiet">
-                        {stepUpTargetTask.id}「{stepUpTargetTask.title}」
-                      </p>
-                    </div>
-                  ) : null}
-                  <div className="mt-6 border-t border-sapphire/25 pt-5">
-                    <p className="text-xs font-semibold text-sapphire">
-                      今回できた物を、そのまま使う
-                    </p>
-                    <p className="mt-2 text-sm leading-7 text-quiet">
-                      {lesson.stepUp.carryOver}
-                    </p>
-                  </div>
-                  <div className="mt-5 border-t border-sapphire/25 pt-5">
-                    <p className="text-xs font-semibold text-sapphire">
-                      次に増えること
-                    </p>
-                    <p className="mt-2 text-sm leading-7 text-quiet">
-                      {lesson.stepUp.adds}
-                    </p>
-                  </div>
-                  {formalNextTask ? (
-                    <div className="mt-5 border-t border-sapphire/25 pt-5">
-                      <p className="text-xs font-semibold text-sapphire">
-                        番号順の正式な次課題
-                      </p>
-                      <p className="mt-2 text-sm leading-7 text-quiet">
-                        {formalNextTask.id}「{formalNextTask.title}」
-                      </p>
-                    </div>
-                  ) : null}
-                </div>
-                <div className="bg-paper-white p-6 sm:p-8">
-                  <div className="flex items-center gap-3 text-sapphire">
-                    <Compass className="size-5" aria-hidden="true" />
-                    <p className="text-xs font-semibold">
-                      今いるChatまたはWorkの続きで、こう言う
-                    </p>
-                  </div>
-                  <p className="mt-5 font-mono text-xs leading-7">
-                    {lesson.stepUp.say}
-                  </p>
-                  {lesson.stepUp.kind === 'task' ? (
-                    <p className="mt-4 border-l-2 border-warning pl-4 text-xs leading-6 text-quiet">
-                      これは今の完成品へ小さな便利を足す任意の発展です。
-                      {lesson.stepUp.targetTaskId}
-                      を正式に終えた扱いにはなりません。
-                    </p>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      copyText(
-                        lesson.stepUp.say,
-                        'ステップアップの一言',
-                        setStepUpCopyStatus,
-                      )
-                    }
-                    className="soft-button mt-6 inline-flex min-h-11 items-center justify-center gap-2 bg-sapphire px-5 text-xs font-semibold text-white"
-                  >
-                    <Clipboard className="size-4" aria-hidden="true" />
-                    この一言をコピー
-                  </button>
-                  <p
-                    className="mt-3 min-h-5 text-xs text-sapphire"
-                    aria-live="polite"
-                  >
-                    {stepUpCopyStatus}
-                  </p>
-                  {stepUpTargetTask ? (
-                    <Link
-                      href={textbookLessonPath(stepUpTargetTask.id)}
-                      className="soft-control mt-2 inline-flex min-h-11 items-center gap-2 border border-sapphire px-4 text-xs font-semibold text-sapphire hover:bg-sapphire hover:text-white"
+              <div className="border-b border-sapphire/25 bg-paper-white/60 p-6 sm:p-8">
+                <p className="text-xs font-semibold text-sapphire">
+                  次にすること
+                </p>
+                <h4 className="mt-3 max-w-4xl font-mincho text-2xl leading-relaxed">
+                  {lesson.stepUp.title}
+                </h4>
+              </div>
+              <div
+                className={`grid ${
+                  stepUpHasTwoRoutes
+                    ? 'lg:grid-cols-[0.86fr_1.14fr]'
+                    : 'lg:grid-cols-[1.14fr_0.86fr]'
+                }`}
+              >
+                {(() => {
+                  const routePanel = (
+                    <div
+                      key="stepup-route-panel"
+                      className={`p-6 sm:p-8 ${
+                        stepUpHasTwoRoutes
+                          ? 'lg:border-r'
+                          : 'border-t border-sapphire/25 lg:border-t-0'
+                      }`}
                     >
-                      詳しい手順を開く
-                      <ArrowRight className="size-3.5" aria-hidden="true" />
-                    </Link>
-                  ) : null}
-                  <a
-                    className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-quiet hover:text-sapphire"
-                    href="#ask"
-                  >
-                    止まったら、藤本に見せる文へ戻る
-                    <ArrowRight className="size-3.5" aria-hidden="true" />
-                  </a>
-                </div>
+                      <div>
+                        <p className="text-xs font-semibold text-sapphire">
+                          今作った物の、ここを使います
+                        </p>
+                        <p className="mt-2 text-sm leading-7 text-quiet">
+                          {lesson.stepUp.carryOver}
+                        </p>
+                      </div>
+                      <div className="mt-5 border-t border-sapphire/25 pt-5">
+                        <p className="text-xs font-semibold text-sapphire">
+                          できるようになること
+                        </p>
+                        <p className="mt-2 text-sm leading-7 text-quiet">
+                          {lesson.stepUp.adds}
+                        </p>
+                      </div>
+                      <div
+                        id="stepup-route"
+                        tabIndex={-1}
+                        className="mt-5 scroll-mt-24 border-t border-sapphire/25 pt-5 outline-none focus-visible:ring-2 focus-visible:ring-sapphire/40"
+                      >
+                        {stepUpHasTwoRoutes ? (
+                          <>
+                            <p className="text-xs font-semibold text-sapphire">
+                              進み方は、どちらか一つでOKです
+                            </p>
+                            <div className="mt-3 grid gap-3">
+                              {stepUpTargetTask ? (
+                                <Link
+                                  href={textbookLessonPath(stepUpTargetTask.id)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="soft-control flex min-h-16 items-center justify-between gap-4 border border-sapphire bg-paper-white px-4 py-3 hover:bg-sapphire hover:text-white"
+                                >
+                                  <span className="min-w-0">
+                                    <span className="block text-[11px] font-semibold">
+                                      おすすめ：今の作品を育てる
+                                    </span>
+                                    <span className="mt-1 block text-xs leading-5">
+                                      {`${stepUpTargetTask.id}「${stepUpTargetTask.title}」`}
+                                    </span>
+                                  </span>
+                                  <ArrowRight
+                                    className="size-4 shrink-0"
+                                    aria-hidden="true"
+                                  />
+                                </Link>
+                              ) : null}
+                              {formalNextTask ? (
+                                <Link
+                                  href={textbookLessonPath(formalNextTask.id)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="soft-control flex min-h-16 items-center justify-between gap-4 border border-rule bg-paper-white px-4 py-3 hover:border-deep-green hover:bg-deep-green hover:text-white"
+                                >
+                                  <span className="min-w-0">
+                                    <span className="block text-[11px] font-semibold">
+                                      番号順に学ぶ
+                                    </span>
+                                    <span className="mt-1 block text-xs leading-5">
+                                      {`${formalNextTask.id}「${formalNextTask.title}」`}
+                                    </span>
+                                  </span>
+                                  <ArrowRight
+                                    className="size-4 shrink-0"
+                                    aria-hidden="true"
+                                  />
+                                </Link>
+                              ) : null}
+                            </div>
+                          </>
+                        ) : stepUpTargetTask ? (
+                          <>
+                            <p className="text-xs font-semibold text-sapphire">
+                              この内容を詳しく学ぶ教材
+                            </p>
+                            <Link
+                              href={textbookLessonPath(stepUpTargetTask.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="soft-control mt-3 flex min-h-16 items-center justify-between gap-4 border border-sapphire bg-paper-white px-4 py-3 hover:bg-sapphire hover:text-white"
+                            >
+                              <span className="min-w-0 text-xs leading-5">
+                                {`${stepUpTargetTask.id}「${stepUpTargetTask.title}」`}
+                              </span>
+                              <ArrowRight
+                                className="size-4 shrink-0"
+                                aria-hidden="true"
+                              />
+                            </Link>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-xs font-semibold text-sapphire">
+                              このコースに、次の課題はありません
+                            </p>
+                            <p className="mt-2 text-xs leading-6 text-quiet">
+                              下の文は、やりたい人だけが試す最後の仕上げです。
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                  const promptPanel = (
+                    <div
+                      key="stepup-prompt-panel"
+                      className={`bg-paper-white p-6 sm:p-8 ${
+                        stepUpHasTwoRoutes
+                          ? 'border-t border-sapphire/25 lg:border-t-0'
+                          : 'lg:border-r'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 text-sapphire">
+                        <Compass className="size-5" aria-hidden="true" />
+                        <p className="text-xs font-semibold">
+                          {stepUpHasTwoRoutes
+                            ? '「今の作品を育てる」時に送る文'
+                            : '続ける時に送る文'}
+                        </p>
+                      </div>
+                      {stepUpHasTwoRoutes ? (
+                        <p className="mt-4 border-l-2 border-warning pl-4 text-xs leading-6 text-quiet">
+                          下の文は「おすすめ：今の作品を育てる」を選ぶ時だけ使います。「番号順に学ぶ」を選ぶ時は、この文を送らず、そちらの教材を開いてください。
+                        </p>
+                      ) : null}
+                      <div className="mt-5 border-t border-rule pt-5">
+                        <p className="text-xs font-semibold text-sapphire">
+                          次に送る文
+                        </p>
+                        <pre
+                          className="soft-control mt-3 overflow-x-auto border border-sapphire/20 bg-sapphire-soft/45 p-5 font-mono text-xs leading-7 whitespace-pre-wrap text-brand-dark"
+                          tabIndex={0}
+                        >
+                          {lesson.stepUp.say}
+                        </pre>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          copyText(
+                            lesson.stepUp.say,
+                            '次に送る文',
+                            setStepUpCopyStatus,
+                          )
+                        }
+                        className="soft-button mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 bg-sapphire px-5 text-xs font-semibold text-white sm:w-auto"
+                      >
+                        <Clipboard className="size-4" aria-hidden="true" />
+                        次に送る文をコピー
+                      </button>
+                      <p
+                        className="mt-3 min-h-5 text-xs text-sapphire"
+                        aria-live="polite"
+                      >
+                        {stepUpCopyStatus}
+                      </p>
+                      <div className="mt-3 border-t border-rule pt-5">
+                        <p className="text-xs font-semibold text-sapphire">
+                          送り方は3つだけ
+                        </p>
+                        <ol className="mt-4 grid gap-3">
+                          {stepUpActions.map((action, index) => (
+                            <li
+                              key={action}
+                              className="flex items-start gap-3 text-xs leading-6 text-quiet"
+                            >
+                              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-sapphire text-[11px] font-bold leading-none text-white">
+                                {index + 1}
+                              </span>
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                      <a
+                        className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-quiet hover:text-sapphire"
+                        href="#ask"
+                      >
+                        止まったら、藤本に見せる文へ戻る
+                        <ArrowRight className="size-3.5" aria-hidden="true" />
+                      </a>
+                    </div>
+                  );
+
+                  return stepUpHasTwoRoutes
+                    ? [routePanel, promptPanel]
+                    : [promptPanel, routePanel];
+                })()}
               </div>
             </div>
           </section>
@@ -1102,20 +1248,18 @@ export function LessonReader({
             ) : (
               <span aria-hidden="true" />
             )}
-            {formalNextTask ? (
-              <Link
-                href={textbookLessonPath(formalNextTask.id)}
-                className="soft-control flex min-h-14 min-w-0 items-center justify-between gap-3 overflow-hidden border border-deep-green bg-paper-white px-5 py-3 text-left hover:bg-deep-green hover:text-white"
-              >
-                <span className="min-w-0 truncate text-xs font-semibold">
-                  {formalNextTask.id} {formalNextTask.title}
-                </span>
-                <span className="flex shrink-0 items-center gap-2 text-xs">
-                  次の課題
-                  <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-                </span>
-              </Link>
-            ) : null}
+            <Link
+              href={textbookExplorePath}
+              className="soft-control flex min-h-14 min-w-0 items-center justify-between gap-3 overflow-hidden border border-deep-green bg-paper-white px-5 py-3 text-left hover:bg-deep-green hover:text-white"
+            >
+              <span className="min-w-0 truncate text-xs font-semibold">
+                興味や目的から、別の課題を選び直す
+              </span>
+              <span className="flex shrink-0 items-center gap-2 text-xs">
+                課題一覧
+                <ListOrdered className="size-4 shrink-0" aria-hidden="true" />
+              </span>
+            </Link>
           </div>
         </div>
 
@@ -1231,15 +1375,36 @@ export function LessonReader({
                 {lessonSections[currentSection].label}
               </span>
             </p>
-            <button
-              type="button"
-              className="inline-flex min-w-11 items-center justify-center px-1.5 text-xs font-semibold text-quiet disabled:opacity-35"
-              disabled={currentSection === lessonSections.length - 1}
-              onClick={() => goToSection(currentSection + 1)}
-            >
-              次へ
-              <ChevronRight className="size-4" aria-hidden="true" />
-            </button>
+            {currentSection === lessonSections.length - 1 && formalNextTask ? (
+              <button
+                type="button"
+                aria-controls="stepup-route"
+                onClick={showStepUpRoutes}
+                className="inline-flex min-w-11 items-center justify-center gap-1 px-1.5 text-xs font-semibold text-deep-green"
+              >
+                <Compass className="size-4" aria-hidden="true" />
+                進み方
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="inline-flex min-w-11 items-center justify-center px-1.5 text-xs font-semibold text-quiet disabled:opacity-35"
+                disabled={currentSection === lessonSections.length - 1}
+                onClick={() => goToSection(currentSection + 1)}
+              >
+                {currentSection === lessonSections.length - 1 ? (
+                  <>
+                    <Check className="size-4" aria-hidden="true" />
+                    ここまで
+                  </>
+                ) : (
+                  <>
+                    次へ
+                    <ChevronRight className="size-4" aria-hidden="true" />
+                  </>
+                )}
+              </button>
+            )}
             <button
               type="button"
               className={`inline-flex min-w-11 flex-col items-center justify-center gap-1 px-1.5 text-xs font-semibold ${
