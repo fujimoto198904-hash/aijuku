@@ -1,4 +1,5 @@
 import { authenticatePassword } from '@/db/member-auth';
+import { getMember } from '@/db/membership';
 import { requestClientAddress, noStoreJson } from '@/lib/auth-request';
 import { appendSessionCookie } from '@/lib/member-session-cookie';
 import { cleanRequestText, isSameOriginRequest } from '@/lib/request-security';
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
               ? '試行回数が多いため、一時的にログインを停止しました。時間をおいてお試しください。'
               : result.reason === 'verification-required'
                 ? '初回ログインには、同じメールアドレスでChatGPTの本人確認を完了してください。'
-              : 'ログインIDまたはパスワードを確認してください。',
+                : 'ログインIDまたはパスワードを確認してください。',
           retryAfterSeconds: result.retryAfterSeconds || undefined,
           code:
             result.reason === 'verification-required'
@@ -66,17 +67,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const isOwner = getAuthenticatedStaffPermissions({
+    const staffPermissions = getAuthenticatedStaffPermissions({
       userId: result.session.user.memberId,
       authMethod: 'password',
       email: result.session.user.contactEmail ?? result.session.user.loginId,
       loginId: result.session.user.loginId,
       isDemo: result.session.user.accountKind === 'demo',
-    }).isOwner;
+    });
+    const member =
+      result.session.user.accountKind === 'member'
+        ? await getMember(result.session.user.memberId)
+        : null;
+    const inactiveMember = Boolean(member && member.status !== 'active');
     const requestedReturnTo = safeRelativeReturnPath(
       cleanRequestText(body.returnTo, 1_000) || '/mypage',
     );
-    const accountHome = isOwner ? '/aikanri' : requestedReturnTo;
+    const accountHome = inactiveMember
+      ? '/mypage/billing'
+      : staffPermissions.isOwner
+        ? '/aikanri'
+        : requestedReturnTo;
     const next =
       result.session.user.sessionKind === 'password-change'
         ? `/account/password?return_to=${encodeURIComponent(accountHome)}`

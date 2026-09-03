@@ -10,7 +10,7 @@
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
     "doctor": "node scripts/doctor.mjs",
-    "verify": "npm run doctor && npm run check:catalog && npm run check:lessons && npm run check:access && npm run check:auth && npm run check:docs && npm run check:demo-data && npm run build",
+    "verify": "npm run doctor && npm run check:catalog && npm run check:lessons && npm run check:access && npm run check:auth && npm run check:docs && npm run check:columns && npm run check:calendar && npm run check:demo-data && npm run build",
     "build:catalog": "node scripts/build_textbook_catalog.mjs",
     "build:lessons": "tsx scripts/check_textbook_lessons.ts --write && tsx scripts/build_lesson_meta.ts",
     "check:catalog": "node scripts/build_textbook_catalog.mjs --check",
@@ -25,7 +25,9 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "build:demo-index": "python3 scripts/build_demo_file_index.py && tsx scripts/build_demo_task_download_plan.ts && python3 scripts/extract_demo_direct_files.py",
-    "check:docs": "node scripts/check_docs.mjs"
+    "check:docs": "node scripts/check_docs.mjs",
+    "check:columns": "tsx scripts/check_chatgpt_columns.ts",
+    "check:calendar": "tsx scripts/check_google_calendar.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
@@ -44,6 +46,7 @@
     "react-resizable-panels": "4.5.8",
     "react-server-dom-webpack": "19.2.8",
     "recharts": "3.8.0",
+    "stripe": "22.4.0",
     "tailwind-merge": "3.6.0",
     "tw-animate-css": "1.4.0",
     "vinext": "1.0.0-beta.8"

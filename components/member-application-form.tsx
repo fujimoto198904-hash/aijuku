@@ -49,7 +49,7 @@ export function MemberApplicationForm({
 
       setStatus('success');
       setMessage(
-        '申込希望を受け付けました。日程・料金・支払いはまだ確定していません。運営確認後、登録メールへご案内します。',
+        '申込希望を受け付けました。日程・料金・支払いはまだ確定していません。確定した内容はマイページで確認できます。',
       );
       requestId.current = '';
       window.setTimeout(
@@ -121,9 +121,22 @@ export function MemberApplicationForm({
             className="min-h-12 border border-rule bg-white px-4 font-normal outline-none transition-colors focus:border-sapphire"
             maxLength={300}
             name="preferredSchedule"
-            placeholder="例：平日19時以降／11月から"
+            placeholder={
+              serviceType === 'in-person-tutor'
+                ? '例：10月3日 19時／10月5日 18時'
+                : serviceType === 'online-tutor'
+                  ? '例：9月10日 19時／9月12日 20時'
+                  : '例：11月から通いたい'
+            }
             required
           />
+          <span className="text-xs font-normal leading-5 text-quiet">
+            {serviceType === 'in-person-tutor'
+              ? '対面授業は2026年10月1日以降。候補を2〜3つ書いてください。'
+              : serviceType === 'online-tutor'
+                ? '候補を2〜3つ書いてください。確定後、専用のGoogle Meetをマイページに表示します。'
+                : '対面・教科書自習式は2026年11月1日から始まります。'}
+          </span>
         </label>
 
         <label className="grid gap-2 text-sm font-semibold">

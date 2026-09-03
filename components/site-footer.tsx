@@ -1,13 +1,18 @@
 import { ArrowRight, Mail, MapPin } from 'lucide-react';
 import { BrandMark } from '@/components/brand-mark';
 import Link from '@/components/site-link';
-import { textbookGuidePath, textbookSetupPath } from '@/lib/textbook-routes';
+import {
+  textbookColumnsPath,
+  textbookGuidePath,
+  textbookSetupPath,
+} from '@/lib/textbook-routes';
 
 const footerLinks = [
   { href: '/#goals', label: '学んだ先' },
   { href: '/#curriculum', label: '始め方' },
   { href: textbookGuidePath, label: 'Web教科書' },
   { href: textbookSetupPath, label: 'ChatGPTの準備・プラン' },
+  { href: textbookColumnsPath, label: 'ChatGPTコラム' },
   { href: '/#services', label: '受講方法' },
   { href: '/#faq', label: 'よくある質問' },
   { href: '/login', label: '会員ログイン' },

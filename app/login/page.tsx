@@ -134,6 +134,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               verifiedInitialIdentity={hasVerifiedInitialIdentity}
             />
 
+            <div className="soft-control mt-6 border border-rule bg-paper p-4 text-xs leading-6 text-quiet">
+              <p>
+                会員登録が停止中・退会済みでも、既存のStripe支払い・契約情報は専用ページから確認できます。
+              </p>
+              <Link
+                className="mt-2 inline-flex items-center gap-2 font-semibold text-sapphire underline underline-offset-4"
+                href="/mypage/billing"
+              >
+                請求管理専用ページへ
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+
             <Link
               className="group mt-6 flex min-h-12 items-center justify-between border-t border-rule pt-6 text-xs font-semibold text-sapphire"
               href="/textbook"

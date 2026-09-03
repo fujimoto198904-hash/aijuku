@@ -7,7 +7,9 @@ import { AdminApplicationAuditLog } from '@/components/admin-application-audit-l
 import { AdminApplicationQueue } from '@/components/admin-application-queue';
 import { AdminSkillReview } from '@/components/admin-skill-review';
 import { BrandMark } from '@/components/brand-mark';
+import { GoogleCalendarConnectionCard } from '@/components/google-calendar-connection-card';
 import Link from '@/components/site-link';
+import { getGoogleCalendarConnection } from '@/db/google-calendar';
 import {
   applicationStatusValues,
   countAdminApplications,
@@ -20,6 +22,7 @@ import {
   listAdminSkillEvidence,
 } from '@/db/skill-passport';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
+import { getGoogleCalendarConfig } from '@/lib/google-calendar';
 import {
   getAuthenticatedStaffPermissions,
   hasStaffAccess,
@@ -33,6 +36,15 @@ export const metadata: Metadata = {
 };
 
 const applicationPageSize = 30;
+
+function googleCalendarIsConfigured(): boolean {
+  try {
+    getGoogleCalendarConfig();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function firstSearchValue(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
@@ -90,6 +102,8 @@ export default async function AdminPage({
   const statusFilter = applicationStatusValues.includes(statusValue)
     ? statusValue
     : undefined;
+  const calendarResult = firstSearchValue(params.calendar) || undefined;
+  const calendarConfigured = googleCalendarIsConfigured();
   const requestedPage = Math.max(
     1,
     Number.parseInt(firstSearchValue(params.page), 10) || 1,
@@ -100,6 +114,7 @@ export default async function AdminPage({
     skillEvidence,
     pendingEvidenceTotal,
     applicationHistory,
+    calendarConnection,
   ] = await Promise.all([
     permissions.canManageApplications
       ? countAdminApplications(statusFilter)
@@ -116,6 +131,9 @@ export default async function AdminPage({
     permissions.isOwner
       ? listAdminApplicationStatusEvents()
       : Promise.resolve([]),
+    permissions.isOwner
+      ? getGoogleCalendarConnection(user.userId)
+      : Promise.resolve(null),
   ]);
   const pageCount = Math.max(
     1,
@@ -184,9 +202,28 @@ export default async function AdminPage({
           </div>
         </section>
 
+        {permissions.isOwner ? (
+          <GoogleCalendarConnectionCard
+            configured={calendarConfigured}
+            connection={
+              calendarConnection
+                ? {
+                    status: calendarConnection.status,
+                    googleEmail: calendarConnection.googleEmail,
+                    lastVerifiedAt: calendarConnection.lastVerifiedAt,
+                  }
+                : null
+            }
+            result={calendarResult}
+          />
+        ) : null}
+
         {permissions.canManageApplications ? (
           <AdminApplicationQueue
             applications={applications}
+            calendarConnectionActive={
+              calendarConfigured && calendarConnection?.status === 'active'
+            }
             key={`${statusFilter ?? 'all'}-${page}`}
             page={page}
             pageCount={pageCount}
@@ -211,7 +248,7 @@ export default async function AdminPage({
         />
 
         <p className="mt-8 text-xs leading-6 text-quiet">
-          予約枠の自動在庫、メール自動送信、決済はまだ接続していません。確定内容はマイページへ表示し、必要な連絡は登録メールで行います。電話受付は行いません。
+          申込確定時のGoogleカレンダー登録とオンライン授業のMeet作成に対応します。空き枠の自動在庫とメール自動送信はまだ行いません。確定内容はマイページへ表示し、必要な連絡は登録メールで行います。電話受付は行いません。
         </p>
       </div>
     </main>

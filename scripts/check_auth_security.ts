@@ -359,8 +359,8 @@ const ownerLoginRouteSource = await readFile(
 );
 assert.match(
   ownerLoginRouteSource,
-  /const accountHome = isOwner \? '\/aikanri' : requestedReturnTo/,
-  'the owner password login must always land on the management entry',
+  /const accountHome = inactiveMember[\s\S]+\? '\/mypage\/billing'[\s\S]+staffPermissions\.isOwner[\s\S]+\? '\/aikanri'/,
+  'inactive password login must prefer billing-only access while active owners keep the management entry',
 );
 const nextConfigSource = await readFile('next.config.ts', 'utf8');
 assert.match(
@@ -397,6 +397,16 @@ assert.match(
   memberAuthSource,
   /resolveVerifiedMemberAuthAccount[\s\S]+candidateLoginId[\s\S]+loginId: account\.loginId/,
   'the configured owner login ID must be used to find its bootstrap account',
+);
+assert.match(
+  memberAuthSource,
+  /resolvePasswordSession[\s\S]+row\.memberStatus && row\.memberStatus !== 'active'[\s\S]+resolveBillingPasswordSession/,
+  'normal member sessions must continue rejecting inactive membership before the billing-only resolver is declared',
+);
+assert.match(
+  memberAuthSource,
+  /resolveBillingPasswordSession[\s\S]+INNER JOIN members AS member[\s\S]+session\.session_kind = 'member'[\s\S]+account\.status = 'active'[\s\S]+account\.password_state = 'personal'[\s\S]+account\.account_kind = 'member'/,
+  'billing-only password sessions must require a real member and reject temporary, demo, disabled, or password-change access',
 );
 
 const loginRouteSource = await readFile('app/api/auth/login/route.ts', 'utf8');
@@ -443,6 +453,39 @@ assert.match(
   loginPageSource,
   /isPasswordManagementReturn[\s\S]+searchParams\.get\('mode'\) === 'manage'/,
   'password-management login recovery must preserve its return path',
+);
+assert.match(
+  loginPageSource,
+  /href="\/mypage\/billing"[\s\S]+請求管理専用ページへ/,
+  'the login screen must expose the billing-only recovery path',
+);
+
+const billingAuthSource = await readFile('app/chatgpt-auth.ts', 'utf8');
+assert.match(
+  billingAuthSource,
+  /getBillingAuthenticatedUser[\s\S]+resolveBillingPasswordSession[\s\S]+linkedAccount\.status !== 'active'[\s\S]+linkedAccount\.accountKind !== 'member'[\s\S]+linkedAccount\.passwordState !== 'personal'/,
+  'billing-only identity must apply the same strict account requirements to password and ChatGPT entry paths',
+);
+const billingPageSource = await readFile('app/mypage/billing/page.tsx', 'utf8');
+assert.match(
+  billingPageSource,
+  /requireBillingAuthenticatedUser\(billingPath\)[\s\S]+memberStatus === 'active'[\s\S]+isOwner[\s\S]+getBillingCustomer\([\s\S]+<BillingPortalButton/,
+  'the billing-only page must retain active-owner routing and show the portal only for the member-owned D1 customer mapping',
+);
+const billingRouteSource = await readFile('lib/stripe-route.ts', 'utf8');
+assert.match(
+  billingRouteSource,
+  /allowInactiveMember[\s\S]+\? await getBillingAuthenticatedUser\(\)[\s\S]+: await getChatGPTUser\(\)[\s\S]+!allowInactiveMember[\s\S]+member\.status !== 'active'/,
+  'only the customer portal may use inactive billing identity; checkout must retain active membership checks',
+);
+const billingPortalRouteSource = await readFile(
+  'app/api/billing/portal/route.ts',
+  'utf8',
+);
+assert.match(
+  billingPortalRouteSource,
+  /auth\.member\.status === 'active'[\s\S]+urls\.portalReturnUrl[\s\S]+withSiteBasePath\('\/mypage\/billing'\)[\s\S]+return_url: portalReturnUrl/,
+  'inactive customers must return from Stripe Portal to the billing-only page instead of the regular mypage guard',
 );
 
 const demoProtectedRoutes = [

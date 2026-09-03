@@ -10,6 +10,7 @@ import { TextbookSubnav } from '@/components/textbook/textbook-subnav';
 import { findTextbookTask } from '@/lib/textbook-catalog';
 import { toClientTask } from '@/lib/textbook-catalog-client';
 import { getTaskDemoDownloadPlan } from '@/lib/textbook-demo-download-plan';
+import { getRecommendedChatgptColumns } from '@/lib/chatgpt-column-recommendations';
 import { loadLesson } from '@/lib/textbook-lessons/loader';
 import {
   formalNextTaskIdFor,
@@ -72,6 +73,7 @@ export default async function TextbookLessonPage({ params }: LessonPageProps) {
     lesson.stepUp.kind === 'task'
       ? findTextbookTask(lesson.stepUp.targetTaskId)
       : undefined;
+  const recommendedColumns = getRecommendedChatgptColumns(task, lesson);
 
   return (
     <>
@@ -109,6 +111,7 @@ export default async function TextbookLessonPage({ params }: LessonPageProps) {
             task={toClientTask(task)}
             lesson={lesson}
             downloadPlan={downloadPlan}
+            recommendedColumns={recommendedColumns}
             previousTask={previousTask ? toClientTask(previousTask) : undefined}
             formalNextTask={
               formalNextTask ? toClientTask(formalNextTask) : undefined

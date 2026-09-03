@@ -71,6 +71,20 @@
       "when": 1788391388326,
       "tag": "0009_aikanri_owner_login",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1788438256548,
+      "tag": "0010_bored_shadowcat",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1788442760708,
+      "tag": "0011_glorious_captain_cross",
+      "breakpoints": true
     }
   ]
 }

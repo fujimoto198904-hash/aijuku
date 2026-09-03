@@ -4,8 +4,11 @@ import { redirect } from 'next/navigation';
 import {
   getMemberAuthAccount,
   passwordAuthEmail,
+  resolveBillingPasswordSession,
   resolvePasswordSession,
+  type BillingMemberStatus,
 } from '@/db/member-auth';
+import { getMember } from '@/db/membership';
 import { readMemberSessionToken } from '@/lib/member-session-cookie';
 import { withSiteBasePath, withoutSiteBasePath } from '@/lib/site-paths';
 
@@ -18,6 +21,10 @@ export type ChatGPTUser = {
   authMethod: 'chatgpt' | 'password';
   mustChangePassword: boolean;
   isDemo: boolean;
+};
+
+export type BillingAuthenticatedUser = ChatGPTUser & {
+  memberStatus: BillingMemberStatus;
 };
 
 export type ChatGPTHeaderIdentity = {
@@ -97,6 +104,51 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   return user && !user.mustChangePassword ? user : null;
 }
 
+export async function getBillingAuthenticatedUser(): Promise<BillingAuthenticatedUser | null> {
+  const memberSessionToken = await readMemberSessionToken();
+  if (memberSessionToken) {
+    const sessionUser = await resolveBillingPasswordSession(memberSessionToken);
+    if (sessionUser) {
+      return {
+        userId: sessionUser.memberId,
+        displayName: sessionUser.displayName,
+        email: passwordAuthEmail(sessionUser),
+        loginId: sessionUser.loginId,
+        fullName: sessionUser.displayName,
+        authMethod: 'password',
+        mustChangePassword: false,
+        isDemo: false,
+        memberStatus: sessionUser.memberStatus,
+      };
+    }
+  }
+
+  const identity = readChatGPTIdentityHeaders(await headers());
+  if (!identity) return null;
+  const [linkedAccount, member] = await Promise.all([
+    getMemberAuthAccount(identity.userId),
+    getMember(identity.userId),
+  ]);
+  if (
+    !linkedAccount ||
+    !member ||
+    linkedAccount.status !== 'active' ||
+    linkedAccount.accountKind !== 'member' ||
+    linkedAccount.passwordState !== 'personal'
+  ) {
+    return null;
+  }
+
+  return {
+    ...identity,
+    loginId: linkedAccount.loginId,
+    authMethod: 'chatgpt',
+    mustChangePassword: false,
+    isDemo: false,
+    memberStatus: member.status,
+  };
+}
+
 function cleanIdentityHeader(value: string | null, maxLength: number) {
   if (!value) return null;
   const normalized = value.trim();
@@ -123,6 +175,20 @@ export async function requireChatGPTUser(
   }
   if (user) return user;
 
+  redirect(memberLoginPath(returnTo));
+}
+
+export async function requireBillingAuthenticatedUser(
+  returnTo = '/mypage/billing',
+): Promise<BillingAuthenticatedUser> {
+  const user = await getBillingAuthenticatedUser();
+  if (user) return user;
+
+  const regularUser = await getAuthenticatedUser();
+  if (regularUser?.mustChangePassword) {
+    redirect(passwordChangePath(returnTo));
+  }
+  if (regularUser) redirect('/mypage');
   redirect(memberLoginPath(returnTo));
 }
 

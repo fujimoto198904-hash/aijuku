@@ -3,13 +3,16 @@ import { redirect } from 'next/navigation';
 import { ShieldAlert } from 'lucide-react';
 
 import { requireChatGPTUser } from '@/app/chatgpt-auth';
+import { BillingPortalButton } from '@/components/billing-portal-button';
 import { BrandMark } from '@/components/brand-mark';
 import { MemberOnboardingForm } from '@/components/member-onboarding-form';
 import Link from '@/components/site-link';
+import { getBillingCustomer } from '@/db/billing';
 import { getMemberAuthAccount } from '@/db/member-auth';
 import { getMemberOnboardingProfile } from '@/db/member-onboarding';
 import { getMember, hasCurrentMembershipConsent } from '@/db/membership';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
+import { getStripeTestBillingDisplayConfig } from '@/lib/stripe-billing';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +84,18 @@ async function MembershipOnboardingContent({
     getMemberAuthAccount(user.userId),
     getMemberOnboardingProfile(user.userId),
   ]);
+  const billingConfig = user.isDemo
+    ? null
+    : getStripeTestBillingDisplayConfig();
+  const billingCustomer =
+    member && billingConfig
+      ? await getBillingCustomer({
+          memberId: user.userId,
+          stripeAccountId: billingConfig.stripeAccountId,
+          livemode: false,
+        })
+      : null;
+  const canManageBilling = billingCustomer !== null;
   const hasCurrentConsent = Boolean(
     member?.status === 'active' && hasCurrentMembershipConsent(member),
   );
@@ -105,6 +120,7 @@ async function MembershipOnboardingContent({
             画面上では再開できません。登録メールアドレスから info@mon-ai.jp
             へご連絡ください。電話受付は行いません。
           </p>
+          {canManageBilling ? <InactiveMemberBillingPortal /> : null}
         </section>
       </main>
     );
@@ -124,6 +140,7 @@ async function MembershipOnboardingContent({
             以前の同意だけで自動的に再登録することはありません。再登録を希望する場合は、登録メールアドレスから
             info@mon-ai.jp へご連絡ください。電話受付は行いません。
           </p>
+          {canManageBilling ? <InactiveMemberBillingPortal /> : null}
         </section>
       </main>
     );
@@ -150,6 +167,17 @@ async function MembershipOnboardingContent({
           <h1 className="sr-only">
             {isProfileEdit ? '学び方の変更' : '無料会員登録'}
           </h1>
+          {canManageBilling && !hasCurrentConsent ? (
+            <div className="soft-control mb-7 border border-rule bg-paper p-5 text-sm leading-7">
+              <p className="font-semibold text-sapphire">
+                Stripeサンドボックスの支払い・契約情報
+              </p>
+              <p className="mt-2 text-quiet">
+                規約同意の更新前でも、既存の支払い・契約管理画面を確認できます。この操作だけで会員情報や同意状態は変更されません。
+              </p>
+              <BillingPortalButton />
+            </div>
+          ) : null}
           <MemberOnboardingForm
             authMethod={user.authMethod}
             defaultName={defaultName}
@@ -199,5 +227,19 @@ async function MembershipOnboardingContent({
         </section>
       </div>
     </main>
+  );
+}
+
+function InactiveMemberBillingPortal() {
+  return (
+    <div className="mt-6 border-t border-rule pt-5 text-sm leading-7">
+      <p className="font-semibold text-sapphire">
+        Stripeサンドボックスの支払い・契約情報
+      </p>
+      <p className="mt-2 text-quiet">
+        会員登録の停止・退会後も、既存の支払い・契約管理画面を確認できます。この操作で会員登録は再開されません。
+      </p>
+      <BillingPortalButton />
+    </div>
   );
 }

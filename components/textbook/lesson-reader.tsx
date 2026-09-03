@@ -27,6 +27,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from '@/components/site-link';
 import { PromptExplanation } from '@/components/prompt-explanation';
 import { TextbookAccessBadges } from '@/components/textbook/access-badges';
+import {
+  LessonColumns,
+  type LessonColumnSummary,
+} from '@/components/textbook/lesson-columns';
 import type { ClientTextbookTask } from '@/lib/textbook-catalog-client';
 import type { TextbookLesson } from '@/lib/textbook-lessons/types';
 import { getTextbookAccessProfile } from '@/lib/textbook-access';
@@ -80,6 +84,7 @@ type LessonReaderProps = {
   formalNextTask?: ClientTextbookTask;
   previousTask?: ClientTextbookTask;
   downloadPlan: TaskDemoDownloadPlan;
+  recommendedColumns?: readonly LessonColumnSummary[];
 };
 
 export function LessonReader({
@@ -89,6 +94,7 @@ export function LessonReader({
   formalNextTask,
   previousTask,
   downloadPlan,
+  recommendedColumns = [],
 }: LessonReaderProps) {
   const taskMistakes = lesson.mistakes;
   const completionGroups = lesson.completionGroups ?? [
@@ -352,6 +358,8 @@ export function LessonReader({
             <p className="mt-2 text-sm leading-6">開けた・使えた・保存できた</p>
           </div>
         </div>
+
+        <LessonColumns columns={recommendedColumns} />
 
         <details className="soft-control mt-6 border border-rule bg-paper px-5 py-4 xl:hidden">
           <summary className="cursor-pointer text-xs font-semibold">

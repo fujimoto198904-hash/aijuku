@@ -15,11 +15,21 @@ import {
 
 import { chatGPTSignOutPath, requireChatGPTUser } from '@/app/chatgpt-auth';
 import { BrandMark } from '@/components/brand-mark';
+import { BillingActions } from '@/components/billing-actions';
 import { MemberApplicationActions } from '@/components/member-application-actions';
 import { MemberLearningProgress } from '@/components/member-learning-progress';
+import { MemberMeetLink } from '@/components/member-meet-link';
 import { MemberProfileSettings } from '@/components/member-profile-settings';
 import { MobileMemberNav } from '@/components/mobile-member-nav';
 import Link from '@/components/site-link';
+import {
+  getBillingCustomer,
+  getLatestBillingCheckoutSessionForApplication,
+  getLatestBillingCheckoutSessionForService,
+  getLatestBillingSubscription,
+  type BillingCheckoutSession,
+  type BillingSubscription,
+} from '@/db/billing';
 import { getMemberAuthAccount } from '@/db/member-auth';
 import {
   SkillPassport,
@@ -44,7 +54,9 @@ import {
   memberServicePlans,
   sharedFees,
 } from '@/lib/member-service-plans';
+import { getMemberApplicationCalendarDetails } from '@/lib/member-calendar-details';
 import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
+import { getStripeTestBillingDisplayConfig } from '@/lib/stripe-billing';
 import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 import { findTextbookTask, textbookCatalog } from '@/lib/textbook-catalog';
 import { textbookExplorePath, textbookGuidePath } from '@/lib/textbook-routes';
@@ -111,6 +123,8 @@ async function MemberPageContent({
   const user = await requireChatGPTUser(returnTo);
   if (getAuthenticatedStaffPermissions(user).isOwner) redirect('/aikanri');
   const isDemo = user.isDemo === true;
+  const billingConfig = isDemo ? null : getStripeTestBillingDisplayConfig();
+  const billingEnabled = billingConfig !== null;
   const [member, authAccount] = await Promise.all([
     getMember(user.userId),
     getMemberAuthAccount(user.userId),
@@ -138,6 +152,73 @@ async function MemberPageContent({
     throw new Error('Demo skill profile is unavailable.');
   }
   const skillProfile = skillProfileResult;
+  const memberCalendarDetails = await getMemberApplicationCalendarDetails(
+    isDemo
+      ? []
+      : applications
+          .filter(
+            (application) =>
+              application.status === 'confirmed' &&
+              application.serviceType === 'online-tutor',
+          )
+          .map((application) => application.id),
+  );
+  const billingSessions = new Map<string, BillingCheckoutSession>();
+  let billingCustomerAvailable = false;
+  let selfStudyBillingSession: BillingCheckoutSession | null = null;
+  let selfStudySubscription: BillingSubscription | null = null;
+  if (billingConfig) {
+    const confirmedApplications = applications.filter(
+      (application) => application.status === 'confirmed',
+    );
+    const hasConfirmedSelfStudy = confirmedApplications.some(
+      (application) => application.serviceType === 'self-study',
+    );
+    const [customer, subscription, selfStudySession, sessions] =
+      await Promise.all([
+        getBillingCustomer({
+          memberId: user.userId,
+          stripeAccountId: billingConfig.stripeAccountId,
+          livemode: false,
+        }),
+        hasConfirmedSelfStudy
+          ? getLatestBillingSubscription({
+              memberId: user.userId,
+              serviceType: 'self-study',
+              stripeAccountId: billingConfig.stripeAccountId,
+              livemode: false,
+            })
+          : Promise.resolve(null),
+        hasConfirmedSelfStudy
+          ? getLatestBillingCheckoutSessionForService({
+              memberId: user.userId,
+              serviceType: 'self-study',
+              stripeAccountId: billingConfig.stripeAccountId,
+              livemode: false,
+            })
+          : Promise.resolve(null),
+        Promise.all(
+          confirmedApplications
+            .filter((application) => application.serviceType !== 'self-study')
+            .map((application) =>
+              getLatestBillingCheckoutSessionForApplication({
+                memberId: user.userId,
+                applicationId: application.id,
+                stripeAccountId: billingConfig.stripeAccountId,
+                livemode: false,
+              }),
+            ),
+        ),
+      ]);
+    billingCustomerAvailable = customer !== null;
+    selfStudyBillingSession = selfStudySession;
+    selfStudySubscription = subscription;
+    for (const session of sessions) {
+      if (session?.applicationId) {
+        billingSessions.set(session.applicationId, session);
+      }
+    }
+  }
   const activeApplications = applications.filter(
     (application) =>
       application.status === 'received' || application.status === 'reviewing',
@@ -485,6 +566,19 @@ async function MemberPageContent({
                 <div className="mt-7 grid gap-4">
                   {applications.map((application) => {
                     const plan = findMemberServicePlan(application.serviceType);
+                    const billingSession =
+                      application.serviceType === 'self-study'
+                        ? selfStudyBillingSession
+                        : billingSessions.get(application.id);
+                    const subscription =
+                      application.serviceType === 'self-study'
+                        ? selfStudySubscription
+                        : null;
+                    const meetDetails =
+                      application.status === 'confirmed' &&
+                      application.serviceType === 'online-tutor'
+                        ? (memberCalendarDetails.get(application.id) ?? null)
+                        : null;
                     return (
                       <article
                         className="soft-work-surface border border-rule bg-paper-white p-6"
@@ -545,6 +639,28 @@ async function MemberPageContent({
                                 {application.deliveryDetails}
                               </p>
                             ) : null}
+                            <MemberMeetLink details={meetDetails} />
+                            {!isDemo && application.status === 'confirmed' ? (
+                              <BillingActions
+                                applicationId={application.id}
+                                billingEnabled={billingEnabled}
+                                canManageBilling={billingCustomerAvailable}
+                                checkoutStatus={billingSession?.status}
+                                paymentFailedAt={
+                                  billingSession?.paymentFailedAt
+                                }
+                                paymentStatus={billingSession?.paymentStatus}
+                                serviceType={application.serviceType}
+                                subscriptionCancelAt={subscription?.cancelAt}
+                                subscriptionCancelAtPeriodEnd={
+                                  subscription?.cancelAtPeriodEnd
+                                }
+                                subscriptionCurrentPeriodEnd={
+                                  subscription?.currentPeriodEnd
+                                }
+                                subscriptionStatus={subscription?.status}
+                              />
+                            ) : null}
                             {!isDemo &&
                             (application.status === 'received' ||
                               application.status === 'reviewing') ? (
@@ -576,7 +692,10 @@ async function MemberPageContent({
               tasks={skillTaskOptions}
             />
 
-            <section className="mt-10 grid gap-4 md:grid-cols-2">
+            <section
+              className="mt-10 grid scroll-mt-24 gap-4 md:grid-cols-2"
+              id="billing"
+            >
               <div className="soft-work-surface border border-rule bg-paper-white p-6">
                 <CircleDollarSign
                   className="size-5 text-sapphire"
@@ -584,7 +703,9 @@ async function MemberPageContent({
                 />
                 <h2 className="mt-4 font-mincho text-2xl">支払い</h2>
                 <p className="mt-3 text-xs leading-6 text-quiet">
-                  決済はまだ接続していません。料金と取引条件を確認できる状態にしてから、マイページ内に追加します。
+                  {billingEnabled
+                    ? '申込内容が確定したら、対象の申込からStripeサンドボックスのテスト決済へ進めます。実際の請求は発生しません。'
+                    : '決済はまだ接続していません。料金と取引条件を確認できる状態にしてから、マイページ内に追加します。'}
                 </p>
               </div>
               <div className="soft-work-surface border border-rule bg-paper-white p-6">

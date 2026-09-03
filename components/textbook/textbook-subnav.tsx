@@ -1,6 +1,7 @@
 import {
   BookOpenText,
   Check,
+  CircleHelp,
   ExternalLink,
   Map,
   Search,
@@ -12,10 +13,16 @@ import {
   textbookExplorePath,
   textbookGuidePath,
   textbookLessonPath,
+  textbookColumnsPath,
   textbookSetupPath,
 } from '@/lib/textbook-routes';
 
-export type TextbookSubnavCurrent = 'guide' | 'setup' | 'explore' | 'lesson';
+export type TextbookSubnavCurrent =
+  | 'guide'
+  | 'setup'
+  | 'explore'
+  | 'lesson'
+  | 'columns';
 
 type TextbookSubnavProps = {
   current: TextbookSubnavCurrent;
@@ -54,6 +61,14 @@ const items = [
     href: textbookLessonPath('Lv.01'),
     Icon: BookOpenText,
   },
+  {
+    id: 'columns',
+    eyebrow: '困ったとき',
+    label: 'ChatGPTコラム',
+    hint: '言葉や仕組みを調べる',
+    href: textbookColumnsPath,
+    Icon: CircleHelp,
+  },
 ] as const;
 
 export function TextbookSubnav({ current }: TextbookSubnavProps) {
@@ -62,7 +77,7 @@ export function TextbookSubnav({ current }: TextbookSubnavProps) {
       className="border-b border-rule bg-paper-white px-4 py-4 sm:px-8"
       aria-label="Web教科書の進み方"
     >
-      <ol className="mx-auto grid w-full max-w-[1240px] gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <ol className="mx-auto grid w-full max-w-[1240px] grid-cols-2 gap-2 [&>li:last-child]:col-span-2 lg:grid-cols-5 lg:[&>li:last-child]:col-span-1">
         {items.map(({ id, eyebrow, label, hint, href, Icon }) => {
           const isCurrent = current === id;
           const opensNewTab = id === 'lesson' && !isCurrent;

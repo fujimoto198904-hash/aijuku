@@ -35,6 +35,12 @@ export type PasswordSessionUser = MemberAuthAccount & {
   sessionKind: 'member' | 'password-change';
 };
 
+export type BillingMemberStatus = 'active' | 'suspended' | 'withdrawn';
+
+export type BillingPasswordSessionUser = PasswordSessionUser & {
+  memberStatus: BillingMemberStatus;
+};
+
 export type IssuedPasswordSession = {
   token: string;
   expiresAt: number;
@@ -644,6 +650,65 @@ export async function resolvePasswordSession(
     ...user,
     displayName: row.displayName ?? defaultDisplayName(row),
   };
+}
+
+export async function resolveBillingPasswordSession(
+  token: string,
+): Promise<BillingPasswordSessionUser | null> {
+  if (!token || token.length > 200) return null;
+  const tokenHash = await sha256Base64Url(token);
+  const now = Date.now();
+  type StoredBillingPasswordSessionRow = MemberAuthAccount & {
+    sessionKind: 'member';
+    lastSeenAt: number;
+    displayName: string;
+    memberStatus: BillingMemberStatus;
+  };
+  const row = await getD1()
+    .prepare(
+      `
+      SELECT
+        account.member_id AS memberId,
+        account.login_id AS loginId,
+        account.contact_email AS contactEmail,
+        account.password_state AS passwordState,
+        account.account_kind AS accountKind,
+        account.status,
+        account.temporary_password_expires_at AS temporaryPasswordExpiresAt,
+        account.password_changed_at AS passwordChangedAt,
+        account.last_login_at AS lastLoginAt,
+        session.session_kind AS sessionKind,
+        session.last_seen_at AS lastSeenAt,
+        member.display_name AS displayName,
+        member.status AS memberStatus
+      FROM member_auth_sessions AS session
+      INNER JOIN member_auth_accounts AS account
+        ON account.member_id = session.account_id
+      INNER JOIN members AS member
+        ON member.id = account.member_id
+      WHERE session.token_hash = ?
+        AND session.revoked_at IS NULL
+        AND session.expires_at > ?
+        AND session.session_kind = 'member'
+        AND account.status = 'active'
+        AND account.password_state = 'personal'
+        AND account.account_kind = 'member'
+      LIMIT 1
+    `,
+    )
+    .bind(tokenHash, now)
+    .first<StoredBillingPasswordSessionRow>();
+  if (!row) return null;
+  if (now - row.lastSeenAt > 15 * 60 * 1_000) {
+    await getD1()
+      .prepare(
+        'UPDATE member_auth_sessions SET last_seen_at = ? WHERE token_hash = ?',
+      )
+      .bind(now, tokenHash)
+      .run();
+  }
+  const { lastSeenAt: _, ...user } = row;
+  return user;
 }
 
 export async function revokePasswordSession(token: string): Promise<void> {

@@ -536,3 +536,365 @@ export const externalReviewModerationEvents = sqliteTable(
     ),
   ],
 );
+
+export const billingCustomers = sqliteTable(
+  'billing_customers',
+  {
+    stripeCustomerId: text('stripe_customer_id').primaryKey(),
+    memberId: text('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'restrict' }),
+    stripeAccountId: text('stripe_account_id').notNull(),
+    livemode: integer('livemode').notNull(),
+    deletedAt: integer('deleted_at'),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    check('billing_customers_livemode_check', sql`${table.livemode} in (0, 1)`),
+    uniqueIndex('billing_customers_member_account_mode_unique').on(
+      table.memberId,
+      table.stripeAccountId,
+      table.livemode,
+    ),
+    index('billing_customers_member_updated_idx').on(
+      table.memberId,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const billingCheckoutSessions = sqliteTable(
+  'billing_checkout_sessions',
+  {
+    stripeCheckoutSessionId: text('stripe_checkout_session_id').primaryKey(),
+    memberId: text('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'restrict' }),
+    applicationId: text('application_id').references(() => applications.id, {
+      onDelete: 'restrict',
+    }),
+    checkoutAttemptId: text('checkout_attempt_id').notNull(),
+    stripeIdempotencyKey: text('stripe_idempotency_key').notNull(),
+    stripeAccountId: text('stripe_account_id').notNull(),
+    livemode: integer('livemode').notNull(),
+    serviceType: text('service_type').notNull(),
+    mode: text('mode').notNull(),
+    status: text('status').notNull(),
+    paymentStatus: text('payment_status').notNull(),
+    paymentFailedAt: integer('payment_failed_at'),
+    stateObservedAt: integer('state_observed_at').notNull(),
+    currency: text('currency'),
+    amountTotal: integer('amount_total'),
+    stripeCustomerId: text('stripe_customer_id'),
+    stripePaymentIntentId: text('stripe_payment_intent_id'),
+    stripeSubscriptionId: text('stripe_subscription_id'),
+    checkoutUrl: text('checkout_url'),
+    expiresAt: integer('expires_at'),
+    completedAt: integer('completed_at'),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    check(
+      'billing_checkout_sessions_livemode_check',
+      sql`${table.livemode} in (0, 1)`,
+    ),
+    check(
+      'billing_checkout_sessions_service_type_check',
+      sql`${table.serviceType} in ('in-person-tutor', 'online-tutor', 'self-study')`,
+    ),
+    check(
+      'billing_checkout_sessions_mode_check',
+      sql`${table.mode} in ('payment', 'subscription')`,
+    ),
+    check(
+      'billing_checkout_sessions_application_mode_check',
+      sql`(${table.mode} = 'payment' and ${table.applicationId} is not null) or (${table.mode} = 'subscription' and ${table.applicationId} is null)`,
+    ),
+    check(
+      'billing_checkout_sessions_status_check',
+      sql`${table.status} in ('open', 'complete', 'expired')`,
+    ),
+    check(
+      'billing_checkout_sessions_payment_status_check',
+      sql`${table.paymentStatus} in ('no_payment_required', 'unpaid', 'paid')`,
+    ),
+    check(
+      'billing_checkout_sessions_amount_total_check',
+      sql`${table.amountTotal} is null or ${table.amountTotal} >= 0`,
+    ),
+    uniqueIndex('billing_checkout_sessions_account_attempt_unique').on(
+      table.stripeAccountId,
+      table.livemode,
+      table.checkoutAttemptId,
+    ),
+    uniqueIndex('billing_checkout_sessions_account_idempotency_unique').on(
+      table.stripeAccountId,
+      table.livemode,
+      table.stripeIdempotencyKey,
+    ),
+    index('billing_checkout_sessions_member_updated_idx').on(
+      table.memberId,
+      table.updatedAt,
+    ),
+    index('billing_checkout_sessions_application_updated_idx').on(
+      table.applicationId,
+      table.updatedAt,
+    ),
+    index('billing_checkout_sessions_status_updated_idx').on(
+      table.status,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const billingSubscriptions = sqliteTable(
+  'billing_subscriptions',
+  {
+    stripeSubscriptionId: text('stripe_subscription_id').primaryKey(),
+    memberId: text('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'restrict' }),
+    applicationId: text('application_id').references(() => applications.id, {
+      onDelete: 'set null',
+    }),
+    stripeAccountId: text('stripe_account_id').notNull(),
+    livemode: integer('livemode').notNull(),
+    stripeCustomerId: text('stripe_customer_id').notNull(),
+    serviceType: text('service_type').notNull(),
+    stripePriceId: text('stripe_price_id').notNull(),
+    status: text('status').notNull(),
+    stateObservedAt: integer('state_observed_at').notNull(),
+    currency: text('currency'),
+    unitAmount: integer('unit_amount'),
+    quantity: integer('quantity'),
+    currentPeriodStart: integer('current_period_start'),
+    currentPeriodEnd: integer('current_period_end'),
+    cancelAtPeriodEnd: integer('cancel_at_period_end').notNull().default(0),
+    cancelAt: integer('cancel_at'),
+    canceledAt: integer('canceled_at'),
+    endedAt: integer('ended_at'),
+    trialEnd: integer('trial_end'),
+    latestInvoiceId: text('latest_invoice_id'),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    check(
+      'billing_subscriptions_livemode_check',
+      sql`${table.livemode} in (0, 1)`,
+    ),
+    check(
+      'billing_subscriptions_service_type_check',
+      sql`${table.serviceType} in ('in-person-tutor', 'online-tutor', 'self-study')`,
+    ),
+    check(
+      'billing_subscriptions_status_check',
+      sql`${table.status} in ('incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid', 'paused')`,
+    ),
+    check(
+      'billing_subscriptions_application_null_check',
+      sql`${table.applicationId} is null`,
+    ),
+    check(
+      'billing_subscriptions_unit_amount_check',
+      sql`${table.unitAmount} is null or ${table.unitAmount} >= 0`,
+    ),
+    check(
+      'billing_subscriptions_quantity_check',
+      sql`${table.quantity} is null or ${table.quantity} > 0`,
+    ),
+    check(
+      'billing_subscriptions_cancel_at_period_end_check',
+      sql`${table.cancelAtPeriodEnd} in (0, 1)`,
+    ),
+    index('billing_subscriptions_member_service_status_idx').on(
+      table.memberId,
+      table.serviceType,
+      table.status,
+    ),
+    index('billing_subscriptions_customer_updated_idx').on(
+      table.stripeCustomerId,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const stripeObjectSyncLocks = sqliteTable(
+  'stripe_object_sync_locks',
+  {
+    lockKey: text('lock_key').primaryKey(),
+    stripeObjectType: text('stripe_object_type').notNull(),
+    stripeObjectId: text('stripe_object_id').notNull(),
+    stripeAccountId: text('stripe_account_id').notNull(),
+    livemode: integer('livemode').notNull(),
+    leaseOwner: text('lease_owner').notNull(),
+    leaseExpiresAt: integer('lease_expires_at').notNull(),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    check(
+      'stripe_object_sync_locks_type_check',
+      sql`${table.stripeObjectType} in ('checkout_session', 'subscription', 'customer')`,
+    ),
+    check(
+      'stripe_object_sync_locks_livemode_check',
+      sql`${table.livemode} in (0, 1)`,
+    ),
+    index('stripe_object_sync_locks_lease_expires_idx').on(
+      table.leaseExpiresAt,
+    ),
+    uniqueIndex('stripe_object_sync_locks_account_object_unique').on(
+      table.stripeAccountId,
+      table.livemode,
+      table.stripeObjectType,
+      table.stripeObjectId,
+    ),
+  ],
+);
+
+export const stripeWebhookEvents = sqliteTable(
+  'stripe_webhook_events',
+  {
+    stripeEventId: text('stripe_event_id').primaryKey(),
+    stripeAccountId: text('stripe_account_id').notNull(),
+    livemode: integer('livemode').notNull(),
+    eventType: text('event_type').notNull(),
+    apiVersion: text('api_version'),
+    status: text('status').notNull(),
+    attemptCount: integer('attempt_count').notNull(),
+    lastError: text('last_error'),
+    stripeCreatedAt: integer('stripe_created_at').notNull(),
+    processingStartedAt: integer('processing_started_at').notNull(),
+    processedAt: integer('processed_at'),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    check(
+      'stripe_webhook_events_livemode_check',
+      sql`${table.livemode} in (0, 1)`,
+    ),
+    check(
+      'stripe_webhook_events_status_check',
+      sql`${table.status} in ('processing', 'processed', 'failed')`,
+    ),
+    check(
+      'stripe_webhook_events_attempt_count_check',
+      sql`${table.attemptCount} >= 1`,
+    ),
+    index('stripe_webhook_events_status_updated_idx').on(
+      table.status,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const googleCalendarConnections = sqliteTable(
+  'google_calendar_connections',
+  {
+    ownerMemberId: text('owner_member_id')
+      .primaryKey()
+      .references(() => members.id, { onDelete: 'cascade' }),
+    googleSubject: text('google_subject').notNull(),
+    googleEmail: text('google_email').notNull(),
+    refreshTokenCiphertext: text('refresh_token_ciphertext'),
+    grantedScopes: text('granted_scopes').notNull(),
+    status: text('status').notNull(),
+    lastErrorCode: text('last_error_code'),
+    connectedAt: integer('connected_at').notNull(),
+    lastVerifiedAt: integer('last_verified_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('google_calendar_connections_subject_unique').on(
+      table.googleSubject,
+    ),
+    uniqueIndex('google_calendar_connections_email_unique').on(
+      table.googleEmail,
+    ),
+    check(
+      'google_calendar_connections_status_check',
+      sql`${table.status} in ('active', 'reconnect_required', 'disconnected')`,
+    ),
+    check(
+      'google_calendar_connections_token_state_check',
+      sql`(${table.status} = 'active' and ${table.refreshTokenCiphertext} is not null) or (${table.status} <> 'active' and ${table.refreshTokenCiphertext} is null)`,
+    ),
+    index('google_calendar_connections_status_updated_idx').on(
+      table.status,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const applicationCalendarEvents = sqliteTable(
+  'application_calendar_events',
+  {
+    applicationId: text('application_id')
+      .primaryKey()
+      .references(() => applications.id, { onDelete: 'cascade' }),
+    ownerMemberId: text('owner_member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'restrict' }),
+    googleEventId: text('google_event_id').notNull(),
+    googleEventEtag: text('google_event_etag'),
+    conferenceRequestId: text('conference_request_id'),
+    meetUrlCiphertext: text('meet_url_ciphertext'),
+    startAt: integer('start_at').notNull(),
+    endAt: integer('end_at').notNull(),
+    timezone: text('timezone').notNull(),
+    syncStatus: text('sync_status').notNull(),
+    lastErrorCode: text('last_error_code'),
+    attemptCount: integer('attempt_count').notNull(),
+    syncedAt: integer('synced_at'),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('application_calendar_events_google_event_id_unique').on(
+      table.googleEventId,
+    ),
+    uniqueIndex('application_calendar_events_conference_request_id_unique').on(
+      table.conferenceRequestId,
+    ),
+    check(
+      'application_calendar_events_schedule_check',
+      sql`${table.startAt} >= 0 and ${table.endAt} > ${table.startAt}`,
+    ),
+    check(
+      'application_calendar_events_timezone_check',
+      sql`${table.timezone} = 'Asia/Tokyo'`,
+    ),
+    check(
+      'application_calendar_events_sync_status_check',
+      sql`${table.syncStatus} in ('create_pending', 'active', 'failed', 'reconnect_required')`,
+    ),
+    check(
+      'application_calendar_events_attempt_count_check',
+      sql`${table.attemptCount} >= 1`,
+    ),
+    check(
+      'application_calendar_events_meet_reference_check',
+      sql`${table.meetUrlCiphertext} is null or ${table.conferenceRequestId} is not null`,
+    ),
+    check(
+      'application_calendar_events_synced_at_check',
+      sql`(${table.syncStatus} = 'active' and ${table.syncedAt} is not null) or (${table.syncStatus} <> 'active' and ${table.syncedAt} is null)`,
+    ),
+    check(
+      'application_calendar_events_error_state_check',
+      sql`(${table.syncStatus} in ('create_pending', 'active') and ${table.lastErrorCode} is null) or (${table.syncStatus} in ('failed', 'reconnect_required') and ${table.lastErrorCode} is not null)`,
+    ),
+    index('application_calendar_events_owner_status_idx').on(
+      table.ownerMemberId,
+      table.syncStatus,
+    ),
+    index('application_calendar_events_status_updated_idx').on(
+      table.syncStatus,
+      table.updatedAt,
+    ),
+  ],
+);

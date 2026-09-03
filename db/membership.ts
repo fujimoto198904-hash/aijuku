@@ -10,6 +10,21 @@ export const serviceTypeValues = [
 
 export type ServiceType = (typeof serviceTypeValues)[number];
 
+export const inPersonTutorFirstScheduledAt = Date.parse(
+  '2026-10-01T00:00:00+09:00',
+);
+export const selfStudyFirstScheduledAt = Date.parse(
+  '2026-11-01T17:00:00+09:00',
+);
+
+export function firstScheduledAtForService(
+  serviceType: ServiceType,
+): number | null {
+  if (serviceType === 'in-person-tutor') return inPersonTutorFirstScheduledAt;
+  if (serviceType === 'self-study') return selfStudyFirstScheduledAt;
+  return null;
+}
+
 export const applicationStatusValues = [
   'received',
   'reviewing',
@@ -99,8 +114,8 @@ type RawAdminApplication = Omit<AdminApplication, 'offerSnapshot'> & {
   offerSnapshot: string;
 };
 
-export const membershipTermsVersion = '2026-09-03-portal-v6';
-export const privacyPolicyVersion = '2026-09-03-portal-v5';
+export const membershipTermsVersion = '2026-09-03-portal-v7';
+export const privacyPolicyVersion = '2026-09-03-portal-v6';
 
 export function hasCurrentMembershipConsent(
   member: Pick<MemberProfile, 'termsVersion' | 'privacyVersion'>,
@@ -709,6 +724,7 @@ export async function listAdminApplications(input?: {
   const statement = getD1().prepare(`
       SELECT
         applications.id,
+        applications.member_id AS memberId,
         members.email AS memberEmail,
         members.display_name AS memberDisplayName,
         applications.service_type AS serviceType,
@@ -741,6 +757,47 @@ export async function listAdminApplications(input?: {
     ...application,
     offerSnapshot: parseOfferSnapshot(application.offerSnapshot),
   }));
+}
+
+export async function getAdminApplicationById(
+  applicationId: string,
+): Promise<AdminApplication | null> {
+  await ensureMembershipSchema();
+  const result = await getD1()
+    .prepare(
+      `
+        SELECT
+          applications.id,
+          applications.member_id AS memberId,
+          members.email AS memberEmail,
+          members.display_name AS memberDisplayName,
+          applications.service_type AS serviceType,
+          applications.status,
+          applications.goal,
+          applications.preferred_schedule AS preferredSchedule,
+          applications.participants,
+          applications.notes,
+          applications.offer_snapshot AS offerSnapshot,
+          applications.member_message AS memberMessage,
+          applications.assigned_instructor AS assignedInstructor,
+          applications.scheduled_at AS scheduledAt,
+          applications.delivery_details AS deliveryDetails,
+          applications.internal_note AS internalNote,
+          applications.created_at AS createdAt,
+          applications.updated_at AS updatedAt
+        FROM applications
+        INNER JOIN members ON members.id = applications.member_id
+        WHERE applications.id = ?
+        LIMIT 1
+      `,
+    )
+    .bind(applicationId)
+    .first<RawAdminApplication>();
+  if (!result) return null;
+  return {
+    ...result,
+    offerSnapshot: parseOfferSnapshot(result.offerSnapshot),
+  };
 }
 
 export async function listAdminApplicationStatusEvents(
@@ -802,6 +859,7 @@ export async function updateAdminApplication(input: {
       `
       SELECT
         status,
+        service_type AS serviceType,
         scheduled_at AS scheduledAt,
         updated_at AS updatedAt
       FROM applications
@@ -812,6 +870,7 @@ export async function updateAdminApplication(input: {
     .bind(input.applicationId)
     .first<{
       status: ApplicationStatus;
+      serviceType: ServiceType;
       scheduledAt: number | null;
       updatedAt: number;
     }>();
@@ -820,9 +879,12 @@ export async function updateAdminApplication(input: {
   if (!canAdminTransitionApplication(current.status, input.status)) {
     return 'invalid_transition';
   }
+  const minimumScheduledAt = firstScheduledAtForService(current.serviceType);
   if (
     input.status === 'confirmed' &&
     (!input.scheduledAt ||
+      (minimumScheduledAt !== null &&
+        input.scheduledAt < minimumScheduledAt) ||
       ((current.status !== 'confirmed' ||
         input.scheduledAt !== current.scheduledAt) &&
         input.scheduledAt <= Date.now()))
@@ -862,8 +924,8 @@ export async function updateAdminApplication(input: {
         JSON.stringify({
           assignedInstructor: input.assignedInstructor,
           scheduledAt: input.scheduledAt,
-          deliveryDetails: input.deliveryDetails,
-          internalNote: input.internalNote,
+          hasDeliveryDetails: Boolean(input.deliveryDetails),
+          hasInternalNote: Boolean(input.internalNote),
         }),
         now,
         input.applicationId,

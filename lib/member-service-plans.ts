@@ -17,7 +17,8 @@ export const memberServicePlans: ReadonlyArray<{
     area: '東京23区内',
     summary:
       '講師が伺い、Web教科書を見ながら一緒に進めます。企業は1回5人まで受講できます。',
-    nextStep: '希望日時と場所を確認し、講師の日程を調整します。',
+    nextStep:
+      '2026年10月1日以降の希望日時と場所を確認し、講師の日程を調整します。',
   },
   {
     id: 'online-tutor',
@@ -26,7 +27,8 @@ export const memberServicePlans: ReadonlyArray<{
     price: '4,000円 / 50分',
     area: '全国対応',
     summary: 'Google Meetで同じ画面を見ながら、止まった所から一緒に進めます。',
-    nextStep: '日時が決まったら、Google Meetの案内を送ります。',
+    nextStep:
+      '日時が決まると専用のGoogle Meetを作り、マイページへ表示します。',
   },
   {
     id: 'self-study',
@@ -35,7 +37,8 @@ export const memberServicePlans: ReadonlyArray<{
     price: '月額 10,000円',
     area: '東京23区内',
     summary: '毎日17:00〜21:00。自分で進め、わからない所だけ講師に聞けます。',
-    nextStep: '始める月を確認し、通い方と会場をお知らせします。',
+    nextStep:
+      '2026年11月1日以降の開始月を確認し、通い方と会場をお知らせします。',
   },
 ];
 

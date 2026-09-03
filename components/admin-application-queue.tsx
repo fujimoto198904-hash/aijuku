@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   CalendarClock,
@@ -8,19 +8,23 @@ import {
   Mail,
   Save,
   UsersRound,
-} from "lucide-react";
-import { type SubmitEvent, useState } from "react";
+} from 'lucide-react';
+import { type SubmitEvent, useState } from 'react';
 
-import Link from "@/components/site-link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import type { AdminApplication, ApplicationStatus } from "@/db/membership";
+import Link from '@/components/site-link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import type {
+  AdminApplication,
+  ApplicationStatus,
+  ServiceType,
+} from '@/db/membership';
 import {
   applicationStatusLabels,
   findMemberServicePlan,
-} from "@/lib/member-service-plans";
-import { withSiteBasePath } from "@/lib/site-paths";
+} from '@/lib/member-service-plans';
+import { withSiteBasePath } from '@/lib/site-paths';
 
 type ApplicationDraft = {
   status: ApplicationStatus;
@@ -33,41 +37,57 @@ type ApplicationDraft = {
   expectedUpdatedAt: number;
 };
 
+export type AdminApplicationQueueProps = {
+  applications: AdminApplication[];
+  totalCount: number;
+  page: number;
+  pageCount: number;
+  statusFilter?: ApplicationStatus;
+  /**
+   * 管理者のGoogleカレンダー接続が、予定を作成できる状態か。
+   * 未指定の場合は安全側に倒し、自動登録が必要な申込の確定を止める。
+   */
+  calendarConnectionActive?: boolean;
+};
+
+const inPersonTutorMinimum = '2026-10-01T00:00';
+const selfStudyMinimum = '2026-11-01T17:00';
+
 const statusFilters: ApplicationStatus[] = [
-  "received",
-  "reviewing",
-  "confirmed",
-  "cancelled",
+  'received',
+  'reviewing',
+  'confirmed',
+  'cancelled',
 ];
 
 const statusOptions: Record<ApplicationStatus, ApplicationStatus[]> = {
-  received: ["received", "reviewing", "cancelled"],
-  reviewing: ["reviewing", "confirmed", "cancelled"],
-  confirmed: ["confirmed"],
-  cancelled: ["cancelled"],
+  received: ['received', 'reviewing', 'cancelled'],
+  reviewing: ['reviewing', 'confirmed', 'cancelled'],
+  confirmed: ['confirmed'],
+  cancelled: ['cancelled'],
 };
 
 function formatDate(value: number) {
-  return new Intl.DateTimeFormat("ja-JP", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Tokyo",
+  return new Intl.DateTimeFormat('ja-JP', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Tokyo',
   }).format(new Date(value));
 }
 
 function toDateTimeLocal(value: number | null): string {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("sv-SE", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    timeZone: "Asia/Tokyo",
+  if (!value) return '';
+  return new Intl.DateTimeFormat('sv-SE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: 'Asia/Tokyo',
   })
     .format(new Date(value))
-    .replace(" ", "T");
+    .replace(' ', 'T');
 }
 
 function fromTokyoDateTimeLocal(value: string): number | null {
@@ -80,17 +100,91 @@ function createDraft(application: AdminApplication): ApplicationDraft {
   return {
     status: application.status,
     persistedStatus: application.status,
-    memberMessage: application.memberMessage ?? "",
-    assignedInstructor: application.assignedInstructor ?? "",
+    memberMessage: application.memberMessage ?? '',
+    assignedInstructor: application.assignedInstructor ?? '',
     scheduledAt: toDateTimeLocal(application.scheduledAt),
-    deliveryDetails: application.deliveryDetails ?? "",
-    internalNote: application.internalNote ?? "",
+    deliveryDetails: application.deliveryDetails ?? '',
+    internalNote: application.internalNote ?? '',
     expectedUpdatedAt: application.updatedAt,
   };
 }
 
 function filterHref(status?: ApplicationStatus) {
-  return status ? `/admin?status=${status}` : "/admin";
+  return status ? `/admin?status=${status}` : '/admin';
+}
+
+function isCalendarManagedService(serviceType: ServiceType) {
+  return serviceType === 'online-tutor' || serviceType === 'in-person-tutor';
+}
+
+function minimumScheduleForService(serviceType: ServiceType) {
+  if (serviceType === 'in-person-tutor') return inPersonTutorMinimum;
+  if (serviceType === 'self-study') return selfStudyMinimum;
+  return undefined;
+}
+
+function scheduleGuidance(serviceType: ServiceType) {
+  if (serviceType === 'online-tutor') {
+    return '50分の予定とGoogle Meetを自動作成します。';
+  }
+  if (serviceType === 'in-person-tutor') {
+    return '2026年10月1日以降、60分の予定として登録します。';
+  }
+  return '2026年11月1日17:00以降。自習式はGoogleカレンダーへ自動登録しません。';
+}
+
+function deliveryFieldCopy(serviceType: ServiceType) {
+  if (serviceType === 'online-tutor') {
+    return {
+      label: '当日の補足（任意）',
+      placeholder:
+        '例：開始5分前から入室できます。Google Meet URLの入力は不要です。',
+      help: 'Google Meetは確定時に自動作成され、会員のマイページに表示されます。',
+      required: false,
+    };
+  }
+  if (serviceType === 'in-person-tutor') {
+    return {
+      label: '会場・集合方法（確定時は必須）',
+      placeholder: '会員に伝える会場名、住所、集合方法',
+      help: 'Google Meetは作成せず、対面予定だけをカレンダーへ登録します。',
+      required: true,
+    };
+  }
+  return {
+    label: '初回会場・通い方（確定時は必須）',
+    placeholder: '会員に伝える初回会場、受付方法、通い方',
+    help: '通い放題のため、申込確定で毎日の予定は自動作成しません。',
+    required: true,
+  };
+}
+
+function saveButtonLabel(
+  application: AdminApplication,
+  draft: ApplicationDraft,
+  pending: boolean,
+) {
+  const calendarManaged = isCalendarManagedService(application.serviceType);
+  if (pending) {
+    if (draft.status === 'confirmed' && calendarManaged) {
+      return application.serviceType === 'online-tutor'
+        ? 'Google Meetを作成中…'
+        : 'カレンダーに登録中…';
+    }
+    return '保存しています…';
+  }
+  if (draft.status === 'confirmed' && calendarManaged) {
+    if (application.serviceType === 'online-tutor') {
+      return draft.persistedStatus === 'confirmed'
+        ? '確定内容とGoogle Meetを更新'
+        : '確定してGoogle Meetを作成';
+    }
+    return draft.persistedStatus === 'confirmed'
+      ? '確定内容とカレンダーを更新'
+      : '確定してカレンダーへ登録';
+  }
+  if (draft.status === 'confirmed') return '申込を確定する';
+  return '申込の対応内容を保存';
 }
 
 export function AdminApplicationQueue({
@@ -99,13 +193,8 @@ export function AdminApplicationQueue({
   page,
   pageCount,
   statusFilter,
-}: {
-  applications: AdminApplication[];
-  totalCount: number;
-  page: number;
-  pageCount: number;
-  statusFilter?: ApplicationStatus;
-}) {
+  calendarConnectionActive = false,
+}: AdminApplicationQueueProps) {
   const [drafts, setDrafts] = useState<Record<string, ApplicationDraft>>(() =>
     Object.fromEntries(
       applications.map((application) => [
@@ -116,7 +205,7 @@ export function AdminApplicationQueue({
   );
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [messages, setMessages] = useState<
-    Record<string, { kind: "success" | "error"; text: string }>
+    Record<string, { kind: 'success' | 'error'; text: string }>
   >({});
 
   function updateDraft<K extends keyof ApplicationDraft>(
@@ -132,11 +221,46 @@ export function AdminApplicationQueue({
 
   async function saveApplication(
     event: SubmitEvent<HTMLFormElement>,
-    applicationId: string,
+    application: AdminApplication,
   ) {
     event.preventDefault();
+    const applicationId = application.id;
     const draft = drafts[applicationId];
     if (!draft) return;
+
+    const scheduledAt = fromTokyoDateTimeLocal(draft.scheduledAt);
+    const minimumSchedule = minimumScheduleForService(application.serviceType);
+    if (
+      draft.status === 'confirmed' &&
+      minimumSchedule &&
+      (!scheduledAt || scheduledAt < fromTokyoDateTimeLocal(minimumSchedule)!)
+    ) {
+      setMessages((current) => ({
+        ...current,
+        [applicationId]: {
+          kind: 'error',
+          text:
+            application.serviceType === 'in-person-tutor'
+              ? '対面授業は2026年10月1日以降の日時を指定してください。'
+              : '対面・教科書自習式は2026年11月1日17:00以降の日時を指定してください。',
+        },
+      }));
+      return;
+    }
+    if (
+      draft.status === 'confirmed' &&
+      isCalendarManagedService(application.serviceType) &&
+      !calendarConnectionActive
+    ) {
+      setMessages((current) => ({
+        ...current,
+        [applicationId]: {
+          kind: 'error',
+          text: '先に管理者のGoogleカレンダーを接続してください。接続後にこの申込を確定できます。',
+        },
+      }));
+      return;
+    }
     setPendingId(applicationId);
     setMessages((current) => {
       const next = { ...current };
@@ -146,17 +270,17 @@ export function AdminApplicationQueue({
 
     try {
       const response = await fetch(
-        withSiteBasePath("/api/admin/applications"),
+        withSiteBasePath('/api/admin/applications'),
         {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             applicationId,
             expectedUpdatedAt: draft.expectedUpdatedAt,
             status: draft.status,
             memberMessage: draft.memberMessage,
             assignedInstructor: draft.assignedInstructor,
-            scheduledAt: fromTokyoDateTimeLocal(draft.scheduledAt),
+            scheduledAt,
             deliveryDetails: draft.deliveryDetails,
             internalNote: draft.internalNote,
           }),
@@ -165,9 +289,11 @@ export function AdminApplicationQueue({
       const body = (await response.json()) as {
         error?: string;
         updatedAt?: number;
+        calendarSynced?: boolean;
+        meetReady?: boolean;
       };
       if (!response.ok || !body.updatedAt) {
-        throw new Error(body.error ?? "申込管理を保存できませんでした。");
+        throw new Error(body.error ?? '申込管理を保存できませんでした。');
       }
       setDrafts((current) => ({
         ...current,
@@ -180,19 +306,24 @@ export function AdminApplicationQueue({
       setMessages((current) => ({
         ...current,
         [applicationId]: {
-          kind: "success",
-          text: "保存しました。会員のマイページへ最新状態が表示されます。",
+          kind: 'success',
+          text:
+            body.calendarSynced && body.meetReady
+              ? '確定内容を保存し、Google Meetを作成しました。会員のマイページに参加リンクが表示されます。'
+              : body.calendarSynced
+                ? '確定内容を保存し、Googleカレンダーを更新しました。'
+                : '保存しました。会員のマイページへ最新状態が表示されます。',
         },
       }));
     } catch (error) {
       setMessages((current) => ({
         ...current,
         [applicationId]: {
-          kind: "error",
+          kind: 'error',
           text:
             error instanceof Error
               ? error.message
-              : "申込管理を保存できませんでした。",
+              : '申込管理を保存できませんでした。',
         },
       }));
     } finally {
@@ -216,25 +347,49 @@ export function AdminApplicationQueue({
           <p className="text-[11px] text-quiet">
             {statusFilter
               ? `${applicationStatusLabels[statusFilter]}の件数`
-              : "全申込件数"}
+              : '全申込件数'}
           </p>
           <p className="numeric-text mt-1 text-2xl">{totalCount}件</p>
         </div>
       </div>
+
+      <aside
+        aria-label="Googleカレンダー連携状況"
+        className={`soft-work-surface mt-6 border p-5 text-sm leading-7 ${calendarConnectionActive ? 'border-future-mint bg-future-mint-soft' : 'border-human-coral bg-human-coral-soft'}`}
+      >
+        <p className="font-semibold">
+          {calendarConnectionActive
+            ? '管理者本人のGoogleカレンダーと連携中'
+            : 'Googleカレンダーは未接続です'}
+        </p>
+        <p className="mt-1 text-xs leading-6 text-quiet">
+          {calendarConnectionActive
+            ? 'オンラインは50分＋Google Meet、対面は60分の予定を、申込確定と同時に登録します。自習式は対象外で、会員のカレンダーには追加しません。'
+            : 'オンラインと対面の申込は、カレンダーを接続するまで確定できません。内容確認や取消は保存できます。'}
+        </p>
+        {!calendarConnectionActive ? (
+          <Link
+            className="mt-3 inline-flex font-semibold text-sapphire underline underline-offset-4"
+            href="/admin#google-calendar"
+          >
+            Googleカレンダーの接続設定へ
+          </Link>
+        ) : null}
+      </aside>
 
       <nav
         aria-label="申込状態で絞り込む"
         className="mt-7 flex flex-wrap gap-2"
       >
         <Link
-          className={`soft-control border px-4 py-2 text-xs font-semibold ${!statusFilter ? "border-sapphire bg-sapphire text-white" : "border-rule bg-white text-quiet"}`}
+          className={`soft-control border px-4 py-2 text-xs font-semibold ${!statusFilter ? 'border-sapphire bg-sapphire text-white' : 'border-rule bg-white text-quiet'}`}
           href={filterHref()}
         >
           すべて
         </Link>
         {statusFilters.map((status) => (
           <Link
-            className={`soft-control border px-4 py-2 text-xs font-semibold ${statusFilter === status ? "border-sapphire bg-sapphire text-white" : "border-rule bg-white text-quiet"}`}
+            className={`soft-control border px-4 py-2 text-xs font-semibold ${statusFilter === status ? 'border-sapphire bg-sapphire text-white' : 'border-rule bg-white text-quiet'}`}
             href={filterHref(status)}
             key={status}
           >
@@ -260,11 +415,20 @@ export function AdminApplicationQueue({
             const plan = findMemberServicePlan(application.serviceType);
             const message = messages[application.id];
             if (!draft) return null;
+            const calendarManaged = isCalendarManagedService(
+              application.serviceType,
+            );
+            const confirmationNeedsCalendar =
+              draft.status === 'confirmed' && calendarManaged;
+            const deliveryCopy = deliveryFieldCopy(application.serviceType);
+            const minimumSchedule = minimumScheduleForService(
+              application.serviceType,
+            );
             return (
               <form
                 className="soft-panel border border-rule bg-paper-white p-6 sm:p-8"
                 key={application.id}
-                onSubmit={(event) => saveApplication(event, application.id)}
+                onSubmit={(event) => saveApplication(event, application)}
               >
                 <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
                   <div className="min-w-0">
@@ -322,7 +486,7 @@ export function AdminApplicationQueue({
                         onChange={(event) =>
                           updateDraft(
                             application.id,
-                            "status",
+                            'status',
                             event.target.value as ApplicationStatus,
                           )
                         }
@@ -334,8 +498,8 @@ export function AdminApplicationQueue({
                           </option>
                         ))}
                       </select>
-                      {draft.persistedStatus === "confirmed" ||
-                      draft.persistedStatus === "cancelled" ? (
+                      {draft.persistedStatus === 'confirmed' ||
+                      draft.persistedStatus === 'cancelled' ? (
                         <span className="font-normal leading-5 text-quiet">
                           この状態は確定済みです。再開する場合は新しい申込として受け付けます。
                         </span>
@@ -345,7 +509,10 @@ export function AdminApplicationQueue({
                       className="grid gap-2 text-xs font-semibold"
                       htmlFor={`application-instructor-${application.id}`}
                     >
-                      担当講師
+                      <span>
+                        担当講師
+                        {draft.status === 'confirmed' ? '（必須）' : ''}
+                      </span>
                       <Input
                         className="min-h-11 bg-white px-3 font-normal"
                         id={`application-instructor-${application.id}`}
@@ -353,11 +520,12 @@ export function AdminApplicationQueue({
                         onChange={(event) =>
                           updateDraft(
                             application.id,
-                            "assignedInstructor",
+                            'assignedInstructor',
                             event.target.value,
                           )
                         }
                         placeholder="例：藤本"
+                        required={draft.status === 'confirmed'}
                         value={draft.assignedInstructor}
                       />
                     </label>
@@ -365,7 +533,10 @@ export function AdminApplicationQueue({
                       className="grid gap-2 text-xs font-semibold"
                       htmlFor={`application-scheduled-${application.id}`}
                     >
-                      実施日時（日本時間）
+                      <span>
+                        実施日時（日本時間）
+                        {draft.status === 'confirmed' ? '（必須）' : ''}
+                      </span>
                       <span className="relative">
                         <CalendarClock
                           className="pointer-events-none absolute left-3 top-3 size-4 text-quiet"
@@ -374,16 +545,21 @@ export function AdminApplicationQueue({
                         <Input
                           className="min-h-11 bg-white pl-10 font-normal"
                           id={`application-scheduled-${application.id}`}
+                          min={minimumSchedule}
                           onInput={(event) =>
                             updateDraft(
                               application.id,
-                              "scheduledAt",
+                              'scheduledAt',
                               event.currentTarget.value,
                             )
                           }
+                          required={draft.status === 'confirmed'}
                           type="datetime-local"
                           value={draft.scheduledAt}
                         />
+                      </span>
+                      <span className="font-normal leading-5 text-quiet">
+                        {scheduleGuidance(application.serviceType)}
                       </span>
                     </label>
                     <label
@@ -398,7 +574,7 @@ export function AdminApplicationQueue({
                         onChange={(event) =>
                           updateDraft(
                             application.id,
-                            "memberMessage",
+                            'memberMessage',
                             event.target.value,
                           )
                         }
@@ -410,7 +586,7 @@ export function AdminApplicationQueue({
                       className="grid gap-2 text-xs font-semibold sm:col-span-2"
                       htmlFor={`application-delivery-${application.id}`}
                     >
-                      会場・Google Meet・当日の案内
+                      {deliveryCopy.label}
                       <Textarea
                         className="min-h-24 bg-white p-3 font-normal leading-6"
                         id={`application-delivery-${application.id}`}
@@ -418,13 +594,19 @@ export function AdminApplicationQueue({
                         onChange={(event) =>
                           updateDraft(
                             application.id,
-                            "deliveryDetails",
+                            'deliveryDetails',
                             event.target.value,
                           )
                         }
-                        placeholder="確定後に会員へ表示する会場名、集合方法、Google Meet URLなど"
+                        placeholder={deliveryCopy.placeholder}
+                        required={
+                          draft.status === 'confirmed' && deliveryCopy.required
+                        }
                         value={draft.deliveryDetails}
                       />
+                      <span className="font-normal leading-5 text-quiet">
+                        {deliveryCopy.help}
+                      </span>
                     </label>
                     <label
                       className="grid gap-2 text-xs font-semibold sm:col-span-2"
@@ -438,7 +620,7 @@ export function AdminApplicationQueue({
                         onChange={(event) =>
                           updateDraft(
                             application.id,
-                            "internalNote",
+                            'internalNote',
                             event.target.value,
                           )
                         }
@@ -446,10 +628,26 @@ export function AdminApplicationQueue({
                         value={draft.internalNote}
                       />
                     </label>
+                    {confirmationNeedsCalendar && !calendarConnectionActive ? (
+                      <div
+                        className="soft-control border border-human-coral bg-human-coral-soft p-4 text-xs leading-6 sm:col-span-2"
+                        role="alert"
+                      >
+                        <p className="font-semibold">
+                          この申込は、Googleカレンダー接続後に確定できます。
+                        </p>
+                        <Link
+                          className="mt-2 inline-flex text-sapphire underline underline-offset-4"
+                          href="/admin#google-calendar"
+                        >
+                          接続設定を開く
+                        </Link>
+                      </div>
+                    ) : null}
                     {message ? (
                       <div
-                        className={`soft-control border-l-4 p-4 text-xs leading-6 sm:col-span-2 ${message.kind === "success" ? "border-future-mint bg-future-mint-soft" : "border-human-coral bg-human-coral-soft"}`}
-                        role={message.kind === "error" ? "alert" : "status"}
+                        className={`soft-control border-l-4 p-4 text-xs leading-6 sm:col-span-2 ${message.kind === 'success' ? 'border-future-mint bg-future-mint-soft' : 'border-human-coral bg-human-coral-soft'}`}
+                        role={message.kind === 'error' ? 'alert' : 'status'}
                       >
                         <p>{message.text}</p>
                         <Button
@@ -464,13 +662,18 @@ export function AdminApplicationQueue({
                     ) : null}
                     <Button
                       className="min-h-12 bg-sapphire text-white sm:col-span-2"
-                      disabled={pendingId === application.id}
+                      disabled={
+                        pendingId === application.id ||
+                        (confirmationNeedsCalendar && !calendarConnectionActive)
+                      }
                       type="submit"
                     >
                       <Save className="size-4" aria-hidden="true" />
-                      {pendingId === application.id
-                        ? "保存しています…"
-                        : "申込の対応内容を保存"}
+                      {saveButtonLabel(
+                        application,
+                        draft,
+                        pendingId === application.id,
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -488,7 +691,7 @@ export function AdminApplicationQueue({
           {page > 1 ? (
             <Link
               className="soft-control inline-flex items-center gap-2 border border-rule bg-white px-4 py-3"
-              href={`/admin?page=${page - 1}${statusFilter ? `&status=${statusFilter}` : ""}`}
+              href={`/admin?page=${page - 1}${statusFilter ? `&status=${statusFilter}` : ''}`}
             >
               <ChevronLeft className="size-4" aria-hidden="true" /> 前へ
             </Link>
@@ -501,7 +704,7 @@ export function AdminApplicationQueue({
           {page < pageCount ? (
             <Link
               className="soft-control inline-flex items-center gap-2 border border-rule bg-white px-4 py-3"
-              href={`/admin?page=${page + 1}${statusFilter ? `&status=${statusFilter}` : ""}`}
+              href={`/admin?page=${page + 1}${statusFilter ? `&status=${statusFilter}` : ''}`}
             >
               次へ <ChevronRight className="size-4" aria-hidden="true" />
             </Link>

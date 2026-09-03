@@ -1,12 +1,13 @@
 import { BrandMark } from '@/components/brand-mark';
 import { MobileSiteNav } from '@/components/mobile-site-nav';
 import Link from '@/components/site-link';
-import { textbookGuidePath } from '@/lib/textbook-routes';
+import { textbookColumnsPath, textbookGuidePath } from '@/lib/textbook-routes';
 
 const navItems = [
   { href: '/#goals', label: '学んだ先' },
   { href: '/#curriculum', label: '始め方' },
   { href: textbookGuidePath, label: 'Web教科書' },
+  { href: textbookColumnsPath, label: 'ChatGPTコラム' },
   { href: '/#learning', label: '学び方' },
   { href: '/#services', label: '受講方法' },
   { href: '/#faq', label: 'よくある質問' },
@@ -56,6 +57,12 @@ export function SiteHeader() {
             href={textbookGuidePath}
           >
             Web教科書
+          </Link>
+          <Link
+            className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
+            href={textbookColumnsPath}
+          >
+            コラム
           </Link>
           <Link
             className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
