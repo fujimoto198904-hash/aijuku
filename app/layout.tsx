@@ -8,16 +8,15 @@ const siteUrl = canonicalSiteUrl;
 const socialImageUrl = `${canonicalSiteUrl}/brand/fujimoto-jitsugaku-og-1200x630.png`;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: '藤本実学塾｜AIを、暮らしと仕事の力に',
+  title: '藤本実学塾｜やりたいことが、できる毎日へ。',
   description:
-    'AIが初めての方も、詳しい手順つきの実践課題から、暮らしや仕事で使えるものを一つずつ形にするAI実学塾です。最初からでも、作りたい物からでも始められます。',
+    'Web教科書は無料。AIが初めてでも、作りたいものから始められます。',
   icons: {
     icon: withSiteBasePath('/brand/fujimoto-jitsugaku-mark.svg'),
   },
   openGraph: {
-    title: '藤本実学塾｜AIを、暮らしと仕事の力に',
-    description:
-      '最初からでも、今つくりたい物からでも。東京23区内の対面と全国オンラインで学ぶAI実学塾です。',
+    title: '藤本実学塾｜やりたいことが、できる毎日へ。',
+    description: 'Web教科書は無料。困ったときだけ、講師に聞けるAI塾です。',
     type: 'website',
     locale: 'ja_JP',
     images: [
@@ -31,9 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: '藤本実学塾｜AIを、暮らしと仕事の力に',
-    description:
-      '最初からでも、今つくりたい物からでも。東京23区内の対面と全国オンラインで学ぶAI実学塾です。',
+    title: '藤本実学塾｜やりたいことが、できる毎日へ。',
+    description: 'Web教科書は無料。困ったときだけ、講師に聞けるAI塾です。',
     images: [socialImageUrl],
   },
 };

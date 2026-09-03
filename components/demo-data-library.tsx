@@ -80,13 +80,13 @@ export function DemoDataLibrary() {
           </span>
           <div>
             <p className="text-xs font-semibold tracking-[0.14em] text-success">
-              資料の準備は、課題ページで完了
+              練習データ
             </p>
             <h2 className="mt-3 font-mincho text-3xl leading-tight sm:text-4xl">
-              必要なファイルだけ、その場で取得。
+              必要なファイルは、課題ページから。
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-              課題を開くと、内容に合う架空の会社データを自動で一つ選び、使う資料だけを表示します。業種を選んだり、大きなZIPを展開したりする必要はありません。TXTはその場でコピーできます。
+              使う資料だけ表示します。TXTはコピー、ほかのファイルはその場でダウンロードできます。
             </p>
             <p className="mt-4 flex items-center gap-2 text-xs font-semibold text-success">
               <ShieldCheck className="size-4" aria-hidden="true" />
@@ -101,7 +101,7 @@ export function DemoDataLibrary() {
               className="size-4 shrink-0 text-rust"
               aria-hidden="true"
             />
-            <span>会社データをまとめて使いたい方向け（任意）</span>
+            <span>会社データをまとめてダウンロード（必要な方のみ）</span>
             <span className="ml-auto hidden text-quiet sm:inline">
               通常は取得不要
             </span>
@@ -112,7 +112,7 @@ export function DemoDataLibrary() {
           </summary>
           <div className="border-t border-rule p-5 sm:p-7">
             <p className="text-xs leading-6 text-quiet">
-              複数の課題を同じ会社でまとめて試したい時だけ使います。個々の教科書で学ぶ場合は、このZIPはいりません。
+              複数の課題を同じ会社で試したい時だけ使います。通常は必要ありません。
             </p>
             <div className="mt-5 grid gap-4 lg:grid-cols-3">
               {demoDataCatalog.packages.map((item) => (

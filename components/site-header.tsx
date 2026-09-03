@@ -4,11 +4,10 @@ import Link from '@/components/site-link';
 import { textbookGuidePath } from '@/lib/textbook-routes';
 
 const navItems = [
-  { href: '/#philosophy', label: '理念' },
   { href: '/#goals', label: '学んだ先' },
-  { href: '/#curriculum', label: 'カリキュラム' },
+  { href: '/#curriculum', label: '始め方' },
   { href: textbookGuidePath, label: 'Web教科書' },
-  { href: `${textbookGuidePath}#demo-data`, label: '練習データ' },
+  { href: '/#learning', label: '学び方' },
   { href: '/#services', label: '受講方法' },
   { href: '/#faq', label: 'よくある質問' },
 ] as const;
@@ -28,7 +27,7 @@ export function SiteHeader() {
               藤本実学塾
             </span>
             <span className="hidden text-xs tracking-[0.06em] text-quiet sm:block">
-              AIが初めての方から、仕事に使えるところまで
+              AIが初めてでも、作りたいものから。
             </span>
           </span>
         </Link>

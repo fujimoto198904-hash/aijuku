@@ -167,7 +167,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           <div className="mt-16 max-w-lg lg:my-auto">
             <p className="text-xs font-semibold tracking-[0.18em] text-future-mint">
-              WELCOME BACK
+              おかえりなさい
             </p>
             <h2 className="text-soft-glow mt-5 font-mincho text-[clamp(2.7rem,5vw,4.9rem)] leading-[1.13] tracking-[-0.04em]">
               学びの続きから、

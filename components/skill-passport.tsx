@@ -220,7 +220,7 @@ export function SkillPassport({
       }
       setEvidenceStatus('success');
       setEvidenceMessage(
-        '実践記録を保存し、講師確認待ちにしました。公開設定を選んでいても、講師確認までは共有ページへ出ません。',
+        '作ったものを保存し、講師の確認待ちにしました。確認が終わるまでは共有ページに出ません。',
       );
     } catch (error) {
       setEvidenceStatus('error');
@@ -301,10 +301,10 @@ export function SkillPassport({
             AI PRACTICE PASSPORT
           </p>
           <h2 className="mt-3 font-mincho text-4xl sm:text-5xl">
-            できることを、証拠で残す。
+            作ったものを、あとで見せられる形に。
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-            教科書で学んだことも、これまでの実務・自主制作も記録できます。本人の記録と講師が確認した範囲を分けて表示し、応募時に説明しやすい形へ整えます。
+            教科書で作ったものも、これまでの仕事や作品も記録できます。自分の記録と、講師が確認した内容は分けて表示します。
           </p>
         </div>
         {savedProfile.shareEnabled ? (
@@ -323,7 +323,7 @@ export function SkillPassport({
       <div className="soft-work-surface soft-panel-clip mt-8 grid border border-rule bg-paper-white sm:grid-cols-2">
         <div className="p-6">
           <FileCheck2 className="size-5 text-sapphire" aria-hidden="true" />
-          <p className="mt-4 text-[11px] text-quiet">本人の実践記録</p>
+          <p className="mt-4 text-[11px] text-quiet">自分で記録したもの</p>
           <p className="numeric-text mt-2 text-3xl">{evidence.length}件</p>
         </div>
         <div className="border-b border-rule p-6 sm:border-b-0 sm:border-r">
@@ -340,7 +340,7 @@ export function SkillPassport({
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold text-sapphire">SKILL MAP</p>
-            <h3 className="mt-2 font-mincho text-3xl">証拠の厚みを見る</h3>
+            <h3 className="mt-2 font-mincho text-3xl">作ったものと確認状況</h3>
           </div>
           <p className="hidden text-[11px] text-quiet sm:block">
             点数・人の順位ではありません
@@ -358,7 +358,7 @@ export function SkillPassport({
               </p>
               <div className="mt-4 grid gap-2 text-[10px]">
                 <div className="flex items-center justify-between">
-                  <span>実践記録</span>
+                  <span>自分の記録</span>
                   <span className="numeric-text">{skill.recorded}</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-rule">
@@ -382,10 +382,10 @@ export function SkillPassport({
       {readOnly ? (
         <div className="soft-panel mt-10 border border-sapphire/30 bg-sapphire-soft p-6 sm:p-8">
           <p className="font-semibold text-sapphire">
-            デモでは実践記録の追加・編集はできません。
+            デモでは、作ったものの追加・編集はできません。
           </p>
           <p className="mt-2 text-xs leading-6 text-quiet">
-            本登録後は、作った成果物を記録し、講師の確認状況と分けて整理できます。
+            本登録後は、作ったものと講師の確認状況を分けて記録できます。
           </p>
         </div>
       ) : (
@@ -529,13 +529,15 @@ export function SkillPassport({
                 <p className="text-xs font-semibold text-sapphire">
                   ADD EVIDENCE
                 </p>
-                <h3 className="mt-2 font-mincho text-3xl">できたことを記録</h3>
+                <h3 className="mt-2 font-mincho text-3xl">作ったものを記録</h3>
               </div>
               <Plus className="size-5 text-sapphire" aria-hidden="true" />
             </div>
 
             <fieldset className="mt-6">
-              <legend className="text-sm font-semibold">記録するもの</legend>
+              <legend className="text-sm font-semibold">
+                どこで作ったもの？
+              </legend>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 {(['curriculum', 'prior-work'] as const).map((value) => (
                   <label
@@ -616,7 +618,7 @@ export function SkillPassport({
                   >
                     <p className="font-semibold">{selectedTask.title}</p>
                     <p className="mt-1 text-quiet">
-                      完成物：{selectedTask.outcome}
+                      作るもの：{selectedTask.outcome}
                     </p>
                   </div>
                 ) : null}
@@ -656,7 +658,7 @@ export function SkillPassport({
                 className="grid gap-2 text-sm font-semibold"
                 htmlFor="skill-evidence-title"
               >
-                成果物名
+                作ったものの名前
                 <Input
                   className="min-h-12 bg-white px-4 font-normal"
                   id="skill-evidence-title"
@@ -686,7 +688,7 @@ export function SkillPassport({
                 className="grid gap-2 text-sm font-semibold"
                 htmlFor="skill-evidence-url"
               >
-                成果物URL（任意・httpsのみ）
+                作品・資料のURL（任意・httpsのみ）
                 <Input
                   className="min-h-12 bg-white px-4 font-normal"
                   id="skill-evidence-url"
@@ -759,7 +761,7 @@ export function SkillPassport({
                   ? '保存しています…'
                   : evidenceStatus === 'success'
                     ? '保存済みです'
-                    : '実践記録を保存して講師確認へ'}
+                    : '保存して講師の確認へ'}
               </Button>
             </div>
           </form>
@@ -770,7 +772,7 @@ export function SkillPassport({
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold text-sapphire">MY EVIDENCE</p>
-            <h3 className="mt-2 font-mincho text-3xl">成果物の確認状況</h3>
+            <h3 className="mt-2 font-mincho text-3xl">作ったものの確認状況</h3>
           </div>
           <BookOpenText className="size-5 text-sapphire" aria-hidden="true" />
         </div>
@@ -788,13 +790,13 @@ export function SkillPassport({
             <FileCheck2 className="size-5 text-sapphire" aria-hidden="true" />
             <p className="mt-4 font-mincho text-2xl">
               {readOnly
-                ? '実践記録の表示イメージ'
-                : '最初の成果物を残しましょう。'}
+                ? '作ったものの表示イメージ'
+                : '最初に作ったものを残しましょう。'}
             </p>
             <p className="mt-3 text-sm leading-7 text-quiet">
               {readOnly
-                ? '本登録後に実践記録を追加すると、ここに成果物と講師の確認状況が表示されます。'
-                : 'まず一つ、作ったものと確認できたことを記録すると、スキルマップが動き始めます。'}
+                ? '本登録後に記録すると、ここに作ったものと講師の確認状況が表示されます。'
+                : '一つ記録すると、できたことが一覧に加わります。'}
             </p>
           </div>
         ) : (

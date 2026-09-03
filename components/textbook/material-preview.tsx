@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { humanFileName } from '@/components/textbook/lesson-shared';
 import { demoDataCatalog } from '@/lib/demo-data-catalog';
 import type {
   TaskDemoDownloadFile,
@@ -156,12 +155,9 @@ export function MaterialPreview({ downloadPlan }: MaterialPreviewProps) {
                       {fileExtension(file.publicFile)}
                     </span>
                     <p className="break-words text-sm font-semibold">
-                      {humanFileName(file.originalPath)}
+                      {shortName}
                     </p>
                   </div>
-                  <p className="mt-1 break-all text-[0.68rem] leading-5 text-quiet">
-                    {file.originalPath}
-                  </p>
                 </div>
                 <div className="flex shrink-0 flex-wrap gap-2">
                   {isText ? (
@@ -181,7 +177,7 @@ export function MaterialPreview({ downloadPlan }: MaterialPreviewProps) {
                     download={shortName}
                   >
                     <Download className="size-4" aria-hidden="true" />
-                    このファイルを取得
+                    ダウンロード
                   </a>
                 </div>
               </div>
@@ -198,7 +194,7 @@ export function MaterialPreview({ downloadPlan }: MaterialPreviewProps) {
                   role="alert"
                 >
                   <p className="text-xs leading-6 text-quiet">
-                    中身のプレビューだけ読み込めませんでした。上の「このファイルを取得」はそのまま使えます。
+                    中身だけ表示できませんでした。上の「ダウンロード」は使えます。
                   </p>
                   <button
                     type="button"

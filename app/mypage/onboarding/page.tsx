@@ -178,42 +178,24 @@ async function MembershipOnboardingContent({
             藤本実学塾
           </Link>
           <p className="mt-14 text-xs font-semibold tracking-[0.16em] text-future-mint lg:mt-auto">
-            FREE MEMBERSHIP
+            無料会員登録
           </p>
           <h2 className="text-soft-glow mt-5 font-mincho text-4xl leading-tight">
             {isProfileEdit
               ? '今の自分に、'
               : isConsentUpdate
                 ? '学び方を、'
-                : 'あなたらしい、'}
+                : '自分に合うところから、'}
             <br />
             {isProfileEdit
               ? '学び方を合わせよう。'
               : isConsentUpdate
                 ? '整えなおそう。'
-                : '学びの入り口へ。'}
+                : '始めよう。'}
           </h2>
           <p className="mt-5 text-sm leading-7 text-white/65">
-            一律の順番ではなく、あなたが作りたい変化から学び方を組み立てます。
+            最初からでも、作りたいものからでも始められます。
           </p>
-          <ol className="mt-10 grid gap-4 text-xs text-white/70 lg:mb-auto">
-            <li className="border-t border-white/15 pt-4">
-              01　マイページのお名前
-            </li>
-            <li className="border-t border-white/15 pt-4">
-              02　AIで作りたい変化
-            </li>
-            <li className="border-t border-white/15 pt-4">
-              03　自分に合う始め方
-            </li>
-            <li className="border-t border-white/15 pt-4">
-              04　最初に作りたいもの
-            </li>
-            <li className="border-t border-white/15 pt-4">
-              05　
-              {isProfileEdit ? '変更内容を保存' : '安全なログインの準備'}
-            </li>
-          </ol>
         </section>
       </div>
     </main>

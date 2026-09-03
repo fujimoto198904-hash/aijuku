@@ -54,7 +54,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'マイページ｜藤本実学塾',
   description:
-    '藤本実学塾の無料会員マイページです。課題のブックマークと完了記録、受講申込、実践記録、講師確認を管理できます。',
+    '課題の保存、学習記録、受講申込を確認できる無料会員マイページです。',
   robots: {
     index: false,
     follow: false,
@@ -144,38 +144,38 @@ async function MemberPageContent({
   );
   const nextStep = activeApplications.length
     ? {
-        title: '申込の確認を待ちながら、教科書を進める',
-        body: '対応中の申込があります。運営の確認中もWeb教科書は無料で進められます。',
+        title: '申込の確認中も、教科書を進める',
+        body: 'Web教科書はいつでも無料で使えます。',
         href: '#applications',
         label: '申込状況を見る',
       }
     : lessonProgress.some((item) => item.bookmarked && !item.completed)
       ? {
           title: '「あとでやる」から、一つ選ぶ',
-          body: '保存した課題があります。今の気分や使える時間に合う一つから始めましょう。',
+          body: '保存した課題から、今日やるものを選びましょう。',
           href: '#learning',
           label: 'あとでやるを見る',
         }
       : lessonProgress.some((item) => item.completed) &&
           skillEvidence.length === 0
         ? {
-            title: 'できた課題を、実践記録にする',
-            body: '完了した課題があります。作った成果物と、できるようになったことを記録へ残しましょう。',
+            title: '作ったものを記録する',
+            body: '完成したものと、できるようになったことを残しましょう。',
             href: '#skills',
-            label: '実践記録を残す',
+            label: '作ったものを記録',
           }
         : skillEvidence.length === 0
           ? {
               title: '最初の課題を一つ選ぶ',
-              body: 'Web教科書から今の仕事や暮らしに近い課題を一つ選び、完成物を作ってみましょう。',
+              body: '今の仕事や暮らしに近い課題から始めましょう。',
               href: textbookExplorePath,
               label: 'Web教科書から選ぶ',
             }
           : {
-              title: '次の実践記録を積み重ねる',
-              body: 'できたことを証拠と一緒に残すほど、講師が確認した範囲と分けて説明しやすくなります。',
+              title: '次に作ったものを記録する',
+              body: '作ったものと、講師が確認した内容を分けて残せます。',
               href: '#skills',
-              label: 'AI実学パスポートへ',
+              label: '作ったものを記録',
             };
 
   return (
@@ -275,7 +275,7 @@ async function MemberPageContent({
               <div className="hidden lg:block">
                 <p className="text-xs text-quiet">無料会員マイページ</p>
                 <p className="mt-1 text-sm font-semibold">
-                  申込・学び・できることを、一つの場所に。
+                  申込も、学習の続きも、ここで確認できます。
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -316,7 +316,7 @@ async function MemberPageContent({
               <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
                 <div>
                   <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
-                    WELCOME
+                    マイページ
                   </p>
                   <h1 className="mt-4 font-mincho text-[clamp(2.5rem,5vw,4.9rem)] font-medium leading-[1.12] tracking-[-0.04em]">
                     {member.displayName}さん、
@@ -324,7 +324,7 @@ async function MemberPageContent({
                     何から始めますか。
                   </h1>
                   <p className="mt-5 max-w-2xl text-sm leading-7 text-quiet">
-                    Web教科書はいつでも無料で読めます。気になる課題と完了した課題をマイページに残し、作ったものは実践記録として育てられます。
+                    気になる課題や、終わった課題を残せます。作ったものも記録できます。
                   </p>
                 </div>
                 <Link
@@ -594,7 +594,7 @@ async function MemberPageContent({
                 />
                 <h2 className="mt-4 font-mincho text-2xl">学習の続き</h2>
                 <p className="mt-3 text-xs leading-6 text-quiet">
-                  「あとでやる」と「完了」は、自分で切り替える学習メモです。読んだ位置の自動保存や修了判定ではありません。成果物はAI実学パスポートへ別に記録できます。
+                  「あとでやる」と「完了」は、自分用のメモです。読んだ位置や修了は自動では記録されません。作ったものは下の欄へ別に記録できます。
                 </p>
               </div>
             </section>

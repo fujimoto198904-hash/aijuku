@@ -1,33 +1,22 @@
-"use client";
+'use client';
 
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
 
 type FaqItem = {
+  label: string;
   question: string;
   answer: string;
 };
 
-const faqLabels = [
-  "はじめて",
-  "カリキュラム",
-  "無料会員",
-  "通い方",
-  "料金",
-  "会場",
-  "講師",
-  "教科書",
-  "修了記録",
-] as const;
-
 export function FaqSection({ items }: { items: readonly FaqItem[] }) {
   return (
     <Accordion
-      defaultValue={["faq-0"]}
+      defaultValue={['faq-0']}
       hiddenUntilFound
       className="divide-y divide-rule border-y border-rule"
     >
@@ -39,16 +28,16 @@ export function FaqSection({ items }: { items: readonly FaqItem[] }) {
         >
           <AccordionTrigger
             aria-controls={`faq-panel-${index}`}
-            className="min-h-[104px] p-0 text-left text-ink transition-colors duration-300 hover:bg-sapphire-soft/45 hover:no-underline focus-visible:border-transparent focus-visible:ring-0 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-sapphire aria-expanded:bg-sapphire-soft/65 **:data-[slot=accordion-trigger-icon]:hidden"
+            className="min-h-[84px] p-0 text-left text-ink transition-colors duration-300 hover:bg-sapphire-soft/45 hover:no-underline focus-visible:border-transparent focus-visible:ring-0 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-sapphire aria-expanded:bg-sapphire-soft/65 **:data-[slot=accordion-trigger-icon]:hidden"
             id={`faq-trigger-${index}`}
           >
-            <span className="grid w-full grid-cols-[minmax(0,1fr)_42px] items-center gap-4 px-4 py-7 sm:grid-cols-[132px_minmax(0,1fr)_46px] sm:px-6 sm:py-8">
+            <span className="grid w-full grid-cols-[minmax(0,1fr)_42px] items-center gap-4 px-4 py-5 sm:grid-cols-[132px_minmax(0,1fr)_46px] sm:px-6 sm:py-6">
               <span className="hidden text-xs font-semibold tracking-[0.12em] text-sapphire sm:block">
-                {faqLabels[index] ?? "その他"}
+                {item.label}
               </span>
               <span>
                 <span className="mb-2 block text-xs font-semibold tracking-[0.12em] text-sapphire sm:hidden">
-                  {faqLabels[index] ?? "その他"}
+                  {item.label}
                 </span>
                 <span className="block font-mincho text-lg font-medium leading-8 sm:text-[1.35rem] sm:leading-9">
                   {item.question}
@@ -65,7 +54,7 @@ export function FaqSection({ items }: { items: readonly FaqItem[] }) {
           </AccordionTrigger>
           <AccordionContent
             aria-labelledby={`faq-trigger-${index}`}
-            className="px-4 pb-8 text-sm leading-8 text-quiet sm:grid sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-4 sm:px-6 sm:pb-10 sm:text-base"
+            className="px-4 pb-6 text-sm leading-7 text-quiet sm:grid sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-4 sm:px-6 sm:pb-8 sm:text-base"
             id={`faq-panel-${index}`}
           >
             <span className="hidden font-mincho text-lg text-sapphire sm:block">

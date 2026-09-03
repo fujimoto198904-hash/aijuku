@@ -36,15 +36,15 @@ export function getTextbookMaterialGuide(
   if (!hasAnyMaterial) {
     return {
       badge: '材料：なし',
-      summary: '材料なし。そのまま一言送る',
-      steps: ['「まずこう言ってみる」をそのまま送る'],
+      summary: '材料なし。そのまま始める',
+      steps: ['下のプロンプトをそのまま送る'],
       modeNote:
         lesson.recommendedMode === 'work'
-          ? 'Workが表示されるならそこで始めます。なければChatへ同じ一言を送って進めます。'
+          ? 'Workが表示されるならそこで始めます。なければChatへ同じプロンプトを送ります。'
           : 'Chatの入力欄を使います。',
       alternative: null,
       failureNote: null,
-      promptLead: '材料はいりません。この一言をそのまま送ります。',
+      promptLead: '材料はいりません。下の文をそのまま送ります。',
     };
   }
 
@@ -62,7 +62,7 @@ export function getTextbookMaterialGuide(
     summaryParts.push('資料はこのページから取得');
     steps.push('上の一覧から指定された資料だけを取得し、入力欄へ添付する');
   }
-  steps.push('材料がそろったら「まずこう言ってみる」を送る');
+  steps.push('材料がそろったら、下のプロンプトを送る');
 
   const badge = hasCarryIn
     ? lesson.files.length > 0
@@ -76,14 +76,14 @@ export function getTextbookMaterialGuide(
 
   const promptLead =
     hasCarryIn && lesson.files.length === 0
-      ? '上に書かれた前の完成物を用意してから、この一言を送ります。'
+      ? '上に書かれた前の完成物を用意してから、下の文を送ります。'
       : hasCarryIn
-        ? '上に書かれた前の完成物と今回の材料をそろえてから、この一言を送ります。'
+        ? '前の完成物と今回の材料をそろえてから、下の文を送ります。'
         : hasTextFiles && hasFilesToAttach
-          ? 'TXTを貼り、このページから取得した指定資料を添付してから、この一言を送ります。'
+          ? 'TXTを貼り、指定資料を添付してから、下の文を送ります。'
           : hasTextFiles
-            ? 'TXTの中身を貼り、その下にこの一言を続けます。'
-            : 'このページから取得した指定資料を添付してから、この一言を送ります。';
+            ? 'TXTの中身を貼り、その下にこの文を続けます。'
+            : '指定資料を添付してから、下の文を送ります。';
 
   return {
     badge,

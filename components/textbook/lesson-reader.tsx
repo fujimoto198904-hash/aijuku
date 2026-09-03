@@ -55,7 +55,7 @@ const trackColors: Record<ClientTextbookTask['track'], string> = {
 
 const stepUpActions = [
   '今使っているChatまたはWorkを、そのまま続ける',
-  '下の「次に送る文」をコピーして送る',
+  '下の追加プロンプトをコピーして送る',
   '出てきた物を見て、必要な所だけ一つ直す',
 ] as const;
 
@@ -283,7 +283,7 @@ export function LessonReader({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold text-sapphire">
-            Workで作った物は、この一言で保存
+            Workで作った物を保存するプロンプト
           </p>
           <p className="mt-3 max-w-3xl text-sm leading-7">
             {lesson.savePrompt}
@@ -292,12 +292,12 @@ export function LessonReader({
         <button
           type="button"
           onClick={() =>
-            copyText(lesson.savePrompt, '保存の一言', setSaveCopyStatus)
+            copyText(lesson.savePrompt, '保存用プロンプト', setSaveCopyStatus)
           }
           className="soft-control inline-flex min-h-11 shrink-0 items-center justify-center gap-2 border border-sapphire px-4 text-xs font-semibold text-sapphire hover:bg-sapphire hover:text-white"
         >
           <Clipboard className="size-4" aria-hidden="true" />
-          保存の一言をコピー
+          保存用プロンプトをコピー
         </button>
       </div>
       <p className="mt-3 min-h-5 text-xs text-sapphire" aria-live="polite">
@@ -388,7 +388,7 @@ export function LessonReader({
               どの課題も、この順番でOK
             </span>
             <span className="mx-2 text-quiet">/</span>
-            材料を渡す → 一言送る → 実際に触る → 一つ直す → 残した物を開く
+            材料を入れる → プロンプトを送る → 試す → 直す → 保存する
           </div>
 
           {focusIndex !== null ? (
@@ -460,7 +460,7 @@ export function LessonReader({
                 <p className="numeric-text text-xs text-rust">02</p>
                 <h3 className="mt-3 font-mincho text-3xl">材料をAIに渡す</h3>
                 <p className="mt-4 text-sm leading-7 text-quiet">
-                  材料の渡し方と作業画面は別です。ファイル名やパスを覚えることは課題ではありません。
+                  下の材料を用意して、ChatGPTに入れます。
                 </p>
               </div>
               <div>
@@ -485,13 +485,13 @@ export function LessonReader({
                     ) : null}
                     {lesson.files.length === 0 && !lesson.carryIn ? (
                       <p className="text-sm leading-7 text-quiet">
-                        この課題に材料はいりません。最初の一言だけで始められます。
+                        この課題に材料はいりません。プロンプトだけで始められます。
                       </p>
                     ) : null}
                   </div>
                   {lesson.files.length > 0 ? (
                     <p className="mt-5 border-t border-rule pt-4 text-xs leading-6 text-quiet">
-                      必要なファイルは下から直接取得できます。自分で業種や保存場所を探す必要はありません。
+                      必要なファイルは、下からダウンロードできます。
                     </p>
                   ) : null}
                   <MaterialPreview key={task.id} downloadPlan={downloadPlan} />
@@ -499,7 +499,7 @@ export function LessonReader({
                 <details className="soft-control group mt-4 border border-rule bg-paper-white px-4 py-1.5">
                   <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 text-xs [&::-webkit-details-marker]:hidden">
                     <span className="soft-badge shrink-0 bg-paper px-2 py-1 font-semibold text-rust">
-                      共通操作メモ
+                      材料の入れ方
                     </span>
                     <span className="min-w-0 font-semibold">
                       {materialGuide.summary}
@@ -573,21 +573,22 @@ export function LessonReader({
               <div>
                 <p className="numeric-text text-xs text-rust">03</p>
                 <h3 className="mt-3 font-mincho text-3xl">
-                  まずこう言ってみる
+                  ChatGPTに送るプロンプト
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-quiet">
+                  プロンプトは、ChatGPTにそのまま貼る指示文です。
                   {materialGuide.promptLead}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() =>
-                  copyText(lesson.firstWord, '最初の一言', setPromptCopyStatus)
+                  copyText(lesson.firstWord, 'プロンプト', setPromptCopyStatus)
                 }
                 className="soft-control inline-flex min-h-11 items-center justify-center gap-2 border border-deep-green px-4 text-xs font-semibold hover:bg-deep-green hover:text-white"
               >
                 <Clipboard className="size-4" aria-hidden="true" />
-                この一言をコピー
+                プロンプトをコピー
               </button>
             </div>
             <section aria-label="ChatGPTへ最初に送る文">
@@ -615,10 +616,10 @@ export function LessonReader({
           >
             <p className="numeric-text text-xs text-rust">04</p>
             <h3 className="mt-3 font-mincho text-3xl">
-              出てきた物を実際に触る
+              AIの答えを確認して試す
             </h3>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-              最初から完璧でなくて大丈夫です。読むだけにせず、この課題で必要な操作を自分で一度行います。
+              最初から完璧でなくて大丈夫。まず一度、自分で動かしてみます。
             </p>
             <div className="soft-panel soft-panel-clip mt-7 grid border border-rule md:grid-cols-2">
               <div className="border-b border-rule p-6 md:border-b-0 md:border-r sm:p-8">
@@ -656,10 +657,10 @@ export function LessonReader({
             {lesson.nextPrompts?.length ? (
               <div className="soft-card mt-6 border-l-4 border-human-coral bg-human-coral-soft p-6 sm:p-8">
                 <p className="text-xs font-semibold tracking-[0.1em] text-human-coral">
-                  ここまで動いたら、次に送る一言
+                  追加のプロンプト
                 </p>
                 <p className="mt-3 text-sm leading-7 text-quiet">
-                  これは任意のコツではなく、完成まで進むための次の手順です。上から、当てはまるものだけ送ります。
+                  当てはまるものだけ、上から順に送ります。
                 </p>
                 <div className="mt-6 grid gap-5">
                   {lesson.nextPrompts.map((item, index) => (
@@ -678,7 +679,7 @@ export function LessonReader({
                           {item.afterActions?.length ? (
                             <div className="mt-4 border-l-2 border-human-coral/35 pl-4">
                               <p className="text-xs font-semibold text-human-coral">
-                                この一言を送った後に試す
+                                送った後に試す
                               </p>
                               <div className="mt-2 grid gap-2">
                                 {item.afterActions.map((action) => (
@@ -699,14 +700,14 @@ export function LessonReader({
                           onClick={() =>
                             copyText(
                               item.say,
-                              '次の一言',
+                              '追加のプロンプト',
                               setNextPromptCopyStatus,
                             )
                           }
                           className="soft-control inline-flex min-h-10 shrink-0 items-center justify-center gap-2 border border-human-coral px-4 text-xs font-semibold text-human-coral hover:bg-human-coral hover:text-white"
                         >
                           <Clipboard className="size-4" aria-hidden="true" />
-                          この一言をコピー
+                          追加プロンプトをコピー
                         </button>
                       </div>
                     </div>
@@ -729,9 +730,11 @@ export function LessonReader({
             className="mt-16 scroll-mt-24 border-t border-rule pt-7"
           >
             <p className="numeric-text text-xs text-rust">05</p>
-            <h3 className="mt-3 font-mincho text-3xl">出力を上げるコツ</h3>
+            <h3 className="mt-3 font-mincho text-3xl">
+              仕上がりをよくするコツ
+            </h3>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-              全部試さなくて大丈夫です。気になるものを一つだけ選び、短く伝えます。
+              気になるものを一つ選んで、ChatGPTに伝えます。
             </p>
             <div className="mt-7 grid gap-4 md:grid-cols-3">
               {lesson.improvementTips.map((item) => (
@@ -766,7 +769,7 @@ export function LessonReader({
               </p>
             </div>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-              当てはまったらチェックします。見つけられたら大成功。上の短い言い方を一つ送って直し、直ったらチェックを外します。
+              当てはまる所を見つけたら、上のコツを使って直します。
             </p>
             <div className="soft-panel soft-panel-clip mt-7 border border-rule bg-paper-white">
               {taskMistakes.map((item, index) => (
@@ -888,10 +891,11 @@ export function LessonReader({
             </div>
             <div className="soft-panel mt-5 flex flex-col gap-4 border border-future-mint bg-future-mint-soft p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold">できた証拠を残す</p>
+                <p className="text-sm font-semibold">
+                  作ったものを学習記録に残す
+                </p>
                 <p className="mt-1 text-xs leading-6 text-quiet">
-                  マイページで「{task.id}
-                  」を選び、作ったものと確認できたことをAI実学パスポートへ記録できます。
+                  マイページに、作品や仕事の成果を残せます。
                 </p>
               </div>
               <Link
@@ -899,7 +903,7 @@ export function LessonReader({
                 href="/mypage#skills"
               >
                 <FileCheck2 className="size-4" aria-hidden="true" />
-                実践記録へ残す
+                学習記録へ残す
               </Link>
             </div>
           </section>
@@ -913,7 +917,7 @@ export function LessonReader({
             <p className="numeric-text text-xs text-rust">08</p>
             <h3 className="mt-3 font-mincho text-3xl">自分の仕事なら</h3>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-              今つくった形を、明日の仕事で一つだけ使える形へ変えます。
+              今作ったものを、明日の仕事で使える形に変えます。
             </p>
             <div className="soft-card soft-panel-clip mt-7 border border-rule bg-paper p-6 sm:p-8">
               <Sparkles className="size-6 text-rust" aria-hidden="true" />
@@ -936,10 +940,10 @@ export function LessonReader({
               <div>
                 <p className="numeric-text text-xs text-rust">09</p>
                 <h3 className="mt-3 font-mincho text-3xl">
-                  困ったら藤本に聞く
+                  困ったら講師に聞く
                 </h3>
                 <p className="mt-4 text-sm leading-7 text-quiet">
-                  うまく説明できなくても大丈夫です。止まった画面のスクショと、一言だけ送ってください。
+                  止まった画面のスクショと、一言だけで大丈夫です。
                 </p>
               </div>
               <div className="soft-card soft-dark-glow bg-deep-green p-6 text-white sm:p-8">
@@ -948,7 +952,7 @@ export function LessonReader({
                     className="size-5 text-human-coral-bright"
                     aria-hidden="true"
                   />
-                  <h4 className="font-mincho text-2xl">藤本に見せる内容</h4>
+                  <h4 className="font-mincho text-2xl">講師に見せる内容</h4>
                 </div>
                 <label className="mt-6 block">
                   <span className="text-xs text-white/65">
@@ -964,16 +968,12 @@ export function LessonReader({
                 <button
                   type="button"
                   onClick={() =>
-                    copyText(
-                      questionMemo,
-                      '藤本に見せる文',
-                      setQuestionCopyStatus,
-                    )
+                    copyText(questionMemo, '相談メモ', setQuestionCopyStatus)
                   }
                   className="soft-button mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 bg-white px-5 text-xs font-semibold text-deep-green hover:bg-sapphire-soft"
                 >
                   <PenLine className="size-4" aria-hidden="true" />
-                  藤本に見せる文をコピー
+                  相談メモをコピー
                 </button>
                 <p className="mt-3 text-xs leading-5 text-white/55">
                   ここからは送信されません。コピーした文と画面のスクショを、相談する時に見せてください。
@@ -997,9 +997,7 @@ export function LessonReader({
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="numeric-text text-xs text-sapphire">10 / 任意</p>
-                <h3 className="mt-3 font-mincho text-3xl">
-                  もう一つ、できること
-                </h3>
+                <h3 className="mt-3 font-mincho text-3xl">次に進みたい方へ</h3>
               </div>
               <span className="soft-badge inline-flex border border-sapphire/35 bg-sapphire-soft px-3 py-1.5 text-xs font-semibold text-sapphire">
                 やりたい人だけ
@@ -1007,10 +1005,10 @@ export function LessonReader({
             </div>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
               {lesson.stepUp.kind === 'terminal'
-                ? 'このコースはここまでで完成です。最後にもう一度試したい人だけ、今作った物を使って総仕上げをします。'
+                ? 'ここで完成です。もっと試したい方だけ、総仕上げへ進みます。'
                 : stepUpHasTwoRoutes
-                  ? 'この課題はここまでで完成です。さらに続けたい時は、まず下の二つから進み方を一つ選びます。'
-                  : 'この課題はここまでで完成です。さらに続けたい時だけ、今作った物を使って、下の文を一つ送ります。'}
+                  ? 'ここで完成です。続ける方は、次の進み方を一つ選びます。'
+                  : 'ここで完成です。続ける方だけ、下の文を送ります。'}
             </p>
             <div className="soft-card soft-panel-clip mt-7 overflow-hidden border border-sapphire bg-sapphire-soft">
               <div className="border-b border-sapphire/25 bg-paper-white/60 p-6 sm:p-8">
@@ -1155,18 +1153,18 @@ export function LessonReader({
                         <Compass className="size-5" aria-hidden="true" />
                         <p className="text-xs font-semibold">
                           {stepUpHasTwoRoutes
-                            ? '「今の作品を育てる」時に送る文'
-                            : '続ける時に送る文'}
+                            ? '作品を育てる追加プロンプト'
+                            : '続けるための追加プロンプト'}
                         </p>
                       </div>
                       {stepUpHasTwoRoutes ? (
                         <p className="mt-4 border-l-2 border-warning pl-4 text-xs leading-6 text-quiet">
-                          下の文は「おすすめ：今の作品を育てる」を選ぶ時だけ使います。「番号順に学ぶ」を選ぶ時は、この文を送らず、そちらの教材を開いてください。
+                          「今の作品を育てる」を選ぶ方だけ、下の文を使います。
                         </p>
                       ) : null}
                       <div className="mt-5 border-t border-rule pt-5">
                         <p className="text-xs font-semibold text-sapphire">
-                          次に送る文
+                          追加のプロンプト
                         </p>
                         <pre
                           className="soft-control mt-3 overflow-x-auto border border-sapphire/20 bg-sapphire-soft/45 p-5 font-mono text-xs leading-7 whitespace-pre-wrap text-brand-dark"
@@ -1180,14 +1178,14 @@ export function LessonReader({
                         onClick={() =>
                           copyText(
                             lesson.stepUp.say,
-                            '次に送る文',
+                            '追加のプロンプト',
                             setStepUpCopyStatus,
                           )
                         }
                         className="soft-button mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 bg-sapphire px-5 text-xs font-semibold text-white sm:w-auto"
                       >
                         <Clipboard className="size-4" aria-hidden="true" />
-                        次に送る文をコピー
+                        追加プロンプトをコピー
                       </button>
                       <p
                         className="mt-3 min-h-5 text-xs text-sapphire"
@@ -1197,7 +1195,7 @@ export function LessonReader({
                       </p>
                       <div className="mt-3 border-t border-rule pt-5">
                         <p className="text-xs font-semibold text-sapphire">
-                          送り方は3つだけ
+                          進め方は3つだけ
                         </p>
                         <ol className="mt-4 grid gap-3">
                           {stepUpActions.map((action, index) => (
@@ -1217,7 +1215,7 @@ export function LessonReader({
                         className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-quiet hover:text-sapphire"
                         href="#ask"
                       >
-                        止まったら、藤本に見せる文へ戻る
+                        止まったら、相談メモへ戻る
                         <ArrowRight className="size-3.5" aria-hidden="true" />
                       </a>
                     </div>
@@ -1292,13 +1290,13 @@ export function LessonReader({
             <div className="mt-8 border-t border-rule pt-5">
               <p className="text-xs font-semibold">止まっても大丈夫</p>
               <p className="mt-2 text-xs leading-6 text-quiet">
-                画面のスクショと、止まった所を藤本へ見せればOKです。
+                画面のスクショと、止まった所を講師に見せればOKです。
               </p>
               <a
                 className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-rust"
                 href="#ask"
               >
-                藤本に見せる文を作る
+                相談メモを作る
                 <ArrowRight className="size-3.5" aria-hidden="true" />
               </a>
             </div>

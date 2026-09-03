@@ -4,8 +4,8 @@ import Link from '@/components/site-link';
 import { textbookGuidePath, textbookSetupPath } from '@/lib/textbook-routes';
 
 const footerLinks = [
-  { href: '/#philosophy', label: '理念' },
   { href: '/#goals', label: '学んだ先' },
+  { href: '/#curriculum', label: '始め方' },
   { href: textbookGuidePath, label: 'Web教科書' },
   { href: textbookSetupPath, label: 'ChatGPTの準備・プラン' },
   { href: '/#services', label: '受講方法' },
@@ -29,12 +29,12 @@ export function SiteFooter() {
                 藤本実学塾
               </span>
               <span className="block text-xs tracking-[0.06em] text-white/70">
-                AIを、すべての人の実学へ。
+                やりたいことが、できる毎日へ。
               </span>
             </span>
           </Link>
           <p className="mt-7 max-w-sm text-sm leading-7 text-white/65">
-            AIが初めての方から、自分の仕事や暮らしに必要なところまで。教科書で手を動かし、講師と完成を確かめる大人のためのAI実学塾です。
+            Web教科書は無料。困ったときだけ、講師に聞けます。
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export function SiteFooter() {
             />
           </Link>
           <p className="mt-4 text-xs leading-6 text-white/65">
-            会場は日ごとに変わる予定です。運営本部と当日の教室会場は異なる場合があります。
+            教室会場は予約人数に合わせてご案内します。
           </p>
         </div>
       </div>

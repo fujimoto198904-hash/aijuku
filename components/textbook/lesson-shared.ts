@@ -7,14 +7,14 @@
 export const lessonSections = [
   { id: 'goal', number: '01', label: '今日はこれを作る' },
   { id: 'start', number: '02', label: '材料を渡す' },
-  { id: 'prompt', number: '03', label: 'まずこう言ってみる' },
-  { id: 'compare', number: '04', label: '出てきた物を実際に触る' },
-  { id: 'improve', number: '05', label: '出力を上げるコツ' },
+  { id: 'prompt', number: '03', label: 'ChatGPTに送るプロンプト' },
+  { id: 'compare', number: '04', label: 'AIの答えを確認して試す' },
+  { id: 'improve', number: '05', label: '仕上がりをよくするコツ' },
   { id: 'check', number: '06', label: 'やりがちなミス' },
   { id: 'complete', number: '07', label: 'ここまでできたら完成' },
   { id: 'application', number: '08', label: '自分の仕事なら' },
-  { id: 'ask', number: '09', label: '困ったら藤本に聞く' },
-  { id: 'stepup', number: '10', label: 'もう一つできること' },
+  { id: 'ask', number: '09', label: '困ったら講師に聞く' },
+  { id: 'stepup', number: '10', label: '次に進みたい方へ' },
 ] as const;
 
 export type LessonSectionId = (typeof lessonSections)[number]['id'];

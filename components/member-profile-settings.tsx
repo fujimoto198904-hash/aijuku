@@ -91,7 +91,7 @@ export function MemberProfileSettings({
         <div className="border-y border-rule py-4 text-xs leading-6 text-quiet">
           <p className="break-all">登録メール：{email}</p>
           <p className="mt-2">
-            AI実学パスポートをURL共有すると、この表示名も共有ページに表示されます。応募用の表記へ整えてから共有してください。
+            共有ページには、この表示名が出ます。見せたい名前に直してから共有してください。
           </p>
         </div>
         {!readOnly ? (

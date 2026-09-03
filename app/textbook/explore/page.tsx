@@ -21,7 +21,7 @@ import { textbookGuidePath, textbookLessonPath } from '@/lib/textbook-routes';
 export const metadata: Metadata = {
   title: '学ぶことを探す｜Web教科書｜藤本実学塾',
   description:
-    'AIが初めての方の入口、作りたい物、仕事の悩み、時間、使う材料から、自分に合うChatGPT実践課題を探せます。',
+    '作りたいものや仕事の悩みから、自分に合うChatGPTの課題を探せます。',
   alternates: { canonical: canonicalPublicPath('/textbook/explore') },
 };
 
@@ -74,7 +74,7 @@ export default function TextbookExplorePage() {
                 ここから見つける。
               </h1>
               <p className="mt-6 max-w-2xl text-sm leading-8 text-white/75 sm:text-base">
-                最初から順番に進んでも、作りたい物から始めても大丈夫です。課題を選ぶと、教科書本文だけが新しいタブで開きます。
+                最初からでも、作りたいものからでも大丈夫。課題は新しいタブで開きます。
               </p>
             </div>
             <div className="soft-card border border-white/20 bg-white/10 p-6 backdrop-blur-sm">
@@ -83,7 +83,7 @@ export default function TextbookExplorePage() {
                 探すページは、そのまま残ります。
               </p>
               <p className="mt-3 text-xs leading-6 text-white/65">
-                教科書を読んでからここへ戻り、次の課題を比べられます。新しいタブが増えすぎないよう、本文内の前後移動は同じタブで進みます。
+                読み終えたらここへ戻り、次の課題を選べます。
               </p>
             </div>
           </div>
@@ -107,11 +107,10 @@ export default function TextbookExplorePage() {
                 id="level-zero-title"
                 className="relative mt-4 max-w-2xl font-mincho text-[clamp(2rem,4vw,3.4rem)] leading-[1.25]"
               >
-                まだ分からない、から始めて大丈夫。
+                何も分からなくても、大丈夫。
               </h2>
               <p className="relative mt-5 max-w-2xl text-sm leading-8 text-quiet">
-                Level
-                0は、人の能力を測る順位ではありません。AIをまだ使ったことがない方のための入口です。最初の実課題では、自分の仕事を話すところから始めます。
+                AIをまだ使ったことがない方の入り口です。最初の会話から始められます。
               </p>
               <Link
                 className="button-glow group relative mt-7 inline-flex min-h-14 items-center gap-4 px-6 text-sm font-semibold text-white"
@@ -135,7 +134,7 @@ export default function TextbookExplorePage() {
                 走り書きのメモを、送れるメールへ。
               </h2>
               <p className="mt-5 text-sm leading-8 text-quiet">
-                難しい説明を読む前に、短い課題で「AIと一緒に作れた」を体験します。保存して開き直すところまで、教科書が順番に案内します。
+                短い課題で、メールを1通作ってみます。
               </p>
               <Link
                 className="soft-outline-button group mt-7 inline-flex min-h-14 items-center gap-4 border border-deep-green px-6 text-sm font-semibold text-deep-green hover:bg-deep-green hover:text-white"
@@ -159,11 +158,11 @@ export default function TextbookExplorePage() {
                     作りたい物から選ぶ
                   </p>
                   <h2 className="soft-section-heading mt-4 font-mincho text-[clamp(2rem,4vw,3.4rem)] font-medium leading-[1.2]">
-                    学んだ先に、手元へ残るもの。
+                    学びながら、こんなものが作れます。
                   </h2>
                 </div>
                 <p className="max-w-md text-xs leading-6 text-quiet">
-                  気になる完成物を選ぶと、そのコースの最初の教科書を新しいタブで開きます。
+                  気になるものを選ぶと、最初の課題が開きます。
                 </p>
               </div>
               <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -218,7 +217,7 @@ export default function TextbookExplorePage() {
               言葉・目的・時間から探す。
             </h2>
             <p className="mt-5 max-w-3xl text-sm leading-8 text-quiet">
-              「メール」「見積もり」「画像」のように入力するか、仕事の悩みやコースで絞ってください。どの課題から始めても、教科書の順番に沿って授業を受けられます。
+              「メール」「見積もり」「画像」など、作りたいものを入れてください。
             </p>
             <TextbookAccessLegend className="mt-9" />
             <TaskExplorer
@@ -238,7 +237,7 @@ export default function TextbookExplorePage() {
                 迷ったら、使い方へ戻れます。
               </p>
               <p className="mt-2 text-xs leading-6 text-quiet">
-                練習データの選び方や、教科書と授業の使い分けを確認できます。
+                教科書の開き方を、もう一度確認できます。
               </p>
             </div>
             <Link

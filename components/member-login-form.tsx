@@ -147,7 +147,7 @@ export function MemberLoginForm({
           aria-hidden="true"
         />
         <p className="text-xs leading-6 text-quiet">
-          初期パスワードは、登録した誕生日の8桁（YYYYMMDD）で、発行から72時間有効です。初回はChatGPTでメールアドレスを確認し、ログイン後すぐ自分だけのパスワードへ変更します。
+          初期パスワードは誕生日8桁（YYYYMMDD）で、72時間有効です。初回ログイン後、8文字以上の新しいパスワードに変更してください。
         </p>
       </div>
 

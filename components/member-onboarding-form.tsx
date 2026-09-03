@@ -71,14 +71,14 @@ const goals: readonly Option<LearningGoal>[] = [
   },
   {
     value: 'creative',
-    title: '表現の幅を広げたい',
-    body: '画像、文章、企画など、頭の中のイメージを形にしたい',
+    title: '画像や文章を作りたい',
+    body: '頭の中のイメージを形にしたい',
     Icon: Palette,
   },
   {
     value: 'build',
-    title: '自分の道具や仕組みを作りたい',
-    body: 'Webサイトや自動化など、実際に使えるものを完成させたい',
+    title: 'Webサイトや自動化を作りたい',
+    body: '自分で使えるものを完成させたい',
     Icon: Laptop,
   },
   {
@@ -89,8 +89,8 @@ const goals: readonly Option<LearningGoal>[] = [
   },
   {
     value: 'explore',
-    title: 'まずは可能性を知りたい',
-    body: '何ができるか試しながら、自分に合う学び方を見つけたい',
+    title: 'まずAIを試してみたい',
+    body: '何ができるか、使いながら知りたい',
     Icon: Compass,
   },
 ] as const;
@@ -378,7 +378,7 @@ export function MemberOnboardingForm({
             <StepHeading
               eyebrow="YOUR GOAL"
               headingRef={headingRef}
-              title="AIで、どんな変化を作りたい？"
+              title="AIで、何を楽にしたい？"
               body="今の気持ちに一番近いものを一つ。あとから変えても大丈夫です。"
             />
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -402,7 +402,7 @@ export function MemberOnboardingForm({
               eyebrow="START YOUR WAY"
               headingRef={headingRef}
               title="どこから始めたい？"
-              body="Level 0から順番でも、今つくりたいものからでも、特定の分野だけでも構いません。"
+              body="最初からでも、やりたいことからでも大丈夫です。"
             />
             <div className="mt-6 grid gap-3">
               {startModes.map((option) => (
@@ -424,8 +424,8 @@ export function MemberOnboardingForm({
             <StepHeading
               eyebrow="FIRST EXCITEMENT"
               headingRef={headingRef}
-              title="まず、何をできるようにしたい？"
-              body="気になる分野は複数選べます。後から見直せる、あなたの学び方メモとして残します。"
+              title="最初に、何をやってみたい？"
+              body="気になる分野は、いくつ選んでも大丈夫です。"
             />
             <fieldset className="mt-6">
               <legend className="text-sm font-semibold">
@@ -466,7 +466,7 @@ export function MemberOnboardingForm({
               htmlFor="first-outcome"
             >
               <span>
-                最初に作りたい変化・もの
+                最初にやってみたいこと
                 <span className="ml-2 text-[11px] font-normal text-quiet">
                   入力必須
                 </span>

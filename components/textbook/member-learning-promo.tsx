@@ -20,8 +20,8 @@ const memberBenefits = [
   },
   {
     Icon: FileCheck2,
-    title: '実践記録',
-    body: '成果物名・説明・外部URLを記録',
+    title: '作ったもの',
+    body: '作品や仕事の成果を記録',
   },
 ] as const;
 
@@ -44,12 +44,12 @@ export function MemberLearningPromo({
             id="member-learning-promo-heading"
             className="mt-4 font-mincho text-3xl leading-[1.35] sm:text-4xl"
           >
-            気になる課題も、やった課題も、
+            やりたい課題も、できた課題も、
             <br />
             一つのマイページへ。
           </h2>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-quiet">
-            教科書を読むだけなら登録不要です。無料会員になると、ブックマークと自分で完了にした課題を保存し、学びの積み重ねを確認できます。
+            教科書は登録なしで読めます。無料会員になると、課題の保存や学習記録が使えます。
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link

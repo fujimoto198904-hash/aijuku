@@ -91,8 +91,8 @@ const publishChapters = [
 export const purposePresets: readonly PurposePreset[] = [
   {
     id: 'three-min',
-    label: 'まず3分で一個',
-    hint: '10分以内に最初の完成品ができる課題',
+    label: 'まず10分で一つ',
+    hint: '10分以内で終わる課題',
     matches: (task) => {
       const minutes = lessonMeta[task.id]?.[2];
       return typeof minutes === 'number' && minutes <= 10;
@@ -113,7 +113,7 @@ export const purposePresets: readonly PurposePreset[] = [
   },
   {
     id: 'numbers',
-    label: '数字を整えたい',
+    label: '見積もりや集計を楽にしたい',
     hint: '見積、請求、集計、ダッシュボード、Excel',
     matches: (task, chapterKey) =>
       chapterIn(chapterKey, [
@@ -139,8 +139,8 @@ export const purposePresets: readonly PurposePreset[] = [
   },
   {
     id: 'ai-lead',
-    label: 'AI推進を担いたい',
-    hint: '承認、受付センター、安全運用、社内展開',
+    label: '会社でAIを安全に使いたい',
+    hint: '安全に使う、社内に広げる',
     matches: (task, chapterKey) =>
       commonChapterBetween(chapterKey, 14, 20) ||
       chapterIn(chapterKey, ['department-pmo', 'department-it']),
@@ -366,7 +366,7 @@ export function TaskExplorer({
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-4 text-xs font-semibold [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center gap-2">
                   <Filter className="size-3.5 text-rust" aria-hidden="true" />
-                  プラン・作業環境・時間で絞る
+                  料金・使う画面・時間で絞る
                   {activeFilterCount > 0 || track !== 'all' ? (
                     <span className="soft-badge numeric-text border border-sapphire px-2 py-0.5 text-xs text-sapphire">
                       {activeFilterCount + Number(track !== 'all')}
@@ -382,8 +382,8 @@ export function TaskExplorer({
                     {(
                       [
                         ['all', 'すべて'],
-                        ['free', '無料で始めやすい'],
-                        ['paid-recommended', '有料版推奨'],
+                        ['free', 'ChatGPT無料版'],
+                        ['paid-recommended', 'ChatGPT有料版がおすすめ'],
                       ] as const
                     ).map(([value, label]) => (
                       <button
@@ -402,14 +402,14 @@ export function TaskExplorer({
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-quiet">作業環境</p>
+                  <p className="text-xs font-semibold text-quiet">使う画面</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {(
                       [
                         ['all', 'すべて'],
                         ['chat', 'Chat'],
                         ['work', 'Work'],
-                        ['codex', 'Codex向き'],
+                        ['codex', 'Codexがおすすめ'],
                       ] as const
                     ).map(([value, label]) => (
                       <button
@@ -490,7 +490,7 @@ export function TaskExplorer({
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-quiet">
-                    材料の渡し方
+                    材料の入れ方
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button

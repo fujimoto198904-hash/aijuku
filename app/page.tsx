@@ -4,13 +4,10 @@ import {
   BookOpenText,
   BookmarkCheck,
   CalendarCheck2,
-  CalendarDays,
   Check,
   CheckCircle2,
   FileCheck2,
   FileSpreadsheet,
-  Images,
-  Presentation,
   ShieldCheck,
   Smartphone,
   UsersRound,
@@ -23,11 +20,9 @@ import Link from '@/components/site-link';
 import { BrandMark } from '@/components/brand-mark';
 import { FaqSection } from '@/components/faq-section';
 import { FutureSection } from '@/components/home/future-section';
-import { GoalSection } from '@/components/home/goal-section';
 import { LearningCycleSection } from '@/components/home/learning-cycle-section';
 import { QuickStartSection } from '@/components/home/quick-start-section';
 import { SectionIntro } from '@/components/home/section-intro';
-import { OnlinePriceSpotlight } from '@/components/online-price-spotlight';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { memberServicePlans, sharedFees } from '@/lib/member-service-plans';
@@ -40,44 +35,32 @@ import {
   textbookLessonPath,
 } from '@/lib/textbook-routes';
 import heroFutureImage from '@/sozai/kazoku-sougen.jpg';
-import onlineImage from '@/sozai/zaitaku-pc.jpg';
 
 export const metadata: Metadata = {
   alternates: { canonical: canonicalPublicPath() },
 };
 
-const curriculumTracks = [
+const startChoices = [
   {
     index: '01',
-    role: '技術の幹',
-    english: 'COMMON',
-    title: 'AIを使う技術',
-    body: 'AI秘書、調査、データ、Web、認証、連携、安全運用まで。作りたいものに必要な技術の章を選びます。',
-    examples: '文章・調査・データ・Web・安全',
+    label: '最初から',
+    title: 'スマホ・パソコンの基本から',
+    body: '文字の入力やChatGPTの開き方から、ゆっくり始めます。',
+    Icon: Smartphone,
   },
   {
     index: '02',
-    role: '仕事の担当',
-    english: 'DEPARTMENT',
-    title: '担当業務の実践',
-    body: '経営、営業、経理、人事、製造、AI推進など。自分の担当業務で使える一つの成果物を育てます。',
-    examples: '経営・営業・経理・人事・製造・AI推進',
+    label: '今の仕事から',
+    title: '明日使うものを一つ',
+    body: 'メール、資料、見積もりなど、今の困りごとから選べます。',
+    Icon: FileSpreadsheet,
   },
   {
     index: '03',
-    role: '現場の舞台',
-    english: 'INDUSTRY',
-    title: '業界ごとの実践',
-    body: '小売、飲食、美容、宿泊、建設、不動産、製造、教育など。業界固有の仕事を一つの流れにつなぎます。',
-    examples: '小売・飲食・美容・宿泊・建設・製造',
-  },
-  {
-    index: '04',
-    role: '表現の工房',
-    english: 'CREATION',
-    title: '作品づくり',
-    body: '本、SNS、画像、動画、音声、Web、ゲーム、スマホアプリ、PowerPoint、Excelなど。一作品の表現・体験と、毎日使える仕事ファイルを磨きます。',
-    examples: '本・SNS・画像・動画・Web・ゲーム・アプリ・資料・Excel',
+    label: '好きなところから',
+    title: '作りたいものに挑戦',
+    body: '画像、動画、Web、アプリなど、興味のある分野だけでも大丈夫です。',
+    Icon: AppWindow,
   },
 ] as const;
 
@@ -134,33 +117,6 @@ const textbookSampleCards = [
     href: textbookLessonPath('Lv.80'),
     Icon: Smartphone,
   },
-  {
-    category: '説明・提案',
-    title: '3分で伝わる、5枚のPowerPointを。',
-    body: '課題、解決策、効果、お願いを、あとから編集できる資料へまとめます。',
-    deliverable: '編集できるPowerPoint／3分説明原稿',
-    note: '開いて文字を直し、保存できる所まで確認',
-    href: textbookLessonPath('SLD-03'),
-    Icon: Presentation,
-  },
-  {
-    category: 'SNS・発信',
-    title: 'SNSにもサイトにも使える「顔」を4サイズ。',
-    body: '一つの企画から、横長・縦長・文字入り・文字なしを作り、発信の見た目をそろえます。',
-    deliverable: '主画像4版／レイアウト指示／修正履歴',
-    note: '文字・権利・不自然な箇所を人が確認',
-    href: textbookLessonPath('IMG-03'),
-    Icon: Images,
-  },
-  {
-    category: '自分専用ツール',
-    title: '毎日の面倒を、自分専用アプリへ。',
-    body: '登録、保存、編集、完了、削除まで動く、小さなルーティン管理アプリを作ります。',
-    deliverable: 'スマホで使えるローカル保存アプリ',
-    note: '全ボタンと、閉じた後の保存まで試す',
-    href: textbookLessonPath('APP-04'),
-    Icon: AppWindow,
-  },
 ] as const;
 
 export default function Home() {
@@ -182,25 +138,24 @@ export default function Home() {
                 <div className="flex items-center gap-4">
                   <BrandMark className="size-11" />
                   <p className="text-xs font-semibold tracking-[0.16em] text-quiet">
-                    藤本実学塾｜AI未経験から始める実学
+                    藤本実学塾｜AIが初めてでも大丈夫
                   </p>
                 </div>
 
                 <h1
                   id="hero-title"
-                  className="text-soft-glow mt-10 font-mincho text-[clamp(3rem,6.6vw,6.3rem)] font-medium leading-[1.08] tracking-[-0.055em]"
+                  className="text-soft-glow mt-10 font-mincho text-[clamp(2.1rem,6.6vw,6.3rem)] font-medium leading-[1.08] tracking-[-0.055em]"
                 >
-                  AIを、
-                  <br />
-                  すべての人の
-                  <br />
-                  <span className="text-highlight text-human-coral">
-                    実学へ。
+                  <span className="block whitespace-nowrap">
+                    やりたいことが、
+                  </span>
+                  <span className="text-highlight block whitespace-nowrap text-human-coral">
+                    できる毎日へ。
                   </span>
                 </h1>
 
                 <p className="mt-9 max-w-[650px] text-base leading-8 text-quiet sm:text-lg sm:leading-9">
-                  わからないまま、来てください。はじめて触るところから、暮らし・仕事・チームに必要なところまで。自分のペースで、使えるものを一つずつ作ります。
+                  仕事が早く終わる。思いつきが形になる。AIで、毎日がちょっと楽しくなる。
                 </p>
 
                 <div className="mt-10 flex flex-col gap-3 sm:flex-row">
@@ -228,14 +183,14 @@ export default function Home() {
                       className="size-4 text-sapphire"
                       aria-hidden="true"
                     />
-                    Web教科書は登録なしで無料。無料会員なら、気になる課題と完了した課題を残せます
+                    Web教科書は0円。登録なしですぐ読めます
                   </p>
                   <p className="flex items-center gap-3">
-                    <CalendarDays
+                    <Check
                       className="size-4 text-sapphire"
                       aria-hidden="true"
                     />
-                    対面自習式は2026年11月1日開始予定
+                    最初からでも、好きなところからでも
                   </p>
                 </div>
               </div>
@@ -244,7 +199,7 @@ export default function Home() {
             <figure className="relative min-h-[360px] overflow-hidden bg-rule sm:min-h-[440px] lg:min-h-full">
               <Image
                 src={heroFutureImage}
-                alt="AIを学んだ先の、穏やかな暮らしを表したイメージ写真"
+                alt="青空の下で、家族が笑顔で過ごす様子"
                 fill
                 priority
                 sizes="(min-width: 1024px) 48vw, 100vw"
@@ -254,161 +209,81 @@ export default function Home() {
                 className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"
                 aria-hidden="true"
               />
-              <figcaption className="absolute bottom-4 right-4 rounded-full bg-black/45 px-3 py-1.5 text-xs text-white/85 backdrop-blur-sm">
-                素材写真
+              <figcaption className="absolute inset-x-4 bottom-4 rounded-3xl border border-white/30 bg-brand-dark/72 p-5 text-white shadow-2xl backdrop-blur-md sm:inset-x-6 sm:bottom-6 sm:p-6">
+                <p className="text-xs font-semibold tracking-[0.12em] text-future-mint">
+                  AIで時間ができたら
+                </p>
+                <p className="mt-2 font-mincho text-2xl leading-9 sm:text-3xl">
+                  早く終わった分を、
+                  <br />
+                  大切な時間へ。
+                </p>
               </figcaption>
             </figure>
           </div>
         </section>
 
-        <QuickStartSection />
-
         <FutureSection />
-
-        <GoalSection />
 
         <section
           id="curriculum"
-          className="relative overflow-hidden bg-brand-dark px-5 py-24 text-white sm:px-8 sm:py-32"
+          className="border-y border-rule bg-paper-white px-5 py-20 sm:px-8 sm:py-28"
         >
-          <div
-            className="editorial-grid pointer-events-none absolute inset-0"
-            aria-hidden="true"
-          />
-          <div className="relative mx-auto max-w-[1240px]">
+          <div className="mx-auto max-w-[1240px]">
             <SectionIntro
-              index="03"
-              label="CURRICULUM MAP"
-              light
+              label="始め方"
               title={
                 <>
-                  今つくりたいものが、
+                  最初から。途中から。
                   <br />
-                  学びの入口になる。
+                  好きなところだけ。
                 </>
               }
               body={
-                <>
-                  <p>
-                    藤本実学塾では、暮らしや仕事で本当に使いたいものから教材を選びます。技術・担当業務・業種・表現の4つの入口から、足りない力だけを組み合わせ、一つの成果物を使える形まで育てます。
-                  </p>
-                  <p className="mt-3 text-sm text-white/55">
-                    最初の一歩から一段ずつでも、今の自分に合うところからでも、画像・資料・Excel・Webなど、学びたい領域だけでも始められます。
-                  </p>
-                </>
+                <p>
+                  全部やる必要はありません。今の自分に合う場所から始められます。
+                </p>
               }
             />
 
-            <div className="soft-panel soft-panel-clip soft-dark-glow mt-16 border border-white/20 bg-[#173743]/75">
-              <div className="grid border-b border-white/20 lg:grid-cols-[0.72fr_1.28fr]">
-                <div className="flex min-h-[290px] flex-col justify-between border-b border-white/20 p-7 sm:p-10 lg:border-b-0 lg:border-r lg:p-12">
-                  <div>
-                    <p className="text-xs font-semibold tracking-[0.16em] text-white/65">
-                      CURRENT PROJECT
-                    </p>
-                    <p className="mt-7 font-mincho text-3xl leading-[1.45] sm:text-4xl">
-                      つくりたい一つから、
-                      <br />
-                      未来が動き出す。
-                    </p>
-                  </div>
-                  <p className="mt-10 max-w-md text-sm leading-7 text-white/60">
-                    同じものを教材ごとに作り直しません。完成した素材を受け取り、必要な部分だけを加えて、今つくっているものへ戻します。
-                  </p>
-                </div>
-
-                <div className="grid sm:grid-cols-2">
-                  {curriculumTracks.map((track) => (
-                    <article
-                      key={track.index}
-                      className="group border-b border-white/20 p-7 transition-colors hover:bg-white/[0.035] sm:p-8 sm:[&:nth-child(odd)]:border-r sm:[&:nth-last-child(-n+2)]:border-b-0"
-                    >
-                      <div className="flex items-start justify-between gap-5">
-                        <div className="w-full">
-                          <p className="text-xs font-semibold tracking-[0.14em] text-future-mint">
-                            {track.role} / {track.english}
-                          </p>
-                          <h3 className="mt-4 font-mincho text-2xl">
-                            {track.title}
-                          </h3>
-                        </div>
-                      </div>
-                      <p className="mt-6 text-sm leading-7 text-white/65">
-                        {track.body}
-                      </p>
-                      <p className="mt-5 border-t border-white/15 pt-4 text-xs leading-6 text-white/60">
-                        {track.examples}
-                      </p>
-                    </article>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
-                <div className="border-b border-white/20 p-7 sm:p-10 lg:border-b-0 lg:border-r lg:p-12">
-                  <p className="text-xs font-semibold tracking-[0.14em] text-future-mint">
-                    学びをつなげる / KEEP BUILDING
-                  </p>
-                  <p className="mt-5 font-mincho text-2xl leading-9">
-                    学んだ分だけ、作品が育っていく。
-                  </p>
-                  <p className="mt-4 text-sm leading-7 text-white/55">
-                    前回つくった文章や資料を持ち帰り、次はそこへ新しい工夫を一つ足します。講師が変わっても、続きから進めます。
-                  </p>
-                </div>
-                <div className="p-7 sm:p-10 lg:p-12">
-                  <p className="text-xs font-semibold tracking-[0.14em] text-white/65">
-                    たとえば、お店の予約サイトなら
-                  </p>
-                  <p className="mt-5 font-mincho text-2xl leading-10 sm:text-3xl sm:leading-[1.55]">
-                    まず予約できるページをつくり、次に写真や文章を整え、必要になったら便利な機能を一つ足します。
-                  </p>
-                  <p className="mt-5 text-sm leading-7 text-white/55">
-                    毎回ゼロから作り直さず、自分のお店で本当に使えるサイトへ育てます。
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="soft-panel soft-panel-clip mt-6 grid border border-white/20 bg-white/[0.025] sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                ['AIに頼んでも、思いどおりにならない', '使い方と技術から探す'],
-                [
-                  '自分の仕事で、AIをどこに使えるか分からない',
-                  '担当業務の実例から探す',
-                ],
-                [
-                  '自分の業界に合う使い方が見つからない',
-                  '業界ごとの実例から探す',
-                ],
-                [
-                  '文章・資料・画像を、もっと伝わる形にしたい',
-                  'つくりたい作品から探す',
-                ],
-              ].map(([question, answer]) => (
-                <div
-                  key={question}
-                  className="border-b border-white/20 p-5 sm:[&:nth-child(odd)]:border-r lg:border-r lg:last:border-r-0"
+            <div className="mt-12 grid gap-5 lg:grid-cols-3">
+              {startChoices.map(({ index, label, title, body, Icon }) => (
+                <article
+                  key={index}
+                  className="soft-card soft-interactive border border-rule bg-paper p-7 hover:bg-sapphire-soft/45 sm:p-8"
                 >
-                  <p className="text-xs leading-6 text-white/65">{question}</p>
-                  <p className="mt-2 font-mincho text-lg text-white/85">
-                    {answer}
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="soft-icon grid size-11 place-items-center bg-sapphire-soft text-sapphire">
+                      <Icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <span className="numeric-text text-xs text-quiet">
+                      {index}
+                    </span>
+                  </div>
+                  <p className="mt-7 text-xs font-semibold text-sapphire">
+                    {label}
                   </p>
-                </div>
+                  <h3 className="mt-3 font-mincho text-2xl leading-9">
+                    {title}
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-quiet">{body}</p>
+                </article>
               ))}
             </div>
-            <p className="mt-5 text-xs leading-6 text-white/65">
-              教材内の番号は、人の優劣ではなく、作品の利用者数・データ・接続・権限・復旧など、技術と運用範囲の難易度を表します。
-            </p>
-            <Link
-              className="soft-outline-button mt-8 inline-flex min-h-12 items-center gap-6 border border-white/35 px-5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-brand-dark"
-              href={textbookExplorePath}
-            >
-              作りたいものから教材を探す
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
+
+            <div className="mt-7 flex justify-end border-t border-rule pt-7">
+              <Link
+                className="button-glow inline-flex min-h-12 shrink-0 items-center gap-5 px-5 text-sm font-semibold text-white"
+                href={textbookExplorePath}
+              >
+                やりたいことから教材を探す
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
           </div>
         </section>
+
+        <QuickStartSection />
 
         <LearningCycleSection />
 
@@ -418,19 +293,18 @@ export default function Home() {
         >
           <div className="mx-auto max-w-[1240px]">
             <SectionIntro
-              index="05"
-              label="PRACTICAL TEXTBOOK"
+              label="Web教科書"
               light
               title={
                 <>
-                  明日、仕事で使うものを
+                  明日使えるものを、
                   <br />
-                  つくる。
+                  ここで作る。
                 </>
               }
               body={
                 <p>
-                  メールの言い換えだけでは終わりません。商談後の段取り、見積書、ホームページ、PowerPoint、発信用画像、自分用アプリまで。欲しい完成物から教材を選べます。
+                  メール、見積書、資料、ホームページ。今ほしいものから選べます。
                 </p>
               }
             />
@@ -459,7 +333,7 @@ export default function Home() {
                     <h3 className="mt-9 max-w-2xl font-mincho text-[clamp(2rem,4vw,3.8rem)] font-medium leading-[1.2] tracking-[-0.035em]">
                       {featuredTextbookSample.title}
                     </h3>
-                    <p className="mt-6 max-w-2xl text-sm leading-8 text-quiet sm:text-base">
+                    <p className="mt-5 max-w-2xl text-sm leading-7 text-quiet sm:text-base">
                       {featuredTextbookSample.body}
                     </p>
 
@@ -554,63 +428,18 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-
-              <div className="grid divide-y divide-rule border-t border-rule sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                {textbookSampleCards.slice(2).map((sample) => (
-                  <Link
-                    key={sample.href}
-                    href={sample.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${sample.title}（新しいタブで開く）`}
-                    className="group flex min-h-[360px] flex-col p-7 transition-colors hover:bg-paper sm:p-8"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="grid size-10 place-items-center bg-brand-dark text-future-mint transition-colors group-hover:bg-sapphire group-hover:text-white">
-                        <sample.Icon className="size-5" aria-hidden="true" />
-                      </span>
-                      <span className="text-xs font-semibold tracking-[0.06em] text-quiet">
-                        {sample.category}
-                      </span>
-                    </div>
-                    <h3 className="mt-7 font-mincho text-2xl leading-9 tracking-[-0.02em]">
-                      {sample.title}
-                    </h3>
-                    <p className="mt-4 text-sm leading-7 text-quiet">
-                      {sample.body}
-                    </p>
-                    <div className="mt-auto pt-8">
-                      <p className="text-xs font-semibold leading-6">
-                        {sample.deliverable}
-                      </p>
-                      <p className="mt-2 text-xs leading-6 text-quiet">
-                        {sample.note}
-                      </p>
-                      <p className="mt-5 flex items-center gap-2 text-xs font-semibold text-sapphire">
-                        この課題を開く
-                        <ArrowRight
-                          className="size-3.5 transition-transform group-hover:translate-x-1"
-                          aria-hidden="true"
-                        />
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
             </div>
 
             <div className="mt-7 flex flex-col gap-6 border-t border-white/20 pt-7 sm:flex-row sm:items-start sm:justify-between">
               <p className="max-w-3xl text-xs leading-6 text-white/55">
                 {allLessonDetailsPublished ? (
                   <>
-                    公開中のすべての教材に、使う材料、最初の一言、実際に触る手順、やりがちなミス、完成条件までの固有の本文があります。
+                    どの教材にも、使う材料、手順、よくある失敗、完成の目安があります。
                   </>
                 ) : (
-                  <>
-                    詳しい手順を公開している教材と、選べる骨格を先に公開している教材があります。詳しい本文は制作できた課題から順次反映します。
-                  </>
+                  <>詳しい手順がある教材から、順番に公開しています。</>
                 )}
-                各章は、前の課題の完成品を育てて一つの成果物へ届く構成です。正式な修了条件・修了証は別途案内します。
+                順番に進めても、作りたいものから始めても大丈夫です。
               </p>
               <Link
                 href={textbookExplorePath}
@@ -630,28 +459,28 @@ export default function Home() {
           <div className="mx-auto grid max-w-[1240px] gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
-                FREE MEMBER
+                無料会員
               </p>
               <h2 className="soft-section-heading mt-5 font-mincho text-[clamp(2.5rem,5vw,4.8rem)] font-medium leading-[1.15] tracking-[-0.04em]">
-                気になるも、
+                やりたい課題も、
                 <br />
-                できたも、残る。
+                できた課題も、残せる。
               </h2>
               <p className="mt-6 max-w-xl text-sm leading-8 text-quiet sm:text-base">
-                教科書を読むだけなら登録はいりません。無料会員になると、今度やりたい課題と、自分で完了にした課題をマイページで確認できます。
+                教科書は登録なしで読めます。無料会員になると、やりたい課題や作ったものをマイページに残せます。
               </p>
               <Link
                 className="button-glow group mt-8 inline-flex min-h-14 items-center gap-8 px-6 text-sm font-semibold text-white"
                 href="/join"
               >
-                無料会員で学びを残す
+                無料会員になって課題を保存
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-1"
                   aria-hidden="true"
                 />
               </Link>
               <p className="mt-3 text-xs text-quiet">
-                登録だけで料金は発生しません。有料受講は希望する場合だけ選びます。
+                登録は無料です。有料受講は、必要なときだけ選べます。
               </p>
             </div>
 
@@ -660,17 +489,17 @@ export default function Home() {
                 {
                   Icon: BookmarkCheck,
                   title: 'あとでやる',
-                  body: '気になる課題を保存し、マイページからすぐ開けます。',
+                  body: '気になる課題を保存できます。',
                 },
                 {
                   Icon: CheckCircle2,
                   title: 'できた課題',
-                  body: '自分で完了にした課題が一覧になり、積み重ねが見えます。',
+                  body: '終えた課題が、ひと目でわかります。',
                 },
                 {
                   Icon: FileCheck2,
-                  title: '実践記録',
-                  body: '成果物名・説明・外部URLと、できるようになったことを記録できます。',
+                  title: '作ったもの',
+                  body: 'あとから見返したり、人に見せたりできます。',
                 },
               ].map(({ Icon, title, body }, index) => (
                 <article
@@ -699,44 +528,18 @@ export default function Home() {
         >
           <div className="mx-auto max-w-[1240px]">
             <SectionIntro
-              index="06"
-              label="HOW TO JOIN"
+              label="受講方法"
               title={
                 <>
-                  3つの学び方から、
+                  ひとりで迷ったら、
                   <br />
-                  今に合うものを。
+                  講師と進める。
                 </>
               }
-              body={
-                <p>
-                  すべての授業は、公開中のWeb教科書に沿って進みます。自分で進むときも、対面やGoogle
-                  Meetで講師と進むときも、同じ教材を開き、つまずいた所を質問しながら一つの成果物を完成させます。
-                </p>
-              }
+              body={<p>有料の授業も、すべてWeb教科書に沿って進めます。</p>}
             />
 
-            <ol className="soft-panel soft-panel-clip mt-12 grid border border-rule bg-paper-white sm:grid-cols-5">
-              {[
-                ['01', '無料会員登録'],
-                ['02', '学び方を選ぶ'],
-                ['03', '希望を送る'],
-                ['04', '条件を確認'],
-                ['05', '受講を開始'],
-              ].map(([number, label]) => (
-                <li
-                  className="border-b border-r border-rule bg-paper-white p-5"
-                  key={number}
-                >
-                  <span className="numeric-text text-xs text-sapphire">
-                    {number}
-                  </span>
-                  <p className="mt-3 text-sm font-semibold">{label}</p>
-                </li>
-              ))}
-            </ol>
-
-            <div className="soft-panel soft-panel-clip mt-14 grid border border-rule bg-paper-white px-6 sm:grid-cols-3 sm:px-8">
+            <div className="soft-panel soft-panel-clip mt-12 grid border border-rule bg-paper-white px-6 sm:grid-cols-3 sm:px-8">
               <div className="border-b border-rule py-5 sm:border-b-0 sm:border-r sm:pr-6">
                 <p className="text-xs font-semibold text-human-coral">
                   {sharedFees.entranceCampaign}
@@ -752,21 +555,19 @@ export default function Home() {
                 <p className="text-xs text-quiet">Web教科書</p>
                 <p className="mt-2 font-mincho text-2xl">登録なしで完全無料</p>
                 <p className="mt-2 text-xs text-quiet">
-                  公開中の教材から今日すぐ始められます
+                  今日から、このサイトで始められます
                 </p>
               </div>
               <div className="py-5 sm:pl-6">
                 <p className="text-xs text-quiet">紙の教科書</p>
                 <p className="numeric-text mt-2 text-2xl">1冊 2,000円前後</p>
                 <p className="mt-2 text-xs text-quiet">
-                  希望する方だけ購入できます
+                  紙で読みたい方だけ購入できます
                 </p>
               </div>
             </div>
 
-            <OnlinePriceSpotlight className="mt-10" />
-
-            <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            <div className="mt-10 grid gap-5 lg:grid-cols-3">
               {joinPlans.map(
                 ({
                   number,
@@ -813,7 +614,7 @@ export default function Home() {
                     </p>
                     {number === '03' ? (
                       <p className="mt-4 border-l-2 border-future-mint pl-3 text-xs leading-6 text-quiet">
-                        通い放題。予約人数に応じて、東京23区内の会場を毎回変更します。
+                        通い放題。会場は予約人数に合わせて、東京23区内で決めます。
                       </p>
                     ) : null}
                   </article>
@@ -827,7 +628,7 @@ export default function Home() {
                   無料会員登録後、マイページから申し込めます。
                 </p>
                 <p className="mt-2 text-xs leading-6 text-quiet">
-                  まず受講希望を受付し、運営が日程と条件を確認します。送信だけで予約・契約・決済は確定しません。
+                  希望を送ったあと、日程と料金を確認します。この時点では予約も支払いも確定しません。
                 </p>
               </div>
               <Link
@@ -838,37 +639,6 @@ export default function Home() {
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
-
-            <figure className="soft-panel soft-panel-clip image-soft-zoom mt-10 grid border border-rule md:grid-cols-[0.82fr_1.18fr]">
-              <div className="relative min-h-[300px] bg-rule">
-                <Image
-                  src={onlineImage}
-                  alt="Google Meetで画面を共有しながら相談するイメージ写真"
-                  fill
-                  sizes="(min-width: 768px) 40vw, 100vw"
-                  className="object-cover"
-                />
-                <span className="absolute bottom-4 left-4 rounded-full bg-brand-dark/80 px-3 py-1.5 text-[10px] font-semibold tracking-[0.08em] text-white backdrop-blur-sm">
-                  素材写真
-                </span>
-              </div>
-              <figcaption className="flex items-center p-7 sm:p-10">
-                <div>
-                  <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
-                    GOOGLE MEET
-                  </p>
-                  <p className="mt-5 font-mincho text-3xl leading-tight">
-                    場所が離れていても、
-                    <br />
-                    同じ画面を見ながら進めます。
-                  </p>
-                  <p className="mt-5 max-w-xl text-sm leading-7 text-quiet">
-                    家庭教師型（オンライン）は全国から受講できます。Google
-                    Meetで同じ画面を見ながら、50分で一つの成果物を進めます。
-                  </p>
-                </div>
-              </figcaption>
-            </figure>
           </div>
         </section>
 
@@ -882,25 +652,13 @@ export default function Home() {
                 よくある質問
               </p>
               <h2 className="soft-section-heading mt-7 font-mincho text-[clamp(2.5rem,5vw,4.8rem)] font-medium leading-[1.16] tracking-[-0.04em]">
-                迷いを、
+                始める前の、
                 <br />
-                ひとつずつ
-                <br />
-                ほどく。
+                よくある質問。
               </h2>
               <p className="mt-7 max-w-sm text-sm leading-8 text-quiet sm:text-base">
-                学び方、通い方、料金、講師について。はじめる前によく聞かれることをまとめました。
+                初心者の方、料金、通い方について答えます。
               </p>
-
-              <div className="mt-10 border-y border-rule py-5">
-                <p className="flex items-center gap-3 text-sm leading-7 text-quiet">
-                  <ArrowRight
-                    className="size-4 shrink-0 text-sapphire"
-                    aria-hidden="true"
-                  />
-                  気になる項目を選ぶと、その場で回答を読めます。
-                </p>
-              </div>
             </div>
 
             <FaqSection items={faqItems} />
@@ -911,19 +669,13 @@ export default function Home() {
           <div className="soft-panel soft-dark-glow mx-auto grid max-w-[1240px] gap-10 border border-white/10 bg-white/[0.035] p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <p className="text-xs font-semibold tracking-[0.16em] text-white/65">
-                START FREE
+                今すぐ始める
               </p>
               <h2 className="mt-6 font-mincho text-[clamp(2.4rem,5.8vw,5.2rem)] font-medium leading-[1.16] tracking-[-0.04em]">
-                まずは0円で、自分で進める。
-                <br />
-                迷ったときだけ、講師に聞く。
+                今日、「できた」を一つ。
               </h2>
               <p className="mt-6 max-w-2xl text-base leading-8 text-white/75">
-                Web教科書は登録なしで無料です。公開中の教材から、今日すぐに始められます。
-                {!allLessonDetailsPublished
-                  ? '詳しい本文は順次公開します。'
-                  : null}
-                講師へ相談したくなったときだけ、無料会員マイページから希望する受講方法を選べます。
+                気になる課題を選んで、今から始められます。
               </p>
             </div>
 
@@ -942,7 +694,7 @@ export default function Home() {
                 href="/join"
                 className="soft-outline-button inline-flex min-h-14 items-center justify-between gap-3 border border-white/45 px-6 text-sm font-semibold transition-colors hover:bg-white hover:text-sapphire"
               >
-                迷ったときの受講を申し込む
+                無料会員登録
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </div>

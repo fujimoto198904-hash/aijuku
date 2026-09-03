@@ -31,26 +31,26 @@ export const metadata: Metadata = {
 const setupSteps = [
   {
     number: '01',
-    title: '今のプランと残り利用量を見る',
-    body: 'プロフィールから設定を開き、Freeか有料かを確認します。Codexを使う時は、利用量や次のリセット表示も確認します。この時点で購入する必要はありません。',
+    title: '無料か有料かを見る',
+    body: '設定で今のプランを確認します。すぐに購入しなくても大丈夫です。',
     Icon: Settings2,
   },
   {
     number: '02',
-    title: 'データの扱いと会社のルールを確かめる',
-    body: '設定のData Controlsを開き、履歴やデータの扱いを自分の方針に合わせます。仕事の資料は会社のルールを優先し、秘密情報は設定にかかわらず入力しません。',
+    title: '会社のルールを確かめる',
+    body: '仕事の資料は会社のルールを優先し、秘密情報は入力しません。',
     Icon: LockKeyhole,
   },
   {
     number: '03',
-    title: '返事の好みを4つだけ伝える',
-    body: 'Settings → Personalization で「呼ばれたい名前」「仕事」「返事の長さ」「避けたい言い方」を入れます。完璧に書く必要はなく、Lv.01で一緒に設定文を作れます。',
+    title: '返事の好みを伝える',
+    body: '名前、仕事、返事の長さ、避けたい言い方を設定します。',
     Icon: MessageSquareText,
   },
   {
     number: '04',
     title: '架空データを1つ貼ってみる',
-    body: 'いきなり本物の顧客情報を使わず、この教科書の架空メールや練習ファイルを貼ります。クリップ・ファイル選択が見当たらない時は、まず文章の中身だけ貼れば進められます。',
+    body: '本物の顧客情報ではなく、この教科書の練習データを使います。',
     Icon: FileUp,
   },
 ] as const;
@@ -58,22 +58,22 @@ const setupSteps = [
 const workspaces = [
   {
     label: 'Chat',
-    title: '聞く・書く・一つずつ直す',
-    body: '質問、メール、要約、アイデア、短いデータの確認に向いています。最初の一歩はほとんどChatから始められます。',
+    title: '聞く・書く・直す',
+    body: '質問、メール、要約など、短い作業に向いています。',
     Icon: MessageSquareText,
     className: 'border-success/30 bg-future-mint-soft text-success',
   },
   {
     label: 'Work',
-    title: '調べる・複数工程を一つの完成品へ',
-    body: '複数の資料を読み、文書・表・スライド・サイトなどを完成まで進める時に便利です。表示されない時はChatで分けて作れます。',
+    title: '資料をまとめて、文書や表を作る',
+    body: '複数の資料を使って、文書や表などを作る時に便利です。',
     Icon: Sparkles,
     className: 'border-warning/30 bg-sunrise-soft text-warning',
   },
   {
     label: 'Codex',
-    title: '実ファイル・コード・テストを扱う',
-    body: 'フォルダやリポジトリを開き、複数ファイルの変更、コマンド、テスト、プレビューを行う時に向いています。料金プランの名前ではありません。',
+    title: 'サイトやアプリを作る',
+    body: '実際のファイルやコードを扱う時に向いています。',
     Icon: TerminalSquare,
     className: 'border-sapphire/30 bg-sapphire-soft text-sapphire',
   },
@@ -111,7 +111,7 @@ export default function TextbookSetupPage() {
               <div className="flex items-center gap-4">
                 <BrandMark className="size-10" framed />
                 <p className="text-xs font-semibold tracking-[0.16em] text-future-mint">
-                  CHATGPT START GUIDE
+                  ChatGPTの準備
                 </p>
               </div>
               <h1 className="text-soft-glow mt-7 max-w-4xl font-mincho text-[clamp(2.8rem,6vw,5.8rem)] font-medium leading-[1.1] tracking-[-0.045em]">
@@ -120,14 +120,14 @@ export default function TextbookSetupPage() {
                 迷わず一つ作る。
               </h1>
               <p className="mt-7 max-w-2xl text-base leading-9 text-white/75">
-                ChatGPTの設定、無料と有料の違い、Chat・Work・Codexの使い分けを、始める前に確認できます。
+                最初の設定と、無料・有料の違いをやさしく確認できます。
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <Link
                   className="button-glow inline-flex min-h-14 items-center justify-between gap-8 px-6 text-sm font-semibold text-white"
                   href={textbookExplorePath}
                 >
-                  無料で始めやすい課題を探す
+                  ChatGPT無料版でできる課題を探す
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
                 <Link
@@ -162,56 +162,15 @@ export default function TextbookSetupPage() {
           </div>
         </section>
 
-        <section className="border-b border-rule bg-paper-white px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
-          <div className="mx-auto w-full max-w-[1240px]">
-            <div className="max-w-3xl">
-              <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
-                TWO DIFFERENT CHOICES
-              </p>
-              <h2 className="soft-section-heading mt-5 font-mincho text-[clamp(2.35rem,5vw,4.7rem)] leading-[1.15]">
-                料金と作業画面を、
-                <br />
-                分けて考える。
-              </h2>
-              <p className="mt-6 text-sm leading-8 text-quiet">
-                Freeか有料かは「使える量や一部機能」の選択。Chat・Work・Codexは「作業の進め方」の選択です。有料にするとCodexになる、という関係ではありません。
-              </p>
-            </div>
-
-            <div className="soft-panel soft-panel-clip mt-12 grid border border-rule bg-paper lg:grid-cols-2">
-              <article className="border-b border-rule p-7 sm:p-9 lg:border-b-0 lg:border-r">
-                <p className="text-xs font-semibold tracking-[0.12em] text-success">
-                  料金プラン
-                </p>
-                <h3 className="mt-4 font-mincho text-3xl">無料 / 有料</h3>
-                <p className="mt-5 text-sm leading-8 text-quiet">
-                  Freeでも通常の会話、Web検索、ファイル添付、データ分析、画像作成を試せます。ファイル・画像・分析などは個別の利用上限があり、有料はその上限が高くなるのが主な違いです。
-                </p>
-              </article>
-              <article className="p-7 sm:p-9">
-                <p className="text-xs font-semibold tracking-[0.12em] text-sapphire">
-                  作業環境
-                </p>
-                <h3 className="mt-4 font-mincho text-3xl">
-                  Chat / Work / Codex
-                </h3>
-                <p className="mt-5 text-sm leading-8 text-quiet">
-                  質問や短い作業はChat、複数工程の完成品はWork、実コードとテストを直接扱う時はCodexが目安です。この教科書にはChat・Workの代替手順があるため、現時点で「Codexだけでしか完了できない課題」はありません。
-                </p>
-              </article>
-            </div>
-          </div>
-        </section>
-
         <section className="border-b border-rule bg-paper px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
           <div className="mx-auto w-full max-w-[1240px]">
             <p className="text-xs font-semibold tracking-[0.16em] text-rust">
-              FIRST FOUR CHECKS
+              最初の設定
             </p>
             <h2 className="soft-section-heading mt-5 max-w-4xl font-mincho text-[clamp(2.35rem,5vw,4.7rem)] leading-[1.15]">
-              最初の3分。
+              使い始める前に、
               <br />
-              この4つだけ確かめる。
+              この4つを確認。
             </h2>
 
             <ol className="mt-12 grid gap-4 md:grid-cols-2">
@@ -241,7 +200,7 @@ export default function TextbookSetupPage() {
         <section className="border-b border-rule bg-paper-white px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
           <div className="mx-auto w-full max-w-[1240px]">
             <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
-              CHOOSE YOUR WORKSPACE
+              使う画面
             </p>
             <h2 className="soft-section-heading mt-5 max-w-4xl font-mincho text-[clamp(2.35rem,5vw,4.7rem)] leading-[1.15]">
               作りたい物で、
@@ -312,11 +271,8 @@ export default function TextbookSetupPage() {
         <section className="border-b border-rule bg-paper px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
           <div className="mx-auto grid w-full max-w-[1240px] gap-10 lg:grid-cols-[0.75fr_1.25fr]">
             <div>
-              <p className="text-xs font-semibold tracking-[0.16em] text-rust">
-                WHEN YOU HIT A LIMIT
-              </p>
-              <h2 className="mt-5 font-mincho text-4xl leading-[1.25]">
-                無料の上限に達しても、失敗ではありません。
+              <h2 className="font-mincho text-4xl leading-[1.25]">
+                無料版で「上限です」と出たら。
               </h2>
             </div>
             <div className="soft-card border border-rule bg-paper-white p-7 sm:p-9">
@@ -326,7 +282,7 @@ export default function TextbookSetupPage() {
                   '複数ファイルを1つずつに分ける',
                   'ファイルを添付せず、必要な文章だけ貼る',
                   'Workの代わりにChatで作り、完成品を自分で保存する',
-                  '緑の「無料で始めやすい」が付いた別の課題へ先に進む',
+                  '緑の「ChatGPT無料版」が付いた別の課題へ進む',
                 ].map((item) => (
                   <li key={item} className="flex gap-3">
                     <CheckCircle2
@@ -346,13 +302,13 @@ export default function TextbookSetupPage() {
             <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
                 <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
-                  OPENAI OFFICIAL
+                  公式情報
                 </p>
                 <h2 className="mt-5 font-mincho text-4xl leading-[1.25]">
                   変わる情報は、公式で確かめる。
                 </h2>
                 <p className="mt-5 text-sm leading-8 text-quiet">
-                  料金、回数、対象プランをこの教科書で固定しません。購入や設定変更の前に、必ず現在の公式画面を見ます。
+                  料金や使える回数は変わります。購入前に、OpenAIの公式画面で確認してください。
                 </p>
               </div>
               <ul className="soft-card divide-y divide-rule border border-rule bg-paper">
@@ -381,13 +337,13 @@ export default function TextbookSetupPage() {
           <div className="soft-panel soft-panel-clip mx-auto grid w-full max-w-[1240px] gap-8 overflow-hidden border border-sapphire bg-sapphire-soft p-8 sm:p-12 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
-                READY TO START
+                準備ができたら
               </p>
               <h2 className="mt-5 max-w-3xl font-mincho text-[clamp(2.2rem,4vw,4rem)] leading-[1.2]">
                 設定を完璧にしてから、始めなくていい。
               </h2>
               <p className="mt-5 max-w-2xl text-sm leading-8 text-quiet">
-                無料プランで一つ作り、足りなくなった機能だけ後から選べば大丈夫です。
+                まず無料版で一つ作ってみましょう。設定はあとで変えられます。
               </p>
             </div>
             <Link

@@ -244,7 +244,7 @@ export function MemberLearningProgress({
             次にやることも、できたことも。
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-            気になる課題は「あとでやる」へ。完成したら「完了」に移します。同じ会員アカウントで、学びの一覧をいつでも確認できます。
+            気になる課題を保存。終わったら「完了」にします。
           </p>
           {readOnly ? (
             <p className="soft-control mt-4 inline-flex border border-sapphire/30 bg-sapphire-soft px-4 py-2 text-xs font-semibold text-sapphire">
@@ -466,13 +466,13 @@ export function MemberLearningProgress({
       <div className="soft-panel mt-8 border border-future-mint/55 bg-future-mint-soft p-6 text-sm leading-7">
         <p className="font-semibold">「完了」は、自分の学習メモです。</p>
         <p className="mt-2 text-xs leading-6 text-quiet">
-          修了資格や講師確認とは別です。作った成果物を証拠として残したい場合は、下のAI実学パスポートへ記録してください。
+          正式な修了や講師の確認とは別です。作ったものは、下の欄へ記録できます。
         </p>
         <a
           className="mt-4 inline-flex min-h-11 items-center gap-2 font-semibold text-sapphire"
           href="#skills"
         >
-          AI実学パスポートへ進む
+          作ったものを記録
         </a>
       </div>
     </section>

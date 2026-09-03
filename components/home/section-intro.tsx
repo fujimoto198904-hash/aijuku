@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export function SectionIntro({
   index,
@@ -7,7 +7,7 @@ export function SectionIntro({
   body,
   light = false,
 }: {
-  index: string;
+  index?: string;
   label: string;
   title: ReactNode;
   body?: ReactNode;
@@ -16,9 +16,10 @@ export function SectionIntro({
   return (
     <div className="grid gap-6 border-t border-current/20 pt-6 md:grid-cols-[180px_1fr] md:gap-10">
       <p
-        className={`text-xs font-semibold tracking-[0.16em] ${light ? "text-future-mint" : "text-sapphire"}`}
+        className={`text-xs font-semibold tracking-[0.16em] ${light ? 'text-future-mint' : 'text-sapphire'}`}
       >
-        {index} / {label}
+        {index ? `${index} / ` : ''}
+        {label}
       </p>
       <div>
         <h2 className="soft-section-heading font-mincho text-[clamp(2rem,4.6vw,4.1rem)] font-medium leading-[1.22] tracking-[-0.035em]">
@@ -26,7 +27,7 @@ export function SectionIntro({
         </h2>
         {body ? (
           <div
-            className={`mt-6 max-w-3xl text-base leading-8 sm:text-lg sm:leading-9 ${light ? "text-white/70" : "text-quiet"}`}
+            className={`mt-6 max-w-3xl text-base leading-8 sm:text-lg sm:leading-9 ${light ? 'text-white/70' : 'text-quiet'}`}
           >
             {body}
           </div>

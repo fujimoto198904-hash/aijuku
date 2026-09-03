@@ -5,8 +5,11 @@ import type { TextbookAccessProfile } from '@/lib/textbook-access';
 import { textbookSetupPath } from '@/lib/textbook-routes';
 
 export function textbookAccessLabel(profile: TextbookAccessProfile): string {
-  const planLabel = profile.plan === 'free' ? '無料で始めやすい' : '有料版推奨';
-  return profile.codexRecommended ? `${planLabel}、Codex向き` : planLabel;
+  const planLabel =
+    profile.plan === 'free'
+      ? 'ChatGPT無料版でできる'
+      : 'ChatGPT有料版がおすすめ';
+  return profile.codexRecommended ? `${planLabel}、Codexがおすすめ` : planLabel;
 }
 
 export function TextbookAccessBadges({
@@ -25,14 +28,14 @@ export function TextbookAccessBadges({
           className={`soft-badge inline-flex items-center gap-1.5 border border-success/35 bg-future-mint-soft font-semibold text-success ${badgeClass}`}
         >
           <CheckCircle2 className="size-3.5" aria-hidden="true" />
-          無料で始めやすい
+          ChatGPT無料版でできる
         </span>
       ) : (
         <span
           className={`soft-badge inline-flex items-center gap-1.5 border border-warning/35 bg-sunrise-soft font-semibold text-warning ${badgeClass}`}
         >
           <Sparkles className="size-3.5" aria-hidden="true" />
-          有料版推奨
+          ChatGPT有料版がおすすめ
         </span>
       )}
       {profile.codexRecommended ? (
@@ -40,7 +43,7 @@ export function TextbookAccessBadges({
           className={`soft-badge inline-flex items-center gap-1.5 border border-sapphire/40 bg-sapphire-soft font-semibold text-sapphire ${badgeClass}`}
         >
           <TerminalSquare className="size-3.5" aria-hidden="true" />
-          Codex向き
+          Codexがおすすめ
         </span>
       ) : null}
     </span>
@@ -68,7 +71,7 @@ export function TextbookAccessLegend({
             マークの見方
           </p>
           <p className="mt-2 text-sm leading-7 text-quiet">
-            料金の目安と作業画面は別です。Codexは有料プラン名ではありません。
+            緑は無料版、黄は有料版がおすすめの課題です。青はCodexで進めやすい課題です。
           </p>
         </div>
         {showLink ? (
@@ -85,28 +88,28 @@ export function TextbookAccessLegend({
         <div className="soft-control border border-success/25 bg-future-mint-soft p-4">
           <p className="inline-flex items-center gap-2 text-xs font-semibold text-success">
             <CheckCircle2 className="size-4" aria-hidden="true" />
-            無料で始めやすい
+            ChatGPT無料版でできる
           </p>
           <p className="mt-2 text-xs leading-6 text-quiet">
-            Freeの標準機能で始めやすい課題。機能ごとの上限に届いたら時間を置きます。
+            無料版のまま始めやすい課題です。
           </p>
         </div>
         <div className="soft-control border border-warning/25 bg-sunrise-soft p-4">
           <p className="inline-flex items-center gap-2 text-xs font-semibold text-warning">
             <Sparkles className="size-4" aria-hidden="true" />
-            有料版推奨
+            ChatGPT有料版がおすすめ
           </p>
           <p className="mt-2 text-xs leading-6 text-quiet">
-            反復生成、複数ファイルのコード制作、外部接続など。利用可否と残り利用量を先に確認します。
+            長い作業や、たくさんのファイルを扱う課題です。
           </p>
         </div>
         <div className="soft-control border border-sapphire/25 bg-sapphire-soft p-4">
           <p className="inline-flex items-center gap-2 text-xs font-semibold text-sapphire">
             <TerminalSquare className="size-4" aria-hidden="true" />
-            Codex向き
+            Codexがおすすめ
           </p>
           <p className="mt-2 text-xs leading-6 text-quiet">
-            Workでも進められます。実ファイル・コード・テストを直接扱う時に向いています。
+            Webサイトやアプリを、実際のファイルで作る課題です。
           </p>
         </div>
       </div>

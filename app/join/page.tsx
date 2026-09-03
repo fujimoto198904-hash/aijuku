@@ -24,29 +24,29 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: '無料会員登録｜藤本実学塾',
   description:
-    '藤本実学塾の無料会員登録ページです。課題のブックマーク、完了記録、実践記録、受講申込を一つのマイページで管理できます。',
+    '無料会員になると、課題の保存、学習記録、受講申込がマイページで使えます。',
 };
 
 const benefits = [
   {
     Icon: BookmarkCheck,
-    title: '気になる課題を、あとで開ける',
-    body: '今は時間がない課題も「あとでやる」へ保存。探し直さず、マイページから開けます。',
+    title: '気になる課題を保存',
+    body: 'あとでマイページから開けます。',
   },
   {
     Icon: CheckCircle2,
-    title: 'やった課題が、ひと目でわかる',
-    body: '完成したら自分で「完了」に。できた課題が一覧になり、積み重ねを確認できます。',
+    title: 'できた課題がわかる',
+    body: '終わった課題を一覧で見られます。',
   },
   {
     Icon: BadgeCheck,
-    title: 'できたことを、実践記録に残せる',
-    body: '成果物名・説明・外部URLを記録し、講師が確認した範囲と分けてURL共有できます。',
+    title: '作ったものを残せる',
+    body: '作品や仕事の成果を記録できます。',
   },
   {
     Icon: CalendarCheck,
-    title: '必要なときだけ、受講を申し込める',
-    body: '対面、Google Meet、対面・教科書自習式から、迷ったときに必要な方法を選べます。',
+    title: '受講を申し込める',
+    body: '困ったときだけ、合う方法を選べます。',
   },
 ] as const;
 
@@ -67,20 +67,18 @@ export default async function JoinPage() {
           <div className="mx-auto grid w-full max-w-[1240px] gap-12 lg:grid-cols-[1fr_0.68fr] lg:items-end">
             <div>
               <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
-                FREE MEMBERSHIP
+                無料会員登録
               </p>
               <h1 className="text-soft-glow mt-6 max-w-4xl font-mincho text-[clamp(2.8rem,6vw,5.8rem)] font-medium leading-[1.13] tracking-[-0.045em]">
-                学ぶだけなら、
+                教科書は無料。
                 <br />
-                登録不要。
-                <br />
+                記録を残すなら、
                 <span className="text-highlight text-human-coral">
-                  残して続ける
+                  無料会員。
                 </span>
-                なら、無料会員。
               </h1>
               <p className="mt-7 max-w-2xl text-base leading-8 text-quiet">
-                公開中のWeb教科書は、登録も購入も不要で完全無料です。無料会員になると、気になる課題のブックマーク、自分で完了にした課題、成果物名や外部URLの実践記録をマイページへまとめられます。登録だけで料金は発生しません。
+                課題の保存、学習記録、受講申込がマイページで使えます。無料会員に料金はかかりません。
               </p>
               <div className="mt-8 grid gap-3 lg:hidden">
                 <Link
@@ -111,10 +109,10 @@ export default async function JoinPage() {
                   aria-hidden="true"
                 />
                 <p className="mt-5 text-sm font-semibold">
-                  ChatGPTで、まず本人確認
+                  ChatGPTでかんたん登録
                 </p>
                 <p className="mt-3 text-xs leading-6 text-quiet">
-                  これから学習に使うChatGPTアカウントでメールアドレスを確認。本人のアドレスだけで無料会員を作れます。
+                  いつも使うChatGPTのメールアドレスで登録します。
                 </p>
               </div>
             </div>
@@ -140,7 +138,7 @@ export default async function JoinPage() {
 
             <div className="soft-panel mx-auto mt-12 max-w-3xl border border-rule bg-paper-white p-7 sm:p-10">
               <p className="text-center text-xs font-semibold tracking-[0.14em] text-sapphire">
-                {user ? 'CONTINUE SETUP' : 'CHOOSE YOUR WAY'}
+                {user ? '登録を続ける' : '登録・ログイン'}
               </p>
               {user ? (
                 <Link
@@ -207,7 +205,7 @@ export default async function JoinPage() {
                   aria-hidden="true"
                 />
                 <p className="text-xs leading-6 text-quiet">
-                  登録の最後に誕生日から初期パスワードを作ります。誕生日そのものは保存しません。初回ログイン時に、自分だけのパスワードへ変更します。
+                  最初のパスワードは誕生日8桁です。誕生日そのものは保存せず、初回ログイン後に自分のパスワードへ変更します。
                 </p>
               </div>
               <p className="mt-5 text-center text-xs leading-6 text-quiet">

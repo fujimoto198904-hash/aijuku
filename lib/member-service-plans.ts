@@ -16,8 +16,8 @@ export const memberServicePlans: ReadonlyArray<{
     price: '10,000円 / 60分',
     area: '東京23区内',
     summary:
-      'Web教科書に沿って、作りたいものを講師と一緒に完成させます。個人・企業に対応し、1回5人まで受講できます。',
-    nextStep: '希望日時と訪問先の条件を確認後、講師と日程を調整します。',
+      '講師が伺い、Web教科書を見ながら一緒に進めます。企業は1回5人まで受講できます。',
+    nextStep: '希望日時と場所を確認し、講師の日程を調整します。',
   },
   {
     id: 'online-tutor',
@@ -25,9 +25,8 @@ export const memberServicePlans: ReadonlyArray<{
     name: '家庭教師型（オンライン）',
     price: '4,000円 / 50分',
     area: '全国対応',
-    summary:
-      'Web教科書を開き、Google Meetで画面を共有して、作りたいものを一緒に進めます。',
-    nextStep: '希望日時を確認後、確定した方へGoogle Meetを案内します。',
+    summary: 'Google Meetで同じ画面を見ながら、止まった所から一緒に進めます。',
+    nextStep: '日時が決まったら、Google Meetの案内を送ります。',
   },
   {
     id: 'self-study',
@@ -35,9 +34,8 @@ export const memberServicePlans: ReadonlyArray<{
     name: '対面・教科書自習式',
     price: '月額 10,000円',
     area: '東京23区内',
-    summary:
-      '毎日17:00〜21:00。Web教科書に沿って自分で進め、止まった所を講師に聞けます。',
-    nextStep: '開始希望月を確認後、通い方と会場案内の方法をお知らせします。',
+    summary: '毎日17:00〜21:00。自分で進め、わからない所だけ講師に聞けます。',
+    nextStep: '始める月を確認し、通い方と会場をお知らせします。',
   },
 ];
 
