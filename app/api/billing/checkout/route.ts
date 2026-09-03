@@ -314,7 +314,7 @@ export async function POST(request: Request) {
       livemode: runtime.livemode,
       serviceType: application.serviceType,
       mode: plan.checkoutMode,
-      status: session.status,
+      status: 'open',
       paymentStatus: session.payment_status,
       paymentFailedAt: null,
       stateObservedAt,

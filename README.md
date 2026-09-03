@@ -111,25 +111,26 @@ cp .env.example .env.local
 
 ## よく使うコマンド
 
-| コマンド                   | 用途                                                                             |
-| -------------------------- | -------------------------------------------------------------------------------- |
-| `npm run dev`              | ローカルで編集画面を起動                                                         |
-| `npm run doctor`           | Node・必須ファイル・公開先設定を確認                                             |
-| `npm run build`            | 本番用ビルド                                                                     |
-| `npm run verify`           | 環境、730カタログ、全730本文、文書リンク、デモデータ、認証、本番ビルドを一括検査 |
-| `npm run lint`             | コード検査。現在は既知の警告・エラーあり                                         |
-| `npm run build:catalog`    | 4冊の原稿から730課題のWeb用カタログを再生成                                      |
-| `npm run build:lessons`    | 全730本文を検査し、品質見本10件と軽量メタを再生成                                |
-| `npm run check:catalog`    | 原稿と生成済みカタログの件数・内容一致を検査                                     |
-| `npm run check:lessons`    | 全730本文、素材、重複、章末、次課題、生成物を検査                                |
-| `npm run check:docs`       | Markdownの相対リンク切れとコードフェンスの閉じ忘れを検査                         |
-| `npm run check:demo-data`  | 3業種ZIPと、730課題の単一業種割当・直接配信185素材を検査                         |
-| `npm run check:auth`       | パスワードハッシュ、初期パスワード変換、秘密値混入、デモ書込ガードを検査         |
-| `npm run check:calendar`   | Google Calendar / Meetの日時、OAuth、予定重複防止、秘密情報の境界を検査          |
-| `npm run build:demo-index` | ZIPから共通パス・課題別割当・直接配信素材を再生成                                |
-| `npm run build:guide`      | スタートガイドPDFを再生成（任意のPython設定が必要）                              |
-| `npm run build:brand-og`   | 蝶ロゴを使った1200×630のSNS共有画像を再生成                                      |
-| `npm run db:generate`      | D1用Drizzleマイグレーションを生成                                                |
+| コマンド                   | 用途                                                                                         |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| `npm run dev`              | ローカルで編集画面を起動                                                                     |
+| `npm run doctor`           | Node・必須ファイル・公開先設定を確認                                                         |
+| `npm run build`            | 本番用ビルド                                                                                 |
+| `npm run verify`           | 環境、730カタログ、全730本文、文書、認証、Stripe、Calendar、デモデータ、本番ビルドを一括検査 |
+| `npm run lint`             | コード検査。現在は既知の警告・エラーあり                                                     |
+| `npm run build:catalog`    | 4冊の原稿から730課題のWeb用カタログを再生成                                                  |
+| `npm run build:lessons`    | 全730本文を検査し、品質見本10件と軽量メタを再生成                                            |
+| `npm run check:catalog`    | 原稿と生成済みカタログの件数・内容一致を検査                                                 |
+| `npm run check:lessons`    | 全730本文、素材、重複、章末、次課題、生成物を検査                                            |
+| `npm run check:billing`    | Stripeのテスト専用制約、認可、Webhook署名、D1マイグレーションと冪等性を検査                  |
+| `npm run check:docs`       | Markdownの相対リンク切れとコードフェンスの閉じ忘れを検査                                     |
+| `npm run check:demo-data`  | 3業種ZIPと、730課題の単一業種割当・直接配信185素材を検査                                     |
+| `npm run check:auth`       | パスワードハッシュ、初期パスワード変換、秘密値混入、デモ書込ガードを検査                     |
+| `npm run check:calendar`   | Google Calendar / Meetの日時、OAuth、予定重複防止、秘密情報の境界を検査                      |
+| `npm run build:demo-index` | ZIPから共通パス・課題別割当・直接配信素材を再生成                                            |
+| `npm run build:guide`      | スタートガイドPDFを再生成（任意のPython設定が必要）                                          |
+| `npm run build:brand-og`   | 蝶ロゴを使った1200×630のSNS共有画像を再生成                                                  |
+| `npm run db:generate`      | D1用Drizzleマイグレーションを生成                                                            |
 
 ## フォルダ案内
 

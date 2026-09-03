@@ -5,6 +5,7 @@ import {
   billingReturnUrls,
   getStripeBillingRuntime,
   isStripeHostedUrl,
+  stripeBillingPortalConfigurationId,
   StripeBillingConfigurationError,
   StripeCatalogConfigurationError,
   verifyStripeBillingAccount,
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
             urls.portalReturnUrl,
           ).toString();
     const portal = await runtime.client.billingPortal.sessions.create({
+      configuration: stripeBillingPortalConfigurationId,
       customer: customer.id,
       return_url: portalReturnUrl,
     });

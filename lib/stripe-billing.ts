@@ -5,7 +5,9 @@ import type { ServiceType } from '@/db/membership';
 import { withSiteBasePath } from '@/lib/site-paths';
 import { canonicalSitesUrl } from '@/lib/site-runtime';
 
-export const stripeApiVersion = '2026-07-29.dahlia' as const;
+export const stripeApiVersion = '2026-08-26.dahlia' as const;
+export const stripeBillingPortalConfigurationId =
+  'bpc_1UBbJVD8iUMy4IW9MrhzJJpZ';
 
 type StripeBillingEnv = {
   STRIPE_ACCOUNT_ID?: string;
