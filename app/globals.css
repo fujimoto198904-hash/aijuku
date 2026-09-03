@@ -688,6 +688,122 @@ details.soft-control > summary:focus-visible {
   font-feature-settings: 'palt' 1;
 }
 
+/*
+ * アプリ内ブラウザーや左右分割したPCウィンドウは、端末がPCでも
+ * 表示領域が700〜1000pxほどになる。マウス操作できる環境では、この幅を
+ * スマホの1列表示にせず、読みやすいコンパクトなPCレイアウトへ切り替える。
+ */
+.desktop-compact-nav {
+  display: none;
+}
+
+@media (min-width: 700px) and (max-width: 1279px) and (hover: hover) and (pointer: fine) {
+  .desktop-compact-nav {
+    display: flex;
+  }
+
+  .desktop-compact-login {
+    display: inline-flex;
+  }
+
+  .desktop-compact-tagline {
+    display: none;
+  }
+
+}
+
+@media (min-width: 700px) and (max-width: 1023px) and (hover: hover) and (pointer: fine) {
+  .desktop-compact-hero {
+    min-height: 620px;
+    grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+  }
+
+  .desktop-compact-hero-copy {
+    padding: 3rem 2rem;
+  }
+
+  .desktop-compact-hero-title {
+    margin-top: 2rem;
+    font-size: clamp(2rem, 4.5vw, 2.35rem);
+  }
+
+  .desktop-compact-hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .desktop-compact-hero-figure {
+    min-height: 100%;
+  }
+
+  .desktop-compact-quick-title {
+    font-size: 1.9rem;
+  }
+
+  .desktop-compact-quick-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .desktop-compact-section-intro {
+    gap: 2rem;
+    grid-template-columns: 145px minmax(0, 1fr);
+  }
+
+  .desktop-compact-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .desktop-compact-grid-3 > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .desktop-compact-card-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .desktop-compact-footer {
+    gap: 2rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .desktop-compact-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .desktop-compact-split-wide {
+    align-items: stretch;
+    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  }
+
+  .desktop-compact-split-aside {
+    grid-template-columns: minmax(180px, 0.68fr) minmax(0, 1.32fr);
+  }
+
+  .desktop-compact-cta {
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, auto);
+  }
+
+  .desktop-compact-split-border > :first-child {
+    border-right-width: 1px;
+    border-bottom-width: 0;
+  }
+
+  .desktop-compact-cycle-arrow {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1023px) and (hover: hover) and (pointer: fine) {
+  .desktop-compact-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .desktop-compact-grid-3 > :last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+}
+
 @media (max-width: 420px) {
   .display-heading {
     letter-spacing: -0.025em;

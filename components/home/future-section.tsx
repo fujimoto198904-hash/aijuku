@@ -49,7 +49,7 @@ export function FutureSection() {
           }
         />
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+        <div className="desktop-compact-grid-3 mt-12 grid gap-5 lg:grid-cols-3">
           {futureScenes.map((scene) => (
             <article
               className="soft-card soft-interactive image-soft-zoom group overflow-hidden border border-rule bg-paper-white"

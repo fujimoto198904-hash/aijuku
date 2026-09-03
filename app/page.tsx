@@ -132,8 +132,8 @@ export default function Home() {
           aria-labelledby="hero-title"
           className="section-aura border-b border-rule bg-paper-white px-3 py-3 sm:px-5 sm:py-5 lg:px-8 lg:py-8"
         >
-          <div className="soft-panel soft-panel-clip mx-auto grid w-full max-w-[1380px] bg-paper-white lg:min-h-[720px] lg:grid-cols-[1.04fr_0.96fr]">
-            <div className="flex items-center px-5 py-16 sm:px-8 sm:py-20 lg:px-14 xl:px-20">
+          <div className="desktop-compact-hero soft-panel soft-panel-clip mx-auto grid w-full max-w-[1380px] bg-paper-white lg:min-h-[720px] lg:grid-cols-[1.04fr_0.96fr]">
+            <div className="desktop-compact-hero-copy flex items-center px-5 py-16 sm:px-8 sm:py-20 lg:px-14 xl:px-20">
               <div className="max-w-[720px]">
                 <div className="flex items-center gap-4">
                   <BrandMark className="size-11" />
@@ -144,7 +144,7 @@ export default function Home() {
 
                 <h1
                   id="hero-title"
-                  className="text-soft-glow mt-10 font-mincho text-[clamp(2.1rem,6.6vw,6.3rem)] font-medium leading-[1.08] tracking-[-0.055em]"
+                  className="desktop-compact-hero-title text-soft-glow mt-10 font-mincho text-[clamp(2.1rem,6.6vw,6.3rem)] font-medium leading-[1.08] tracking-[-0.055em]"
                 >
                   <span className="block whitespace-nowrap">
                     やりたいことが、
@@ -158,7 +158,7 @@ export default function Home() {
                   仕事が早く終わる。思いつきが形になる。AIで、毎日がちょっと楽しくなる。
                 </p>
 
-                <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <div className="desktop-compact-hero-actions mt-10 flex flex-col gap-3 sm:flex-row">
                   <Link
                     href={textbookGuidePath}
                     className="button-glow group inline-flex min-h-14 items-center justify-between gap-8 px-6 text-sm font-semibold text-white"
@@ -196,7 +196,7 @@ export default function Home() {
               </div>
             </div>
 
-            <figure className="relative min-h-[360px] overflow-hidden bg-rule sm:min-h-[440px] lg:min-h-full">
+            <figure className="desktop-compact-hero-figure relative min-h-[360px] overflow-hidden bg-rule sm:min-h-[440px] lg:min-h-full">
               <Image
                 src={heroFutureImage}
                 alt="青空の下で、家族が笑顔で過ごす様子"
@@ -246,7 +246,7 @@ export default function Home() {
               }
             />
 
-            <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            <div className="desktop-compact-grid-3 mt-12 grid gap-5 lg:grid-cols-3">
               {startChoices.map(({ index, label, title, body, Icon }) => (
                 <article
                   key={index}
@@ -456,7 +456,7 @@ export default function Home() {
         </section>
 
         <section className="section-aura border-b border-rule bg-paper px-5 py-20 sm:px-8 sm:py-24">
-          <div className="mx-auto grid max-w-[1240px] gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
+          <div className="desktop-compact-split-wide mx-auto grid max-w-[1240px] gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
                 無料会員
@@ -484,7 +484,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="soft-panel soft-panel-clip grid border border-rule bg-paper-white md:grid-cols-3">
+            <div className="desktop-compact-card-row soft-panel soft-panel-clip grid border border-rule bg-paper-white md:grid-cols-3">
               {[
                 {
                   Icon: BookmarkCheck,
@@ -567,7 +567,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            <div className="desktop-compact-grid-3 mt-10 grid gap-5 lg:grid-cols-3">
               {joinPlans.map(
                 ({
                   number,
@@ -646,7 +646,7 @@ export default function Home() {
           id="faq"
           className="section-aura border-t border-rule bg-paper-white px-5 py-24 sm:px-8 sm:py-32"
         >
-          <div className="mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.55fr)] lg:gap-20">
+          <div className="desktop-compact-split-aside mx-auto grid max-w-[1240px] gap-12 lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.55fr)] lg:gap-20">
             <div className="self-start border-t-2 border-brand-dark pt-6 lg:sticky lg:top-8">
               <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
                 よくある質問
@@ -666,7 +666,7 @@ export default function Home() {
         </section>
 
         <section className="bg-brand-dark px-5 py-20 text-white sm:px-8 sm:py-24">
-          <div className="soft-panel soft-dark-glow mx-auto grid max-w-[1240px] gap-10 border border-white/10 bg-white/[0.035] p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="desktop-compact-cta soft-panel soft-dark-glow mx-auto grid max-w-[1240px] gap-10 border border-white/10 bg-white/[0.035] p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <p className="text-xs font-semibold tracking-[0.16em] text-white/65">
                 今すぐ始める

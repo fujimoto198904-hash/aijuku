@@ -31,14 +31,14 @@ export function QuickStartSection() {
       className="section-aura border-b border-rule bg-paper px-5 py-16 sm:px-8 sm:py-20"
       id="quick-start"
     >
-      <div className="soft-panel soft-panel-clip mx-auto grid max-w-[1240px] border border-rule bg-paper-white lg:grid-cols-[0.8fr_1.2fr]">
+      <div className="desktop-compact-split-wide desktop-compact-split-border soft-panel soft-panel-clip mx-auto grid max-w-[1240px] border border-rule bg-paper-white lg:grid-cols-[0.8fr_1.2fr]">
         <div className="flex flex-col justify-between border-b border-rule p-7 sm:p-9 lg:border-b-0 lg:border-r lg:p-10">
           <div>
             <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
               今日、ひとつ試す
             </p>
             <h2
-              className="mt-5 font-mincho text-4xl leading-[1.3] tracking-[-0.035em] sm:text-5xl"
+              className="desktop-compact-quick-title mt-5 font-mincho text-4xl leading-[1.3] tracking-[-0.035em] sm:text-5xl"
               id="quick-start-title"
             >
               メールの返信を、
@@ -76,7 +76,7 @@ export function QuickStartSection() {
             <PromptCopyButton prompt={prompt} />
           </div>
 
-          <ol className="mt-6 grid gap-3 text-sm sm:grid-cols-3">
+          <ol className="desktop-compact-quick-steps mt-6 grid gap-3 text-sm sm:grid-cols-3">
             {['プロンプトをコピー', 'ChatGPTへ貼る', '内容を確認して送る'].map(
               (step, index) => (
                 <li

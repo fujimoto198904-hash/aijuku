@@ -14,7 +14,7 @@ export function SectionIntro({
   light?: boolean;
 }) {
   return (
-    <div className="grid gap-6 border-t border-current/20 pt-6 md:grid-cols-[180px_1fr] md:gap-10">
+    <div className="desktop-compact-section-intro grid gap-6 border-t border-current/20 pt-6 md:grid-cols-[180px_1fr] md:gap-10">
       <p
         className={`text-xs font-semibold tracking-[0.16em] ${light ? 'text-future-mint' : 'text-sapphire'}`}
       >

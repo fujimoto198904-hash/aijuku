@@ -26,7 +26,7 @@ export function SiteHeader() {
             <span className="block truncate font-mincho text-lg font-semibold tracking-[0.04em]">
               藤本実学塾
             </span>
-            <span className="hidden text-xs tracking-[0.06em] text-quiet sm:block">
+            <span className="desktop-compact-tagline hidden text-xs tracking-[0.06em] text-quiet sm:block">
               AIが初めてでも、作りたいものから。
             </span>
           </span>
@@ -47,9 +47,27 @@ export function SiteHeader() {
           ))}
         </nav>
 
+        <nav
+          className="desktop-compact-nav items-center gap-4 text-xs font-semibold"
+          aria-label="メインナビゲーション（コンパクト）"
+        >
+          <Link
+            className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
+            href={textbookGuidePath}
+          >
+            Web教科書
+          </Link>
+          <Link
+            className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
+            href="/#services"
+          >
+            受講方法
+          </Link>
+        </nav>
+
         <div className="flex items-center gap-2">
           <Link
-            className="hidden min-h-11 items-center justify-center px-3 text-xs font-semibold text-quiet transition-colors hover:text-sapphire md:inline-flex"
+            className="desktop-compact-login hidden min-h-11 items-center justify-center px-3 text-xs font-semibold text-quiet transition-colors hover:text-sapphire md:inline-flex"
             href="/login"
           >
             ログイン

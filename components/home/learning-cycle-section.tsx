@@ -31,7 +31,7 @@ const learningCycleSteps = [
 function CycleConnector({ mobile = false }: { mobile?: boolean }) {
   const Icon = mobile ? ArrowDown : ArrowRight;
   const placement = mobile
-    ? '-bottom-3 left-7 grid lg:hidden'
+    ? 'desktop-compact-cycle-arrow -bottom-3 left-7 grid lg:hidden'
     : '-right-3 top-1/2 hidden -translate-y-1/2 lg:grid';
 
   return (
@@ -64,7 +64,7 @@ export function LearningCycleSection() {
           }
         />
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-4">
+        <div className="desktop-compact-grid-4 mt-10 grid gap-5 lg:grid-cols-4">
           {learningCycleSteps.map((step, index) => (
             <article
               key={step.number}
@@ -93,7 +93,7 @@ export function LearningCycleSection() {
           ))}
         </div>
 
-        <figure className="soft-panel soft-panel-clip image-soft-zoom mt-8 grid border border-rule lg:grid-cols-[0.9fr_1.1fr]">
+        <figure className="desktop-compact-split-wide soft-panel soft-panel-clip image-soft-zoom mt-8 grid border border-rule lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative min-h-[220px] overflow-hidden bg-rule sm:min-h-[260px]">
             <Image
               src={teachingImage}
