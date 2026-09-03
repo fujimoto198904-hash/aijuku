@@ -2,7 +2,7 @@ import { CheckCircle2, Sparkles, TerminalSquare } from 'lucide-react';
 
 import Link from '@/components/site-link';
 import type { TextbookAccessProfile } from '@/lib/textbook-access';
-import { textbookSetupPath } from '@/lib/textbook-routes';
+import { textbookPlanGuidePath } from '@/lib/textbook-routes';
 
 export function textbookAccessLabel(profile: TextbookAccessProfile): string {
   const planLabel =
@@ -77,9 +77,9 @@ export function TextbookAccessLegend({
         {showLink ? (
           <Link
             className="shrink-0 text-xs font-semibold text-sapphire underline decoration-sapphire/30 underline-offset-4 hover:decoration-sapphire"
-            href={textbookSetupPath}
+            href={textbookPlanGuidePath}
           >
-            ChatGPTの準備・プランを見る
+            無料・有料・Codexマークの見方
           </Link>
         ) : null}
       </div>
@@ -100,7 +100,7 @@ export function TextbookAccessLegend({
             ChatGPT有料版がおすすめ
           </p>
           <p className="mt-2 text-xs leading-6 text-quiet">
-            長い作業や、たくさんのファイルを扱う課題です。
+            必須ではありませんが、長い作業や多くのファイルは有料版のほうが進めやすくなります。
           </p>
         </div>
         <div className="soft-control border border-sapphire/25 bg-sapphire-soft p-4">
@@ -109,7 +109,7 @@ export function TextbookAccessLegend({
             Codexがおすすめ
           </p>
           <p className="mt-2 text-xs leading-6 text-quiet">
-            Webサイトやアプリを、実際のファイルで作る課題です。
+            Codexは料金プラン名ではありません。サイトやアプリを実際のファイルで作る時に使います。
           </p>
         </div>
       </div>

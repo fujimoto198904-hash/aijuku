@@ -36,6 +36,7 @@ import { getTextbookPromptExplanation } from '@/lib/textbook-prompt-explanation'
 import {
   textbookExplorePath,
   textbookLessonPath,
+  textbookPlanGuidePath,
   textbookSetupPath,
 } from '@/lib/textbook-routes';
 import { MaterialPreview } from '@/components/textbook/material-preview';
@@ -545,9 +546,9 @@ export function LessonReader({
                     <TextbookAccessBadges profile={accessProfile} compact />
                     <Link
                       className="text-xs font-semibold text-sapphire underline decoration-sapphire/30 underline-offset-4"
-                      href={textbookSetupPath}
+                      href={textbookPlanGuidePath}
                     >
-                      利用プランを確認
+                      無料・有料・Codexマークの見方
                     </Link>
                   </div>
                   <p className="mt-2 text-xs leading-6 text-quiet">

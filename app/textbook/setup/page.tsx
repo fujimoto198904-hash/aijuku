@@ -31,8 +31,8 @@ export const metadata: Metadata = {
 const setupSteps = [
   {
     number: '01',
-    title: '無料か有料かを見る',
-    body: '設定で今のプランを確認します。すぐに購入しなくても大丈夫です。',
+    title: '今のプランを確かめる',
+    body: 'ChatGPTの「設定」から「Billing（請求）」を開きます。無料のままでも教材は始められます。',
     Icon: Settings2,
   },
   {
@@ -156,9 +156,49 @@ export default function TextbookSetupPage() {
           </div>
         </section>
 
-        <section className="border-b border-rule bg-paper px-5 py-14 sm:px-8 sm:py-18 lg:px-10">
+        <section
+          className="scroll-mt-24 border-b border-rule bg-paper px-5 py-16 sm:px-8 sm:py-24 lg:px-10"
+          id="plan-guide"
+        >
           <div className="mx-auto w-full max-w-[1240px]">
-            <TextbookAccessLegend showLink={false} />
+            <div className="grid gap-7 border-t border-rule pt-6 md:grid-cols-[180px_1fr] md:gap-10">
+              <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
+                課題に合うプラン
+              </p>
+              <div>
+                <h2 className="soft-section-heading max-w-4xl font-mincho text-[clamp(2.35rem,5vw,4.7rem)] leading-[1.15]">
+                  この課題は、
+                  <br />
+                  無料版でできる？
+                </h2>
+                <p className="mt-6 max-w-3xl text-base leading-8 text-quiet sm:text-lg sm:leading-9">
+                  教材の色を見るだけで分かります。受講条件ではなく、課題を進めやすくする目安です。
+                </p>
+              </div>
+            </div>
+
+            <TextbookAccessLegend className="mt-10" showLink={false} />
+
+            <div className="soft-control mt-5 flex flex-col gap-4 border border-rule bg-paper-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+              <div>
+                <p className="text-sm font-semibold text-deep-green">
+                  今使っているプランを確かめたい方へ
+                </p>
+                <p className="mt-2 text-xs leading-6 text-quiet">
+                  ChatGPTにログインし、アカウントメニューから「設定」→「Billing（請求）」を開きます。
+                </p>
+              </div>
+              <a
+                className="soft-outline-button inline-flex min-h-11 shrink-0 items-center justify-center gap-3 border border-sapphire px-5 text-xs font-semibold text-sapphire transition-colors hover:bg-sapphire hover:text-white"
+                href="https://help.openai.com/en/articles/9039756-managing-billing-settings-on-chatgpt-web-and-platform"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="OpenAI公式の確認方法（新しいタブで開く）"
+              >
+                OpenAI公式の確認方法
+                <ExternalLink className="size-4" aria-hidden="true" />
+              </a>
+            </div>
           </div>
         </section>
 

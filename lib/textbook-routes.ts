@@ -2,6 +2,7 @@
 
 export const textbookGuidePath = '/textbook';
 export const textbookSetupPath = '/textbook/setup';
+export const textbookPlanGuidePath = `${textbookSetupPath}#plan-guide`;
 export const textbookExplorePath = '/textbook/explore';
 
 export function textbookLessonPath(taskId: string): string {
