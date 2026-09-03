@@ -1,6 +1,6 @@
 # 藤本実学塾サイト 引き継ぎ資料
 
-最終整理日: 2026年9月3日
+最終整理日: 2026年9月4日
 
 ## 1. 最初に把握すること
 
@@ -8,7 +8,7 @@
 | ------------------------ | --------------------------------------------------------------------------------- |
 | 屋号                     | 藤本実学塾                                                                        |
 | 正式URL（公開中）        | https://mon-ai.jp/aijuku                                                          |
-| 会員・認証・D1の正本     | https://toyota-ai-school.mondism.chatgpt.site                                     |
+| 会員・認証・D1の公開URL  | https://mon-ai.jp/aijuku                                                          |
 | Vercel子アプリ（公開中） | https://aijuku.vercel.app/aijuku                                                  |
 | GitHub                   | https://github.com/fujimoto198904-hash/aijuku                                     |
 | 正式ブランチ             | `main`                                                                            |
@@ -16,7 +16,7 @@
 | 教材実数                 | 全730本文、73/73章、`lessonDrafts: 730 / outlines: 0`                             |
 | 検証                     | `npm run verify`、Sites本番D1、運営初回ログイン、管理権限、デモ全書込み拒否を確認 |
 | 未実施                   | 別の一般会員による全行程、受講者端末でのChatGPT実践QA                             |
-| 公開先                   | MON-Ai配下の公開面、OpenAI Sitesの会員面、Vercel子アプリ                          |
+| 公開先                   | MON-Ai配下へ統一。会員・APIは親VercelからOpenAI Sitesへ内部転送                   |
 | 技術構成                 | Vinext、React、TypeScript、Tailwind CSS、Sites用Workerビルド、Vercel用Nitroビルド |
 | 対応Node.js              | 22.13以上（`.nvmrc`は22.13.0）                                                    |
 
@@ -506,7 +506,7 @@ Vercelでは`vite.config.ts`のVercel分岐がCloudflare/Sites用プラグイン
 - 実ブラウザ: 正式URLの教材検索画面と本文を表示。ローカルで検索、コース選択後のフォーカス、本文目次のフォーカス移動を確認
 - 完了: 既存Sitesへ新認証を公開し、運営初回ログイン、管理権限、デモ閲覧と全書込み拒否、本人確認ヘッダー偽装拒否を本番確認。一般会員の全行程は未実施
 
-canonicalとSNS共有画像の絶対URLは、Sites実行時は現在のSites本番、Vercel実行時は目標の`https://mon-ai.jp/aijuku`を使います。公開先を明示的に切り替える場合だけ、末尾スラッシュなしの`NEXT_PUBLIC_SITE_URL`を設定してください。SNS共有画像は`npm run build:brand-og`で人物を含まない1200×630のブランドカードとして再生成できます。
+canonical、SNS共有画像、会員ページ、決済後の戻り先は、実行基盤にかかわらず`https://mon-ai.jp/aijuku`へ統一します。公開先を明示的に切り替える場合だけ、末尾スラッシュなしの`NEXT_PUBLIC_SITE_URL`を設定してください。SNS共有画像は`npm run build:brand-og`で人物を含まない1200×630のブランドカードとして再生成できます。
 
 ```bash
 npx vercel pull --yes --environment production
@@ -514,9 +514,9 @@ npx vercel build --prod --yes
 npx vercel deploy --prebuilt --prod --yes
 ```
 
-Vercel子アプリの公開先は https://aijuku.vercel.app/aijuku です。`.vercel/`は生成物とローカル認証情報を含むためGitへ追加しません。Vercelは公開コンテンツを担当し、`/join`、`/login`、`/account/password`、`/mypage`、`/reserve`、`/admin`、`/skills/*`など認証・D1を使うルートは正本のSitesへ転送します。Sites側のURLには`/aijuku`を付けません。
+Vercel子アプリの公開先は https://aijuku.vercel.app/aijuku です。`.vercel/`は生成物とローカル認証情報を含むためGitへ追加しません。利用者には子アプリやSitesのURLを案内せず、すべて`https://mon-ai.jp/aijuku`を案内します。親Vercelは`/aijuku`配下をSitesへ内部rewriteし、ブラウザのドメインを変えずに認証・D1・教材・APIを提供します。Sites自体のルートには`/aijuku`を付けず、production buildのリンクだけが公開パスを付けます。
 
-`mon-ai.jp/aijuku`は別のGitHubリポジトリ`fujimoto198904-hash/mon-ai`が配信する親サイトです。親の`vercel.json`で`/aijuku`と`/aijuku/:path*`を、子アプリの同じパスへ外部rewriteします。DNSだけではURLパスを割り当てられません。
+`mon-ai.jp/aijuku`は別のGitHubリポジトリ`fujimoto198904-hash/mon-ai`が配信する親サイトです。親の`vercel.json`で`/aijuku`と`/aijuku/:path*`を、既存Sitesのルートへ外部rewriteします。Sitesが返す`/_next/*`とSign in with ChatGPTの3ルートも親で内部転送します。DNSだけではURLパスを割り当てられません。
 
 公開順は次のとおりです。
 

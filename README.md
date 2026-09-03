@@ -2,10 +2,11 @@
 
 東京23区内の対面と全国オンラインで、AIが初めての方も暮らしや仕事で使えるものを一つずつ形にする大人向けAI実学塾の公式サイトです。運営本部は愛知県豊田市にあります。
 
-2026年9月1日に屋号を「豊田Ai塾」から「藤本実学塾」へ変更し、2026年9月2日に公開HP・Web教科書を`https://mon-ai.jp/aijuku`へ正式公開しました。会員認証とD1は既存Sitesを正本として残し、公開面と役割を分けます。
+2026年9月1日に屋号を「豊田Ai塾」から「藤本実学塾」へ変更し、2026年9月2日に公開HP・Web教科書を`https://mon-ai.jp/aijuku`へ正式公開しました。2026年9月4日から会員ページとAPIも同じ公開URLで受け、親Vercelから既存SitesのD1実行基盤へ内部転送します。
 
 - 正式URL（公開中）: https://mon-ai.jp/aijuku
-- 会員機能の現行正本: https://toyota-ai-school.mondism.chatgpt.site
+- 会員機能: https://mon-ai.jp/aijuku/login
+- 会員機能の実行基盤: 既存Sites（利用者向けURLとして案内しない）
 - Vercel子アプリ（公開中）: https://aijuku.vercel.app/aijuku
 - GitHub: https://github.com/fujimoto198904-hash/aijuku
 - 正式な引き継ぎ資料: [docs/HANDOFF.md](docs/HANDOFF.md)

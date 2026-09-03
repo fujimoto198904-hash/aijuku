@@ -9,10 +9,7 @@ export const canonicalPublicUrl = `https://mon-ai.jp${publicSiteBasePath}`;
 // be overridden explicitly when a deployment is promoted.
 const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '');
 export const canonicalSiteUrl =
-  configuredSiteUrl ||
-  (process.env.VERCEL === '1'
-    ? canonicalPublicUrl
-    : 'https://toyota-ai-school.mondism.chatgpt.site');
+  configuredSiteUrl || canonicalPublicUrl;
 
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z\d+.-]*:/i;
 

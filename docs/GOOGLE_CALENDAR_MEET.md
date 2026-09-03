@@ -30,7 +30,7 @@
 4. 承認済みのリダイレクトURIに、次を完全一致で登録します。
 
 ```text
-https://toyota-ai-school.mondism.chatgpt.site/api/admin/google-calendar/callback
+https://mon-ai.jp/aijuku/api/admin/google-calendar/callback
 ```
 
 この連携はサーバー側OAuthフローのため、認証コードをブラウザのJavaScriptから使いません。クライアントシークレットはソースやチャットに貼らず、Sitesの秘密環境値にだけ保存します。

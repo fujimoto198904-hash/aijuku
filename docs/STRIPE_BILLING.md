@@ -56,7 +56,7 @@ STRIPE_WEBHOOK_SECRET=<テストWebhook署名シークレット>
 
 チャット、Git、スクリーンショット、引き継ぎ資料にキー実値を記録しません。キーは可能な限り制限付きとし、Accounts読取、Products / Prices読取、Checkout Sessions作成・読取、Customers作成・読取、Subscriptions読取、Customer Portal Session作成に必要な最小権限だけを付与します。現在は制限付きキーを未作成です。このチャットに入力された標準テスト用シークレットキーは、新しい制限付きキーをSitesへ安全に設定する前にStripe上でローテーションまたは削除します。
 
-Webhook送信先は、Sites正本の`https://toyota-ai-school.mondism.chatgpt.site/api/billing/webhook`に「藤本実学塾 Sites サンドボックス」（`we_1UBbYkD8iUMy4IW9IpJCsXkU`）として登録済みで、状態はアクティブです。APIバージョンは、固定済みの`stripe@22.6.1`とコードに合わせて`2026-08-26.dahlia`を選び、次の10イベントだけを購読しています。署名シークレットは送信先ごとに異なるため、Sitesの秘密値として別途設定します。現在は署名シークレットがSites未設定で、実イベントも送信していません。
+Webhookの公開URLは`https://mon-ai.jp/aijuku/api/billing/webhook`です。親VercelがSitesの実行ルートへ内部転送します。既存のサンドボックス送信先は旧Sites直URLで登録されているため、課金有効化前にこの公開URLへ変更し、署名シークレットをSitesへ設定します。APIバージョンは、固定済みの`stripe@22.6.1`とコードに合わせて`2026-08-26.dahlia`を選び、次の10イベントだけを購読します。現在は署名シークレットがSites未設定で、実イベントも送信していません。
 
 - `checkout.session.completed`
 - `checkout.session.async_payment_succeeded`

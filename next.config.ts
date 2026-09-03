@@ -3,6 +3,8 @@ import type { NextConfig } from 'next';
 const isVercelBuild =
   process.env.VERCEL === '1' || process.env.NITRO_PRESET === 'vercel';
 const isDevelopment = process.env.NODE_ENV !== 'production';
+const publicLinkBasePath =
+  isDevelopment && !isVercelBuild ? '' : '/aijuku';
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -60,7 +62,10 @@ const privateRoutes = privateRouteRoots.flatMap((root) => [
 const nextConfig: NextConfig = {
   basePath: isVercelBuild ? '/aijuku' : '',
   env: {
-    NEXT_PUBLIC_SITE_BASE_PATH: isVercelBuild ? '/aijuku' : '',
+    // Sites serves the application at its root, while mon-ai.jp exposes it
+    // through a reverse proxy below /aijuku. Keep links and browser requests
+    // on the public branded path in every production build.
+    NEXT_PUBLIC_SITE_BASE_PATH: publicLinkBasePath,
   },
   images: {
     // Vinext's image optimizer endpoint is rooted at /_next/image. The public

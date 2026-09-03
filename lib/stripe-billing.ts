@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 
 import type { ServiceType } from '@/db/membership';
 import { withSiteBasePath } from '@/lib/site-paths';
-import { canonicalSitesUrl } from '@/lib/site-runtime';
+import { canonicalPublicMemberUrl } from '@/lib/site-runtime';
 
 export const stripeApiVersion = '2026-08-26.dahlia' as const;
 export const stripeBillingPortalConfigurationId =
@@ -357,7 +357,7 @@ export function billingReturnUrls(request: Request): {
     requestUrl.hostname === '[::1]';
   const origin = localHostname
     ? requestUrl.origin
-    : new URL(canonicalSitesUrl).origin;
+    : new URL(canonicalPublicMemberUrl).origin;
   const mypage = withSiteBasePath('/mypage');
   return {
     successUrl: `${origin}${mypage}?checkout=success&session_id={CHECKOUT_SESSION_ID}#applications`,
