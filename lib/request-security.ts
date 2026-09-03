@@ -1,10 +1,21 @@
+import {
+  canonicalPublicMemberUrl,
+  canonicalSitesUrl,
+} from "@/lib/site-runtime";
+
 export function isSameOriginRequest(request: Request): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return false;
   try {
-    const sameOrigin = new URL(origin).origin === new URL(request.url).origin;
+    const browserOrigin = new URL(origin).origin;
+    const requestOrigin = new URL(request.url).origin;
+    const publicOrigin = new URL(canonicalPublicMemberUrl).origin;
+    const sitesOrigin = new URL(canonicalSitesUrl).origin;
+    const allowedOrigin =
+      browserOrigin === requestOrigin ||
+      (browserOrigin === publicOrigin && requestOrigin === sitesOrigin);
     const fetchSite = request.headers.get("sec-fetch-site");
-    return sameOrigin && (!fetchSite || fetchSite === "same-origin");
+    return allowedOrigin && (!fetchSite || fetchSite === "same-origin");
   } catch {
     return false;
   }

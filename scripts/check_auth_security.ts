@@ -14,6 +14,65 @@ import {
   verifyPassword,
 } from '../lib/password-security';
 import { authenticatedStaffPermissions } from '../lib/staff-permission-policy';
+import { isSameOriginRequest } from '../lib/request-security';
+
+assert.equal(
+  isSameOriginRequest(
+    new Request('https://mon-ai.jp/aijuku/api/auth/login', {
+      headers: {
+        origin: 'https://mon-ai.jp',
+        'sec-fetch-site': 'same-origin',
+      },
+    }),
+  ),
+  true,
+  'a direct same-origin request must be accepted',
+);
+assert.equal(
+  isSameOriginRequest(
+    new Request(
+      'https://toyota-ai-school.mondism.chatgpt.site/api/auth/login',
+      {
+        headers: {
+          origin: 'https://mon-ai.jp',
+          'sec-fetch-site': 'same-origin',
+        },
+      },
+    ),
+  ),
+  true,
+  'the branded public origin must be accepted through the Sites reverse proxy',
+);
+assert.equal(
+  isSameOriginRequest(
+    new Request(
+      'https://toyota-ai-school.mondism.chatgpt.site/api/auth/login',
+      {
+        headers: {
+          origin: 'https://attacker.example',
+          'sec-fetch-site': 'same-origin',
+        },
+      },
+    ),
+  ),
+  false,
+  'an unrelated browser origin must be rejected',
+);
+assert.equal(
+  isSameOriginRequest(
+    new Request(
+      'https://toyota-ai-school.mondism.chatgpt.site/api/auth/login',
+      {
+        headers: {
+          origin: 'https://mon-ai.jp',
+          'sec-fetch-site': 'cross-site',
+        },
+      },
+    ),
+  ),
+  false,
+  'a cross-site browser request must be rejected',
+);
 
 const pepper = 'local-auth-check-only-not-a-deployment-secret';
 const password = 'A safe passphrase 2026!';
