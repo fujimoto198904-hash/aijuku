@@ -83,7 +83,7 @@ npm run db:migrate:local
 npm run verify
 ```
 
-`npm run verify`の成功は、ローカルのコード、資料、ビルドが合格した意味です。2026年9月3日のSites公開ではコードとD1テーブルだけを配備し、Stripe秘密値を設定せず課金無効のままにします。StripeサンドボックスへのAPI通信、実際のテストカード決済、Webhook受信、Customer Portalは別に確認します。
+`npm run verify`の成功は、ローカルのコード、資料、ビルドが合格した意味です。2026年9月3日にコードとD1テーブルをSites本番へ配備し、Stripe用5表を確認しました。Stripe秘密値は設定せず、課金無効のままです。StripeサンドボックスへのAPI通信、実際のテストカード決済、Webhook受信、Customer Portalは別に確認します。
 
 ## ライブ開始の停止条件
 
