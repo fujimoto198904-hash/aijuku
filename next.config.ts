@@ -68,10 +68,12 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SITE_BASE_PATH: publicLinkBasePath,
   },
   images: {
-    // Vinext's image optimizer endpoint is rooted at /_next/image. The public
-    // Vercel build lives below /aijuku, so serve its already-built image files
-    // directly instead of escaping into the MON-Ai parent site's root path.
-    unoptimized: isVercelBuild,
+    // The Sites image optimizer responds with a redirect to its internal
+    // chatgpt.site host. On mon-ai.jp that redirect is rightly blocked by our
+    // CSP, leaving the image areas blank. Imported images are already emitted
+    // as fingerprinted static files, so use those files directly in every
+    // runtime and keep every image request on the public domain.
+    unoptimized: true,
   },
   async headers() {
     return [
