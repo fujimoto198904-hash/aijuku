@@ -20,10 +20,17 @@ const testGlobal = globalThis as typeof globalThis & {
 const originalFetch = globalThis.fetch;
 try {
   const DB = await mf.getD1Database('DB');
+  let launchSeedSql = '';
   for (const name of (await readdir('drizzle'))
     .filter((n) => n.endsWith('.sql'))
     .sort()) {
     const sql = await readFile('drizzle/' + name, 'utf8');
+    // First test an empty community, then apply the real launch migration
+    // below against existing members before testing the seeded social feed.
+    if (name === '0018_official_launch_seed.sql') {
+      launchSeedSql = sql;
+      continue;
+    }
     for (const statement of sql
       .split('--> statement-breakpoint')
       .map((s) => s.trim())
@@ -1442,6 +1449,43 @@ try {
   const accountsBefore = await DB.prepare(
     'SELECT count(*) AS n FROM member_auth_accounts',
   ).first<{ n: number }>();
+  assert(launchSeedSql, 'Launch data migration must be covered by this check');
+  const humansBeforeSeed = await DB.prepare(
+    "SELECT * FROM members WHERE id != 'aistock-system-editorial' ORDER BY id",
+  ).all();
+  const applyLaunchSeed = async () => {
+    for (const statement of launchSeedSql.split('--> statement-breakpoint'))
+      if (statement.trim()) await DB.prepare(statement.trim()).run();
+  };
+  await applyLaunchSeed();
+  await applyLaunchSeed();
+  assert.deepEqual(
+    (
+      await DB.prepare(
+        "SELECT * FROM members WHERE id != 'aistock-system-editorial' ORDER BY id",
+      ).all()
+    ).results,
+    humansBeforeSeed.results,
+    'Launch migration never changes human identities, status or consent',
+  );
+  assert.equal(
+    (
+      await DB.prepare(
+        "SELECT terms_accepted_at FROM members WHERE id='aistock-system-editorial'",
+      ).first()
+    )?.terms_accepted_at,
+    0,
+    'Editorial data is not a human terms acceptance',
+  );
+  assert.equal(
+    (
+      await DB.prepare(
+        "SELECT count(*) n FROM social_profiles WHERE kind IN ('official','official_ai') AND member_id IS NOT NULL",
+      ).first()
+    )?.n,
+    0,
+    'Seeded public characters must not be login members',
+  );
   await api.seedOfficialCommunity();
   await api.seedOfficialCommunity();
   assert.equal(
@@ -1727,6 +1771,7 @@ try {
     memberId: 'test-owner',
     isOwner: true,
   });
+  await applyLaunchSeed();
   await api.seedOfficialCommunity();
   assert.equal(
     await api.getCommunityPost('example-madoka-1'),

@@ -4,9 +4,8 @@ export const siteBasePath = process.env.NEXT_PUBLIC_SITE_BASE_PATH ?? '';
 
 export const canonicalPublicUrl = `https://mon-ai.jp${publicSiteBasePath}`;
 
-// Until the parent Vercel rewrite is actually live, Sites remains the current
-// production origin. Vercel builds point at the target path; either runtime can
-// be overridden explicitly when a deployment is promoted.
+// The parent Vercel rewrite exposes the existing Sites runtime at /aistock.
+// Keep public links on the branded domain unless explicitly overridden.
 const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '');
 export const canonicalSiteUrl = configuredSiteUrl || canonicalPublicUrl;
 

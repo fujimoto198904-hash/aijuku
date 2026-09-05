@@ -1,7 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { officialCharacters } from '@/lib/official-characters';
 import { officialPosts } from '@/lib/official-posts';
-import { membershipTermsVersion, privacyPolicyVersion } from '@/db/membership';
 const publisher = 'aistock-system-editorial';
 export async function seedOfficialCommunity() {
   const now = Date.now();
@@ -13,10 +12,10 @@ export async function seedOfficialCommunity() {
       publisher,
       'editorial@example.invalid',
       '公式コンテンツ管理レコード',
-      membershipTermsVersion,
-      now,
-      privacyPolicyVersion,
-      now,
+      'system-editorial-not-applicable',
+      0,
+      'system-editorial-not-applicable',
+      0,
       now,
       now,
     )

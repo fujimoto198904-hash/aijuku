@@ -5,7 +5,7 @@
 - This repository is the single active application for AIstock, the free AI learning community operated by MON-ai. The former paid school is preserved only for recovery.
 - Use Japanese for customer-facing copy and handoff notes.
 - The source of truth is the GitHub `main` branch.
-- The target public URL is https://mon-ai.jp/aistock. Until the new parent rewrite and Sites version are published and verified, production remains the existing https://mon-ai.jp/aijuku service. Do not treat local integration as publication.
+- The public URL is https://mon-ai.jp/aistock. The parent rewrite and existing Sites version were published and verified on 2026-09-05. Legacy /aijuku pages redirect to the matching /aistock page; legacy API routes remain proxied without redirects. Do not treat local integration or a Git push alone as publication.
 
 ## Setup and validation
 

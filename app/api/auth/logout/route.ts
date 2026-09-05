@@ -4,6 +4,8 @@ import {
 } from '@/app/chatgpt-auth';
 import { revokePasswordSession } from '@/db/member-auth';
 import { noStoreJson } from '@/lib/auth-request';
+import { isSameOriginRequest } from '@/lib/request-security';
+import { withSiteBasePath } from '@/lib/site-paths';
 import {
   appendClearedSessionCookies,
   readMemberSessionToken,
@@ -41,7 +43,7 @@ async function logout(request: Request): Promise<Response> {
   );
   const location = hasChatGPTSession
     ? legacyChatGPTSignOutPath(returnTo)
-    : returnTo;
+    : withSiteBasePath(returnTo);
   const headers = new Headers({ Location: location });
   appendClearedSessionCookies(headers);
   headers.set('Cache-Control', 'private, no-store, max-age=0');
@@ -53,7 +55,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!request.headers.get('origin')) {
+  if (!isSameOriginRequest(request)) {
     return noStoreJson(
       { error: '送信元を確認できませんでした。' },
       { status: 403 },

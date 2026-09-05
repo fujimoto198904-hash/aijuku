@@ -200,7 +200,7 @@ export async function requireBillingAuthenticatedUser(
   if (regularUser?.mustChangePassword) {
     redirect(passwordChangePath(returnTo));
   }
-  if (regularUser) redirect('/mypage');
+  if (regularUser) redirect(withSiteBasePath('/mypage'));
   redirect(memberLoginPath(returnTo));
 }
 
@@ -221,12 +221,12 @@ export function legacyChatGPTSignOutPath(returnTo = '/'): string {
 
 export function memberLoginPath(returnTo = '/mypage'): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
-  return `${LOGIN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+  return `${withSiteBasePath(LOGIN_PATH)}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
 export function passwordChangePath(returnTo = '/mypage'): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
-  return `${PASSWORD_CHANGE_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+  return `${withSiteBasePath(PASSWORD_CHANGE_PATH)}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
 export function safeRelativeReturnPath(value: string): string {

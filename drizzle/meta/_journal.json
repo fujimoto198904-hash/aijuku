@@ -127,6 +127,13 @@
       "when": 1788593900503,
       "tag": "0017_short_lockjaw",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1788605057904,
+      "tag": "0018_official_launch_seed",
+      "breakpoints": true
     }
   ]
 }
