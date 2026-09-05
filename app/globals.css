@@ -66,13 +66,16 @@
   --as-green: #105747;
   --as-ink: #19352c;
   --as-muted: #53665d;
-  --as-canvas: #f6f7f4;
+  --as-canvas: #eef2ee;
   --as-surface: #ffffff;
-  --as-line: #dce5dd;
+  --as-controls: #e2ebe5;
+  --as-line: #cfdad2;
   --as-tint: #eaf2e9;
   --as-shadow: 0 4px 7px #163c2d03, 0 16px 40px -24px #163c2d33;
   --as-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --as-sidebar-width: 232px;
+  --as-motion-fast: 160ms;
+  --as-motion-enter: 240ms;
+  --as-sidebar-width: 208px;
   --paper: #f5f7f6;
   --paper-white: #ffffff;
   --ink: #192d29;
@@ -399,12 +402,10 @@ body {
 
 .soft-interactive,
 .lift-card {
-  transform: translateZ(0);
   transition:
-    transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 500ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 300ms ease,
-    background-color 300ms ease;
+    transform 220ms var(--as-ease),
+    border-color 160ms ease,
+    background-color 160ms ease;
 }
 
 .soft-dark-glow {
@@ -514,10 +515,7 @@ body {
     0 16px 44px rgba(52, 95, 231, 0.28),
     0 0 26px rgba(114, 217, 196, 0.09),
     inset 0 1px 0 rgba(255, 255, 255, 0.26);
-  transition:
-    transform 350ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 350ms ease,
-    background-position 450ms ease;
+  transition: transform 200ms var(--as-ease);
 }
 
 .button-glow::after {
@@ -533,8 +531,8 @@ body {
     rgba(255, 255, 255, 0.32),
     transparent
   );
-  transform: skewX(-18deg);
-  transition: left 650ms ease;
+  transform: translateX(0) skewX(-18deg);
+  transition: transform 400ms var(--as-ease);
 }
 
 .soft-accordion {
@@ -587,11 +585,11 @@ body {
   }
 }
 
-@media (hover: hover) and (pointer: fine) {
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .soft-interactive:hover,
   .lift-card:hover {
     box-shadow: var(--shadow-lift);
-    transform: translateY(-5px);
+    transform: translateY(-2px);
   }
 
   .button-glow:not(:disabled):hover {
@@ -599,11 +597,11 @@ body {
     box-shadow:
       0 20px 54px rgba(52, 95, 231, 0.34),
       0 0 34px rgba(114, 217, 196, 0.14);
-    transform: translateY(-3px);
+    transform: translateY(-1px);
   }
 
   .button-glow:not(:disabled):hover::after {
-    left: 118%;
+    transform: translateX(560%) skewX(-18deg);
   }
 
   .image-soft-zoom:hover img {

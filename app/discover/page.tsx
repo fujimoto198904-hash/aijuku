@@ -48,72 +48,74 @@ export default async function Discover({
   return (
     <>
       <SiteHeader />
-      <main id="main-content" className="as-page">
-        <header className="as-page-lead">
-          <p className="as-eyebrow">見つける</p>
-          <h1>それ、AIでできるかも。</h1>
-          <p>メール、画像、調べもの。気になる言葉で探してみよう。</p>
-        </header>
-        <form action={withSiteBasePath('/discover')} className="as-search">
-          <input type="hidden" name="view" value={view} />
-          <label className="sr-only" htmlFor="discover-query">
-            投稿・教科書の検索
-          </label>
-          <input
-            id="discover-query"
-            name="q"
-            defaultValue={q}
-            placeholder="何をやってみたい？"
-            maxLength={80}
-          />
-          <button type="submit">探す</button>
-        </form>
-        <nav className="as-action-row" aria-label="よく使うキーワード">
-          {[
-            '仕事',
-            'メール',
-            '資料',
-            '会議',
-            'Excel',
-            '画像',
-            '動画',
-            '音楽',
-            'デザイン',
-            'Web',
-            'プログラミング',
-            '調べ',
-            '英語',
-            '暮らし',
-            '旅行',
-            '料理',
-            'お店',
-            'SNS',
-          ].map((k) => (
-            <Link
-              href={'/discover?view=' + view + '&q=' + encodeURIComponent(k)}
-              key={k}
-              className="as-chip"
-              aria-current={q === k ? 'page' : undefined}
-            >
-              {k}
-            </Link>
-          ))}
-        </nav>
-        <nav className="as-feed-tabs" aria-label="検索対象">
-          {[
-            ['posts', '投稿'],
-            ['textbook', '教科書'],
-            ['people', 'メンバー'],
-          ].map(([key, label]) => (
-            <Link
-              key={key}
-              aria-current={view === key ? 'page' : undefined}
-              href={'/discover?view=' + key + '&q=' + encodeURIComponent(q)}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+      <main id="main-content" className="as-page as-discover-page">
+        <div className="as-discover-controls">
+          <header className="as-page-lead">
+            <p className="as-eyebrow">見つける</p>
+            <h1>それ、AIでできるかも。</h1>
+            <p>メール、画像、調べもの。気になる言葉で探してみよう。</p>
+          </header>
+          <form action={withSiteBasePath('/discover')} className="as-search">
+            <input type="hidden" name="view" value={view} />
+            <label className="sr-only" htmlFor="discover-query">
+              投稿・教科書の検索
+            </label>
+            <input
+              id="discover-query"
+              name="q"
+              defaultValue={q}
+              placeholder="何をやってみたい？"
+              maxLength={80}
+            />
+            <button type="submit">探す</button>
+          </form>
+          <nav className="as-discover-keywords" aria-label="よく使うキーワード">
+            {[
+              '仕事',
+              'メール',
+              '資料',
+              '会議',
+              'Excel',
+              '画像',
+              '動画',
+              '音楽',
+              'デザイン',
+              'Web',
+              'プログラミング',
+              '調べ',
+              '英語',
+              '暮らし',
+              '旅行',
+              '料理',
+              'お店',
+              'SNS',
+            ].map((k) => (
+              <Link
+                href={'/discover?view=' + view + '&q=' + encodeURIComponent(k)}
+                key={k}
+                className="as-chip"
+                aria-current={q === k ? 'page' : undefined}
+              >
+                {k}
+              </Link>
+            ))}
+          </nav>
+          <nav className="as-feed-tabs as-feed-subtabs" aria-label="検索対象">
+            {[
+              ['posts', '投稿'],
+              ['textbook', '教科書'],
+              ['people', 'メンバー'],
+            ].map(([key, label]) => (
+              <Link
+                key={key}
+                aria-current={view === key ? 'page' : undefined}
+                href={'/discover?view=' + key + '&q=' + encodeURIComponent(q)}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+        </div>
         {view === 'people' && (
           <section className="as-section">
             <h2>学ぶ仲間を見つける</h2>

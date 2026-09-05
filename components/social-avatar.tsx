@@ -76,6 +76,6 @@ export function AccountBadge({ kind }: { kind?: string | null }) {
   return kind === 'official' ? (
     <span className="as-account-badge">公式</span>
   ) : kind === 'official_ai' ? (
-    <span className="as-account-badge is-ai">公式AI · 架空</span>
+    <span className="as-account-badge is-ai">公式AI</span>
   ) : null;
 }

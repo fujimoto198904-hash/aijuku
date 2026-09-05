@@ -13,6 +13,8 @@ import {
   ListChecks,
   Table2,
   PanelsTopLeft,
+  SlidersHorizontal,
+  ChevronDown,
 } from 'lucide-react';
 import {
   officialPosts,
@@ -463,58 +465,73 @@ export async function CommunityFeed({
   return (
     <main id="main-content" className="as-feed-layout as-social-feed">
       <div className="as-feed-main">
-        <header className="as-feed-heading">
-          <div>
-            <p className="as-eyebrow">AIで、できることが増えていく。</p>
+        <div className="as-feed-controls">
+          <header className="as-feed-heading">
             <h1>みんなの発見</h1>
-          </div>
-          <Link
-            href={composeHref}
-            className="as-compose"
-            aria-label="投稿を書く"
-          >
-            <Plus size={22} />
-          </Link>
-        </header>
-        <nav aria-label="フィードの選択" className="as-feed-tabs">
-          {[
-            ['all', 'おすすめ'],
-            ['following', 'フォロー中'],
-            ['members', 'みんな'],
-            ['textbook', '教材'],
-            ['ai', '公式AI'],
-          ].map(([key, label]) => (
-            <Link
-              key={key}
-              aria-current={view === key ? 'page' : undefined}
-              href={'/community?view=' + key}
-            >
-              {label}
+            <Link href="/learn" className="as-feed-learn">
+              はじめてのAI <ArrowUpRight size={16} aria-hidden="true" />
             </Link>
-          ))}
-        </nav>
-        <nav aria-label="投稿の種類" className="as-feed-tabs as-feed-subtabs">
-          {[
-            [undefined, 'すべて'],
-            ['tip', '便利な使い方'],
-            ['learning', 'できたこと'],
-            ['question', '質問'],
-          ].map(([k, label]) => (
             <Link
-              key={k ?? 'all'}
-              href={'/community?view=' + view + (k ? '&kind=' + k : '')}
-              aria-current={k === kind ? 'page' : undefined}
+              href={composeHref}
+              className="as-compose"
+              aria-label="投稿を書く"
             >
-              {label}
+              <Plus size={22} />
             </Link>
-          ))}
-        </nav>
-        <Link href="/learn" className="as-mobile-start">
-          <span>何から始めるか迷ったら</span>
-          <strong>
-            はじめてのAI <ArrowUpRight size={16} />
-          </strong>
-        </Link>
+          </header>
+          <nav aria-label="フィードの選択" className="as-feed-tabs">
+            {[
+              ['all', 'おすすめ'],
+              ['following', 'フォロー中'],
+              ['members', 'みんな'],
+              ['textbook', '教材'],
+              ['ai', '公式AI'],
+            ].map(([key, label]) => (
+              <Link
+                key={key}
+                aria-current={view === key ? 'page' : undefined}
+                href={'/community?view=' + key}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <details className="as-feed-options" open={Boolean(kind)}>
+            <summary>
+              <SlidersHorizontal size={16} aria-hidden="true" />
+              投稿を絞り込む
+              {kind && (
+                <span className="as-filter-selection">
+                  {communityLabels[kind]}
+                </span>
+              )}
+              <ChevronDown
+                size={16}
+                className="as-disclosure-chevron"
+                aria-hidden="true"
+              />
+            </summary>
+            <nav
+              aria-label="投稿の種類"
+              className="as-feed-tabs as-feed-subtabs"
+            >
+              {[
+                [undefined, 'すべて'],
+                ['tip', '便利な使い方'],
+                ['learning', 'できたこと'],
+                ['question', '質問'],
+              ].map(([k, label]) => (
+                <Link
+                  key={k ?? 'all'}
+                  href={'/community?view=' + view + (k ? '&kind=' + k : '')}
+                  aria-current={k === kind ? 'page' : undefined}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </details>
+        </div>
         {view === 'following' && !me && (
           <p className="as-panel">
             公開プロフィールを作ってフォローすると、ここに投稿が並びます。

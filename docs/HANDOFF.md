@@ -24,6 +24,8 @@ Node.js 22.13以上、npm lockfileを使います。`npm ci` → `npm run db:mig
 
 デザイン調整は[AISTOCK_DESIGN.md](AISTOCK_DESIGN.md)、交流機能は[AISTOCK_SOCIAL.md](AISTOCK_SOCIAL.md)を参照。教材紹介と会員投稿を混在させ、公開プロフィール・いいね・DMを追加。個人状態を含む公開ページとDMはキャッシュ禁止です。`npm run check:ui`を通常の検証へ追加しています。定期投稿は未稼働です。
 
+スマホの表示は739px以下で画面幅のフィード＋アイコン中心の下ナビ。種類フィルターはdetailsで開閉し、URLのkindがある場合は開いた状態で表示します。通常リンクと正式ドメインの経路は変更せず、対応環境に限りCSSで短いページ切替を付けています。本文16px、主要操作44px以上、reduced-motion、AIキャラクターの説明を維持。データ・認証・DBマイグレーションを変更しない表示調整です。
+
 ユーザー名・パスワード登録はメール設定から独立しています。ローカルの隔離D1で登録→ログイン→復旧→再ログイン、コード再利用・同時実行・既存認証との競合・予約名・CSRF・回数制限を検証します。本番は登録・マイページ・ログアウト失効・再ログインをHTTP検証済み。実ブラウザー操作・本番復旧・2人の実会員によるDMは未確認です。Googleログインと確認メールは本番未設定・非表示です。
 
 新規登録時に現行規約への同意を記録するため、直後の再オンボーディングは不要です。ログインIDは公開名に転用せず、初期表示名は「メンバー」。メール未登録は`members.email=''`／`contact_email=NULL`で扱い、架空アドレスを作りません。メールなし会員には、現在のメール一致方式のGoogle後付け連携を表示しません。
@@ -32,12 +34,12 @@ Node.js 22.13以上、npm lockfileを使います。`npm ci` → `npm run db:mig
 
 復旧コードは任意の発行時だけレスポンスに含め、DBには用途・会員ID付きHMACハッシュのみ保存。URL・ログ・localStorageには保存しません。`/account/recover`からパスワードを再設定すると、コードを交換し全既存セッションを失効します。名前だけで手動復旧せず、メールなし・復旧コードなしでパスワードを忘れた場合は復旧不可と案内します。通常の登録を軽くしても、パスワードのハッシュ保存・セッションCookie・権限・回数制限は維持します。
 
-| 環境変数 | 用途 |
-| --- | --- |
+| 環境変数                                              | 用途                                        |
+| ----------------------------------------------------- | ------------------------------------------- |
 | `AUTH_GOOGLE_CLIENT_ID` / `AUTH_GOOGLE_CLIENT_SECRET` | Googleログイン用Web OAuth。Calendar用とは別 |
-| `AUTH_EMAIL_API_KEY` / `AUTH_EMAIL_FROM` | Resendの確認メールと認証済み送信元 |
-| `AUTH_PASSWORD_PEPPER` | 既存秘密値を維持。変更は既存ログインに影響 |
-| `AUTH_OWNER_MEMBER_ID` / `AUTH_OWNER_LOGIN_ID` | 既存運営権限を維持 |
+| `AUTH_EMAIL_API_KEY` / `AUTH_EMAIL_FROM`              | Resendの確認メールと認証済み送信元          |
+| `AUTH_PASSWORD_PEPPER`                                | 既存秘密値を維持。変更は既存ログインに影響  |
+| `AUTH_OWNER_MEMBER_ID` / `AUTH_OWNER_LOGIN_ID`        | 既存運営権限を維持                          |
 
 Googleの戻り先は`https://mon-ai.jp/aistock/api/auth/google/callback`。メール登録は期限付き・一度だけ使える確認リンクから、表示名・8文字以上のパスワード・規約同意へ進みます。メール一致だけで別アカウントを自動統合しません。秘密値は実行環境にだけ設定します。
 

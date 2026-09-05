@@ -11,7 +11,7 @@ export default function LearnPage() {
   return (
     <>
       <SiteHeader />
-      <main id="main-content" className="as-page">
+      <main id="main-content" className="as-page as-learn-page">
         <header className="as-page-lead">
           <p className="as-eyebrow">はじめてのAI</p>
           <h1>

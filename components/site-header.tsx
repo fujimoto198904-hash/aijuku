@@ -44,7 +44,11 @@ export function SiteHeader() {
           <Search size={18} aria-hidden="true" />
           <span>やってみたいことを探す</span>
         </Link>
-        <Link href="/messages" className="as-header-messages as-icon-button" aria-label="メッセージ">
+        <Link
+          href="/messages"
+          className="as-header-messages as-icon-button"
+          aria-label="メッセージ"
+        >
           <MessageCircle size={23} />
         </Link>
         <Link href="/join" className="as-join">
@@ -72,7 +76,7 @@ export function SiteHeader() {
                 <span className="as-nav-icon" aria-hidden="true">
                   <Icon size={23} strokeWidth={selected ? 2.2 : 1.7} />
                 </span>
-                <span>{label}</span>
+                <span className="as-nav-label">{label}</span>
               </Link>
             );
           })}

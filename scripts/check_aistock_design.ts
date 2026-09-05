@@ -11,6 +11,23 @@ import { AuthPasswordInput } from '../components/auth-password-input';
 import { MemberLoginForm } from '../components/member-login-form';
 import { RecoveryCodeCard } from '../components/recovery-code-card';
 
+const accountBadgeSource = readFileSync(
+  new URL('../components/social-avatar.tsx', import.meta.url),
+  'utf8',
+);
+assert.match(
+  accountBadgeSource,
+  /className="as-account-badge is-ai">公式AI<\/span>/,
+);
+assert(!accountBadgeSource.includes('公式AI · 架空'));
+const characterSource = readFileSync(
+  new URL('../lib/official-characters.ts', import.meta.url),
+  'utf8',
+);
+assert(
+  characterSource.includes('人物像と投稿はMON-ai制作のフィクションです。'),
+);
+
 const signupMarkup = renderToStaticMarkup(
   createElement(UsernameRegistrationForm, { returnTo: '/messages?to=friend' }),
 );
@@ -178,6 +195,10 @@ const css = readFileSync(
   new URL('../app/aistock.css', import.meta.url),
   'utf8',
 );
+const socialCss = readFileSync(
+  new URL('../app/social.css', import.meta.url),
+  'utf8',
+);
 const token = (name: string) => {
   const color = globals.match(new RegExp(`--as-${name}: (#[0-9a-f]{6});`))?.[1];
   assert(color, `Missing color token ${name}`);
@@ -201,16 +222,81 @@ for (const [foreground, background] of [
   [token('muted'), token('surface')],
   [token('muted'), token('tint')],
   [token('muted'), token('canvas')],
+  [token('muted'), token('controls')],
   [token('ink'), token('surface')],
+  [token('ink'), token('controls')],
+  [token('green'), token('controls')],
+  [token('green'), token('surface')],
   ['#ffffff', token('green')],
-  ['#d2dfd3', '#153e32'],
-  ['#183b2a', '#deedbd'],
+  ['#48486a', '#eef0f9'],
 ]) {
   assert(
     contrast(foreground, background) >= 4.5,
     `Text contrast ${foreground}/${background}`,
   );
 }
+assert.equal(
+  new Set([token('canvas'), token('controls'), token('surface')]).size,
+  3,
+  'Page canvas, compact controls and reading surfaces remain distinct',
+);
+assert.match(
+  css,
+  /\.as-feed-controls,\s*\.as-discover-controls\s*\{[^}]*background: var\(--as-controls\)/,
+);
+assert.match(
+  css,
+  /\.as-social-feed \.as-post\s*\{[^}]*background: var\(--as-surface\)/,
+);
+assert.match(css, /\.as-post-copy > p\s*\{\s*font-size: 1rem/);
+assert.match(css, /\.as-feed-subtabs a\s*\{\s*font-size: 0\.8125rem/);
+assert.match(css, /\.as-feed-tabs a\s*\{[^}]*min-height: 44px/);
+assert.match(socialCss, /\.as-profile-tabs > button\s*\{[^}]*min-height: 44px/);
+assert.match(css, /\.as-search input\s*\{[^}]*font-size: 16px/);
+assert.match(css, /\.as-discover-keywords\s*\{[^}]*overflow-x: auto/);
+const feedSource = readFileSync(
+  new URL('../components/community-feed.tsx', import.meta.url),
+  'utf8',
+);
+const discoverSource = readFileSync(
+  new URL('../app/discover/page.tsx', import.meta.url),
+  'utf8',
+);
+assert(feedSource.includes('className="as-feed-controls"'));
+assert.match(
+  feedSource,
+  /className="as-feed-options" open=\{Boolean\(kind\)\}/,
+);
+assert(feedSource.includes('className="as-feed-learn"'));
+const headerSource = readFileSync(
+  new URL('../components/site-header.tsx', import.meta.url),
+  'utf8',
+);
+assert(headerSource.includes('className="as-nav-label">{label}</span>'));
+assert.match(css, /@media \(max-width: 739px\)/);
+assert.match(css, /\.as-nav-label\s*\{[^}]*clip-path: inset\(50%\)/);
+assert.match(css, /\.as-nav-item\s*\{[^}]*min-height: 48px/);
+assert.match(
+  css,
+  /\.as-post-author > a:first-child\s*\{[^}]*min-width: 44px;\s*min-height: 44px/,
+);
+assert.match(css, /\.as-social-feed \.as-post-photo\s*\{\s*aspect-ratio: 4\/3/);
+assert.match(
+  css,
+  /\.as-social-feed \.as-post > a\.as-post-photo img\s*\{\s*object-fit: contain/,
+);
+assert.match(
+  css,
+  /@media \(prefers-reduced-motion: no-preference\)\s*\{[\s\S]*@view-transition\s*\{\s*navigation: auto/,
+);
+assert(!css.includes('animation-delay: 120ms'));
+assert(!globals.includes('transition: left'));
+assert.match(
+  globals,
+  /@media \(hover: hover\) and \(pointer: fine\) and \(prefers-reduced-motion: no-preference\)\s*\{\s*\.soft-interactive:hover/,
+);
+assert(discoverSource.includes('className="as-discover-controls"'));
+assert(discoverSource.includes('className="as-discover-keywords"'));
 assert.match(css, /prefers-reduced-motion: reduce/);
 assert.match(css, /transition: none !important/);
 assert.match(css, /forced-colors: active/);
@@ -219,5 +305,5 @@ assert.match(
   /\.as-social-actions \.as-inline-error\s*\{\s*grid-column: 1 \/ -1/,
 );
 console.log(
-  'AIstock UI checks passed: navigation, private saved-state cache policy, text contrast, motion and focus fallbacks.',
+  'AIstock UI checks passed: navigation, private saved-state cache policy, section surfaces, readable content, compact controls, text contrast, motion and focus fallbacks.',
 );

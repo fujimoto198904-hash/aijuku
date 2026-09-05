@@ -2,14 +2,17 @@
 .as-profile-page {
   width: min(100%, 1040px);
   margin: 0 auto;
-  padding: 36px 28px 80px;
+  padding: 24px 24px 48px;
 }
 .as-profile-identity {
   display: grid;
   grid-template-columns: 164px minmax(0, 1fr);
-  gap: 32px;
+  gap: 24px;
   align-items: center;
-  padding: 26px 0 32px;
+  padding: 20px;
+  border: 1px solid var(--as-line);
+  border-radius: 20px;
+  background: var(--as-surface);
 }
 .as-social-avatar {
   display: inline-grid;
@@ -79,7 +82,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px 28px;
-  margin: 18px 0;
+  margin: 12px 0;
   font-size: 0.875rem;
 }
 .as-profile-counts strong {
@@ -112,18 +115,18 @@
 }
 .as-ai-disclosure {
   grid-column: 1 / -1;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   line-height: 1.8;
   background: #eef0f9;
   color: #48486a;
-  padding: 16px 20px;
-  border-radius: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
 }
 .as-private-note {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--as-muted);
   line-height: 1.8;
-  margin: 12px 0 22px;
+  margin: 10px 0 14px;
 }
 .as-profile-status {
   font-size: 0.875rem;
@@ -131,13 +134,13 @@
 }
 .as-profile-shortcuts {
   display: flex;
-  gap: 24px;
-  padding: 12px 0 30px;
+  gap: 12px;
+  padding: 12px 0 16px;
   overflow-x: auto;
 }
 .as-profile-shortcuts > a {
   display: flex;
-  flex: 0 0 110px;
+  flex: 0 0 96px;
   align-items: center;
   flex-direction: column;
   gap: 7px;
@@ -146,13 +149,13 @@
 .as-profile-shortcuts > a > span {
   display: grid;
   place-items: center;
-  width: 62px;
-  height: 62px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: 1px solid var(--as-line);
   background: #fff;
-  box-shadow: inset 0 0 0 5px var(--as-canvas);
-  font-size: 1.3rem;
+  box-shadow: inset 0 0 0 3px var(--as-canvas);
+  font-size: 1.125rem;
   color: var(--as-green);
 }
 .as-profile-shortcuts strong {
@@ -173,17 +176,18 @@
   overflow-x: auto;
   border-top: 1px solid var(--as-line);
   border-bottom: 1px solid var(--as-line);
-  padding: 0;
-  margin: 6px 0 28px;
-  border-radius: 0;
+  padding: 4px;
+  margin: 8px 0 16px;
+  border-radius: 12px;
+  background: var(--as-controls);
 }
 .as-profile-tabs > a,
 .as-profile-tabs > button {
   flex: 1 0 auto;
   justify-content: center;
-  min-height: 55px;
-  padding: 14px 16px;
-  border-radius: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 550;
   color: var(--as-muted);
@@ -192,6 +196,7 @@
 .as-profile-tabs [aria-current='page'],
 .as-profile-tabs [data-active] {
   color: var(--as-green);
+  background: var(--as-surface);
   box-shadow: inset 0 -2px var(--as-green);
 }
 .as-mypage-panel[hidden] {
@@ -207,7 +212,7 @@
   margin-top: 28px;
 }
 .as-tab-section {
-  padding: 4px 0 24px;
+  padding: 4px 0 16px;
 }
 .as-tab-section > h2 {
   font-size: 1.25rem;
@@ -229,7 +234,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
-  min-height: 220px;
+  min-height: 190px;
   aspect-ratio: 1;
   background: #eaf2ee;
   border-radius: 14px;
@@ -252,7 +257,7 @@
 }
 .as-tile-copy {
   position: relative;
-  padding: 24px;
+  padding: 18px;
   width: 100%;
   overflow-wrap: anywhere;
 }
@@ -420,7 +425,7 @@
   accent-color: var(--as-green);
 }
 .as-social-form small {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--as-muted);
   line-height: 1.8;
 }
@@ -478,12 +483,9 @@
   font-size: 0.75rem;
   color: var(--as-muted);
 }
-.as-feed-subtabs {
-  font-size: 0.875rem;
-}
 @media (hover: hover) and (pointer: fine) {
   .as-profile-tile:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: var(--as-shadow);
   }
   .as-icon-button:hover {
@@ -501,12 +503,13 @@
 }
 @media (max-width: 640px) {
   .as-profile-page {
-    padding: 22px 16px 56px;
+    padding: 16px 12px 36px;
   }
   .as-profile-identity {
     grid-template-columns: 80px minmax(0, 1fr);
     gap: 18px;
     align-items: start;
+    padding: 16px;
   }
   .as-social-avatar.is-large {
     width: 76px;
@@ -544,7 +547,7 @@
   }
   .as-profile-tabs > a,
   .as-profile-tabs > button {
-    padding: 12px 10px;
+    padding: 8px 10px;
   }
   .as-saved-grid {
     grid-template-columns: minmax(0, 1fr);

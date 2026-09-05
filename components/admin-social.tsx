@@ -133,7 +133,7 @@ export function OfficialQueueForm() {
         </label>
         <label className="as-check">
           <input name="approved" type="checkbox" required />
-          内容と出典を確認しました。AIキャラクターには架空表示が付きます。
+          内容と出典を確認しました。AIキャラクターには「公式AI」と表示されます。
         </label>
         <button className="as-primary">確認済みの投稿を保存</button>
       </fieldset>
