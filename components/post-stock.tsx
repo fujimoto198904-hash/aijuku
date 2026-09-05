@@ -2,6 +2,26 @@
 import { useState } from 'react';
 import { Bookmark, LoaderCircle } from 'lucide-react';
 import { withSiteBasePath } from '@/lib/site-paths';
+import Link from '@/components/site-link';
+
+export function PostStockNotice({
+  notice,
+  saved,
+}: {
+  notice: string;
+  saved: boolean;
+}) {
+  return (
+    <output
+      className={notice ? 'as-stock-notice' : 'sr-only'}
+      aria-live="polite"
+    >
+      {notice}
+      {notice && saved && <Link href="/mypage#saved">保存済みを見る →</Link>}
+    </output>
+  );
+}
+
 export function PostStock({
   postRef,
   initialSaved = false,
@@ -18,6 +38,7 @@ export function PostStock({
     [error, setError] = useState(''),
     [notice, setNotice] = useState('');
   async function toggle() {
+    if (busy) return;
     if (!canSave) {
       window.location.assign(
         withSiteBasePath(
@@ -42,11 +63,7 @@ export function PostStock({
       const data = (await r.json()) as { error?: string };
       if (!r.ok) throw Error(data.error || '保存できませんでした。');
       setSaved(!saved);
-      setNotice(
-        saved
-          ? '保存を解除しました。'
-          : '保存しました。マイページから見返せます。',
-      );
+      setNotice(saved ? '保存を解除しました。' : '保存しました。');
     } catch (e) {
       setError(e instanceof Error ? e.message : '保存できませんでした。');
     } finally {
@@ -92,9 +109,7 @@ export function PostStock({
                 : '保存'}
         </span>
       </button>
-      <output className="sr-only" aria-live="polite">
-        {notice}
-      </output>
+      <PostStockNotice notice={notice} saved={saved} />
       {error && (
         <span role="alert" className="as-inline-error">
           {error}

@@ -10,6 +10,30 @@ import { getPostStockViewer } from '@/lib/post-stock-viewer';
 import { postLikeStates, searchSocialProfiles } from '@/db/social';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { MemberDirectory } from '@/components/social-profile';
+import { discoveryPage, discoveryPath } from '@/lib/discovery';
+
+// 投稿タブだけが、保存状態・いいね・投稿一覧を必要とする。
+async function loadPostResults(q: string, page: number) {
+  const posts =
+    page === 1
+      ? officialPosts.filter((p) =>
+          (p.title + p.body + p.topic)
+            .toLocaleLowerCase()
+            .includes(q.toLocaleLowerCase()),
+        )
+      : [];
+  const [feed, viewer, user] = await Promise.all([
+    listCommunityPosts(undefined, page, undefined, q),
+    getPostStockViewer(),
+    getChatGPTUser(),
+  ]);
+  const likes = await postLikeStates(
+    [...feed.posts.map((p) => p.id), ...posts.map((p) => p.id)],
+    user?.isDemo ? undefined : user?.userId,
+  );
+  return { feed, viewer, likes, posts };
+}
+
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '見つける｜AIstock' };
 export default async function Discover({
@@ -29,21 +53,14 @@ export default async function Discover({
   );
   const match = (text: string) =>
     text.toLocaleLowerCase().includes(q.toLocaleLowerCase());
-  const posts = officialPosts.filter((p) => match(p.title + p.body + p.topic));
-  const tasks = q
-    ? textbookCatalog.tasks.filter((t) =>
-        match(t.title + t.outcome + t.tags.join(' ')),
-      )
-    : [];
-  const [feed, viewer] = await Promise.all([
-    listCommunityPosts(undefined, page, undefined, q),
-    getPostStockViewer(),
-  ]);
-  const user = await getChatGPTUser();
-  const likes = await postLikeStates(
-    [...feed.posts.map((p) => p.id), ...posts.map((p) => p.id)],
-    user?.isDemo ? undefined : user?.userId,
-  );
+  const tasks =
+    view === 'textbook' && q
+      ? textbookCatalog.tasks.filter((t) =>
+          match(t.title + t.outcome + t.tags.join(' ')),
+        )
+      : [];
+  const taskPage = discoveryPage(tasks, page);
+  const postResults = view === 'posts' ? await loadPostResults(q, page) : null;
   const people = view === 'people' ? await searchSocialProfiles(q, page) : null;
   return (
     <>
@@ -58,7 +75,7 @@ export default async function Discover({
           <form action={withSiteBasePath('/discover')} className="as-search">
             <input type="hidden" name="view" value={view} />
             <label className="sr-only" htmlFor="discover-query">
-              投稿・教科書の検索
+              投稿・教科書・メンバーを検索
             </label>
             <input
               id="discover-query"
@@ -91,7 +108,7 @@ export default async function Discover({
               'SNS',
             ].map((k) => (
               <Link
-                href={'/discover?view=' + view + '&q=' + encodeURIComponent(k)}
+                href={discoveryPath(view, k)}
                 key={k}
                 className="as-chip"
                 aria-current={q === k ? 'page' : undefined}
@@ -101,15 +118,17 @@ export default async function Discover({
             ))}
           </nav>
           <nav className="as-feed-tabs as-feed-subtabs" aria-label="検索対象">
-            {[
-              ['posts', '投稿'],
-              ['textbook', '教科書'],
-              ['people', 'メンバー'],
-            ].map(([key, label]) => (
+            {(
+              [
+                ['posts', '投稿'],
+                ['textbook', '教科書'],
+                ['people', 'メンバー'],
+              ] as const
+            ).map(([key, label]) => (
               <Link
                 key={key}
                 aria-current={view === key ? 'page' : undefined}
-                href={'/discover?view=' + key + '&q=' + encodeURIComponent(q)}
+                href={discoveryPath(key, q)}
               >
                 {label}
               </Link>
@@ -123,26 +142,10 @@ export default async function Discover({
             {!people?.profiles.length && <p>まだ見つかりませんでした。</p>}
             <nav className="as-action-row" aria-label="メンバー検索のページ">
               {page > 1 && (
-                <Link
-                  href={
-                    '/discover?view=people&q=' +
-                    encodeURIComponent(q) +
-                    '&page=' +
-                    (page - 1)
-                  }
-                >
-                  ← 前へ
-                </Link>
+                <Link href={discoveryPath('people', q, page - 1)}>← 前へ</Link>
               )}
               {people?.hasMore && (
-                <Link
-                  href={
-                    '/discover?view=people&q=' +
-                    encodeURIComponent(q) +
-                    '&page=' +
-                    (page + 1)
-                  }
-                >
+                <Link href={discoveryPath('people', q, page + 1)}>
                   もっと見る →
                 </Link>
               )}
@@ -157,11 +160,27 @@ export default async function Discover({
             <Link href="/textbook/explore">教科書の一覧 →</Link>
           </p>
         )}
-        {view === 'textbook' && !!tasks.length && (
+        {view === 'textbook' && q && (
           <section className="as-section">
-            <h2>教科書 · {tasks.length}件</h2>
+            <div className="as-result-heading">
+              <h2>「{q}」の教科書</h2>
+              <span>
+                {taskPage.total
+                  ? `${taskPage.total}件中 ${taskPage.from}–${taskPage.to}件`
+                  : '0件'}
+              </span>
+            </div>
+            {!taskPage.total && (
+              <div className="as-panel as-search-empty">
+                <h3>その言葉では、まだ見つかりませんでした。</h3>
+                <p>「画像」「メール」など、短い言葉で探してみてください。</p>
+                <Link href={discoveryPath('posts', q)}>
+                  同じ言葉で投稿を探す →
+                </Link>
+              </div>
+            )}
             <div className="as-interest-grid">
-              {tasks.slice(0, 12).map((t) => (
+              {taskPage.items.map((t) => (
                 <Link
                   href={'/textbook/lesson/' + encodeURIComponent(t.id)}
                   key={t.id}
@@ -171,62 +190,76 @@ export default async function Discover({
                 >
                   <span className="as-eyebrow">{t.trackLabel}</span>
                   <h3>{t.title}</h3>
-                  <span>教科書を開く ↗</span>
+                  <span>
+                    教科書を開く ↗
+                    <span className="sr-only">（新しいタブ）</span>
+                  </span>
                 </Link>
               ))}
             </div>
-            {tasks.length > 12 && (
-              <Link href="/textbook/explore">教科書の一覧でもっと探す →</Link>
+            {taskPage.pages > 1 && (
+              <nav
+                className="as-action-row as-search-pagination"
+                aria-label="教科書検索のページ"
+              >
+                {taskPage.page > 1 && (
+                  <Link href={discoveryPath('textbook', q, taskPage.page - 1)}>
+                    ← 前へ
+                  </Link>
+                )}
+                <span>
+                  {taskPage.page} / {taskPage.pages} ページ
+                </span>
+                {taskPage.page < taskPage.pages && (
+                  <Link href={discoveryPath('textbook', q, taskPage.page + 1)}>
+                    次へ →
+                  </Link>
+                )}
+              </nav>
             )}
           </section>
         )}
-        {view === 'posts' && (
+        {view === 'posts' && postResults && (
           <section className="as-section">
             <h2>{q ? '「' + q + '」の投稿' : 'こんな使い方から、どうぞ。'}</h2>
             <div className="as-discover-posts">
-              {feed.posts.map((p) => (
+              {postResults.feed.posts.map((p) => (
                 <MemberPostCard
                   post={p}
                   key={p.id}
-                  canSave={viewer.canSave}
-                  initialSaved={viewer.savedRefs.has(p.id)}
-                  likeState={likes[p.id]}
+                  canSave={postResults.viewer.canSave}
+                  initialSaved={postResults.viewer.savedRefs.has(p.id)}
+                  likeState={postResults.likes[p.id]}
                 />
               ))}
               {page === 1 &&
-                posts.map((p) => (
+                postResults.posts.map((p) => (
                   <OfficialCard
                     post={p}
                     key={p.id}
-                    canSave={viewer.canSave}
-                    initialSaved={viewer.savedRefs.has(p.id)}
-                    likeState={likes[p.id]}
+                    canSave={postResults.viewer.canSave}
+                    initialSaved={postResults.viewer.savedRefs.has(p.id)}
+                    likeState={postResults.likes[p.id]}
                   />
                 ))}
             </div>
-            {!feed.posts.length && !posts.length && (
-              <p>まだ見つかりませんでした。別の言葉でも探してみてください。</p>
+            {!postResults.feed.posts.length && !postResults.posts.length && (
+              <div className="as-panel as-search-empty">
+                <h3>
+                  {page > 1
+                    ? 'このページに投稿はありません。'
+                    : 'その言葉では、まだ見つかりませんでした。'}
+                </h3>
+                <p>別の言葉や、教科書のタブでも探せます。</p>
+                <Link href={discoveryPath('textbook', q)}>教科書を探す →</Link>
+              </div>
             )}
             <nav className="as-action-row" aria-label="検索結果のページ">
               {page > 1 && (
-                <Link
-                  href={
-                    '/discover?' +
-                    new URLSearchParams({ q, page: String(page - 1) })
-                  }
-                >
-                  ← 前へ
-                </Link>
+                <Link href={discoveryPath('posts', q, page - 1)}>← 前へ</Link>
               )}
-              {feed.hasMore && (
-                <Link
-                  href={
-                    '/discover?' +
-                    new URLSearchParams({ q, page: String(page + 1) })
-                  }
-                >
-                  次へ →
-                </Link>
+              {postResults.feed.hasMore && (
+                <Link href={discoveryPath('posts', q, page + 1)}>次へ →</Link>
               )}
             </nav>
           </section>

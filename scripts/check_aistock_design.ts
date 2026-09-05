@@ -4,12 +4,118 @@ import nextConfig from '../next.config';
 import { isAistockNavActive } from '../lib/aistock-navigation';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { PostStock } from '../components/post-stock';
-import { mixLearningFeed } from '../lib/social-feed';
+import { PostStock, PostStockNotice } from '../components/post-stock';
+import {
+  mixLearningFeed,
+  communityFeedPath,
+  followingEmptyState,
+} from '../lib/social-feed';
+import { discoveryPage, discoveryPath } from '../lib/discovery';
 import { UsernameRegistrationForm } from '../components/username-registration-form';
 import { AuthPasswordInput } from '../components/auth-password-input';
 import { MemberLoginForm } from '../components/member-login-form';
 import { RecoveryCodeCard } from '../components/recovery-code-card';
+
+const searchFixture = Array.from({ length: 29 }, (_, i) => `task-${i}`);
+const searchPages = [1, 2, 3].map((p) => discoveryPage(searchFixture, p));
+assert.deepEqual(
+  searchPages.flatMap((p) => p.items),
+  searchFixture,
+);
+assert.deepEqual(
+  searchPages.map((p) => [p.from, p.to]),
+  [
+    [1, 12],
+    [13, 24],
+    [25, 29],
+  ],
+);
+assert.equal(discoveryPage(searchFixture, 1000).page, 3);
+assert.equal(discoveryPage(searchFixture, -1).page, 1);
+assert.equal(discoveryPage(searchFixture, NaN).page, 1);
+assert.deepEqual(discoveryPage([], 1000), {
+  items: [],
+  page: 1,
+  pages: 1,
+  total: 0,
+  from: 0,
+  to: 0,
+});
+for (const view of ['posts', 'textbook', 'people'] as const) {
+  const url = new URL(
+    discoveryPath(view, '画像 & AI / 仕事', 2),
+    'https://example.test',
+  );
+  assert.equal(url.searchParams.get('q'), '画像 & AI / 仕事');
+  assert.equal(url.searchParams.get('view'), view);
+  assert.equal(url.searchParams.get('page'), '2');
+  assert(!discoveryPath(view, '画像', 1).includes('page='));
+}
+assert.equal(
+  communityFeedPath('following', 'question', 2),
+  '/community?view=following&kind=question&page=2',
+);
+assert.equal(
+  communityFeedPath('textbook', 'question'),
+  '/community?view=textbook',
+);
+const guestFollowing = followingEmptyState({
+  signedIn: false,
+  publicProfile: false,
+  kind: 'question',
+});
+assert.equal(
+  new URL(guestFollowing.href, 'https://example.test').searchParams.get(
+    'return_to',
+  ),
+  '/community?view=following&kind=question',
+);
+assert.equal(
+  followingEmptyState({ signedIn: true, publicProfile: false }).href,
+  '/mypage#account',
+);
+assert.equal(
+  followingEmptyState({ signedIn: true, publicProfile: true }).href,
+  '/discover?view=people',
+);
+assert.equal(
+  followingEmptyState({ signedIn: true, publicProfile: true, kind: 'question' })
+    .href,
+  '/community?view=following',
+);
+assert.equal(
+  followingEmptyState({
+    signedIn: true,
+    publicProfile: true,
+    page: 2,
+    kind: 'question',
+  }).href,
+  '/community?view=following&kind=question',
+);
+const savedNotice = renderToStaticMarkup(
+  createElement(PostStockNotice, { notice: '保存しました。', saved: true }),
+);
+assert(
+  savedNotice.includes('class="as-stock-notice"') &&
+    savedNotice.includes('aria-live="polite"'),
+);
+assert(
+  savedNotice.includes('/mypage#saved') &&
+    savedNotice.includes('保存済みを見る'),
+);
+assert(
+  !renderToStaticMarkup(
+    createElement(PostStockNotice, { notice: '', saved: true }),
+  ).includes('<a'),
+);
+assert(
+  !renderToStaticMarkup(
+    createElement(PostStockNotice, {
+      notice: '保存を解除しました。',
+      saved: false,
+    }),
+  ).includes('<a'),
+);
 
 const accountBadgeSource = readFileSync(
   new URL('../components/social-avatar.tsx', import.meta.url),
@@ -297,7 +403,25 @@ assert.match(
 );
 assert(discoverSource.includes('className="as-discover-controls"'));
 assert(discoverSource.includes('className="as-discover-keywords"'));
+assert.match(
+  discoverSource,
+  /view === 'posts' \? await loadPostResults\(q, page\) : null/,
+);
+assert.match(
+  discoverSource,
+  /view === 'people' \? await searchSocialProfiles\(q, page\) : null/,
+);
+assert(discoverSource.includes('taskPage.items.map'));
+assert(!discoverSource.includes('tasks.slice(0, 12)'));
+assert(feedSource.includes('findTextbookTask(post.taskId)'));
+assert(feedSource.includes("target={lessonHref ? '_blank' : undefined}"));
+assert(feedSource.includes('この教材の作り方と準備を見る'));
+assert(!feedSource.includes("view === 'following' && !me &&"));
 assert.match(css, /prefers-reduced-motion: reduce/);
+assert.match(
+  css,
+  /\.as-social-actions \.as-stock-notice\s*\{\s*flex-basis: 100%;\s*order: 10/,
+);
 assert.match(css, /transition: none !important/);
 assert.match(css, /forced-colors: active/);
 assert.match(

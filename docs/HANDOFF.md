@@ -2,6 +2,8 @@
 
 更新：2026年9月5日。現行仕様は[AIstock統合の現在地](AISTOCK_INTEGRATION.md)です。旧学校の仕様書は`docs/history/school-handoff-2026-09-05.md`へ保管しました。
 
+9月6日の表示・操作改善：教科書検索の12件ページ送り／0件表示、非表示タブのDB取得省略、フォロー中の空表示を一本化、保存直後の一覧リンク、有効な教材への新タブ導線を追加。認証・DB・公開同意・教材本文は変更していません。公開状況は下の「公開状態」を参照してください。
+
 ## 開発環境
 
 Node.js 22.13以上、npm lockfileを使います。`npm ci` → `npm run db:migrate:local` → `npm run doctor` → `npm run dev`。ポートは起動時に表示された値を正としてください。

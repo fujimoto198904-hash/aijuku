@@ -338,9 +338,11 @@
   color: var(--as-ink);
 }
 .as-social-try {
-  padding: 6px 8px;
+  justify-self: start;
+  padding: 6px;
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
 }
 .as-social-feed .as-social-actions {
   padding: 4px 12px;
@@ -1084,6 +1086,58 @@
   font-size: 14px;
   line-height: 1.8;
   margin: 12px 0;
+}
+.as-stock-notice {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 12px;
+  padding-inline: 10px;
+  margin-top: 4px;
+  border-radius: 10px;
+  background: var(--as-tint);
+  color: var(--as-green);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  min-height: 44px;
+}
+.as-stock-notice a,
+.as-search-pagination a,
+.as-search-empty > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.as-social-actions .as-stock-notice {
+  flex-basis: 100%;
+  order: 10;
+}
+.as-result-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 16px;
+}
+.as-result-heading > span,
+.as-search-pagination > span {
+  font-size: 0.8125rem;
+  color: var(--as-muted);
+}
+.as-search-pagination {
+  justify-content: center;
+}
+.as-search-empty h3,
+.as-feed-empty h2 {
+  font-size: 1.125rem;
+}
+.as-search-empty p,
+.as-feed-empty p {
+  margin: 8px 0;
 }
 .as-note-form {
   display: grid;

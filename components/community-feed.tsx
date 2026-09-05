@@ -28,7 +28,13 @@ import { postLikeStates, ownSocialProfile } from '@/db/social';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { PostReactions } from '@/components/social-actions';
 import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
-import { mixLearningFeed } from '@/lib/social-feed';
+import {
+  mixLearningFeed,
+  communityFeedPath,
+  followingEmptyState,
+} from '@/lib/social-feed';
+import { findTextbookTask } from '@/lib/textbook-catalog';
+import { textbookLessonPath } from '@/lib/textbook-routes';
 import { listCommunityPosts, type CommunityPost } from '@/db/community';
 import { communityLabels, type CommunityKind } from '@/lib/community';
 import { withSiteBasePath } from '@/lib/site-paths';
@@ -176,6 +182,7 @@ function PostCardActions({
   detailHref,
   questionHref,
   official = false,
+  lessonHref,
   canSave,
   initialSaved,
   likeState,
@@ -184,6 +191,7 @@ function PostCardActions({
   detailHref: string;
   questionHref: string;
   official?: boolean;
+  lessonHref?: string;
 }) {
   return (
     <div className="as-social-actions">
@@ -194,16 +202,25 @@ function PostCardActions({
         {...likeState}
       />
       <Link
-        href={detailHref}
+        href={lessonHref ?? detailHref}
+        target={lessonHref ? '_blank' : undefined}
+        rel={lessonHref ? 'noopener noreferrer' : undefined}
         className="as-social-try"
-        aria-label={official ? 'この教材を見て試す' : '投稿の続きを見る'}
+        aria-label={
+          lessonHref
+            ? '教材を試す（新しいタブ）'
+            : official
+              ? 'この教材の作り方と準備を見る'
+              : '投稿の続きを見る'
+        }
+        title={lessonHref ? '教材を試す（新しいタブ）' : undefined}
       >
-        {official ? (
+        {official || lessonHref ? (
           <BookOpen size={24} strokeWidth={1.7} aria-hidden="true" />
         ) : (
           <ArrowUpRight size={24} strokeWidth={1.7} aria-hidden="true" />
         )}
-        <span>{official ? '試す' : '読む'}</span>
+        <span>{lessonHref ? '試す ↗' : official ? '準備' : '読む'}</span>
       </Link>
       <Link
         href={questionHref}
@@ -268,9 +285,6 @@ export function OfficialCard({
           <Link href={'/posts/' + post.id}>{post.title}</Link>
         </h2>
         <p className="as-user-excerpt">{post.body}</p>
-        <Link href={'/posts/' + post.id} className="as-caption-link">
-          教科書でやってみる →
-        </Link>
       </div>
     </article>
   );
@@ -335,6 +349,11 @@ export function MemberPostCard({
       postRef={post.id}
       detailHref={'/community/' + post.id}
       questionHref={'/community/' + post.id + '#replies'}
+      lessonHref={
+        post.taskId && findTextbookTask(post.taskId)
+          ? textbookLessonPath(post.taskId)
+          : undefined
+      }
       canSave={canSave}
       initialSaved={initialSaved}
       likeState={likeState}
@@ -408,10 +427,12 @@ export function MemberPostCard({
   );
 }
 export async function CommunityFeed({
-  kind,
+  kind: requestedKind,
   page = 1,
   view = 'all',
 }: { kind?: CommunityKind; page?: number; view?: string } = {}) {
+  // 教材紹介は「便利な使い方」のみ。別タブの種類条件は持ち込まない。
+  const kind = view === 'textbook' ? undefined : requestedKind;
   const user = await getChatGPTUser();
   const me =
     view === 'following' && user ? await ownSocialProfile(user.userId) : null;
@@ -459,9 +480,13 @@ export async function CommunityFeed({
       />
     ),
   );
-  const pageHref = (p: number) =>
-    '/community?' +
-    new URLSearchParams({ ...(kind ? { kind } : {}), view, page: String(p) });
+  const pageHref = (p: number) => communityFeedPath(view, kind, p);
+  const followingEmpty = followingEmptyState({
+    signedIn: !!user && !user.isDemo,
+    publicProfile: !!me?.isPublic,
+    kind,
+    page,
+  });
   return (
     <main id="main-content" className="as-feed-layout as-social-feed">
       <div className="as-feed-main">
@@ -490,75 +515,84 @@ export async function CommunityFeed({
               <Link
                 key={key}
                 aria-current={view === key ? 'page' : undefined}
-                href={'/community?view=' + key}
+                href={communityFeedPath(key, kind)}
               >
                 {label}
               </Link>
             ))}
           </nav>
-          <details className="as-feed-options" open={Boolean(kind)}>
-            <summary>
-              <SlidersHorizontal size={16} aria-hidden="true" />
-              投稿を絞り込む
-              {kind && (
-                <span className="as-filter-selection">
-                  {communityLabels[kind]}
-                </span>
-              )}
-              <ChevronDown
-                size={16}
-                className="as-disclosure-chevron"
-                aria-hidden="true"
-              />
-            </summary>
-            <nav
-              aria-label="投稿の種類"
-              className="as-feed-tabs as-feed-subtabs"
-            >
-              {[
-                [undefined, 'すべて'],
-                ['tip', '便利な使い方'],
-                ['learning', 'できたこと'],
-                ['question', '質問'],
-              ].map(([k, label]) => (
-                <Link
-                  key={k ?? 'all'}
-                  href={'/community?view=' + view + (k ? '&kind=' + k : '')}
-                  aria-current={k === kind ? 'page' : undefined}
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
-          </details>
+          {view !== 'textbook' && (
+            <details className="as-feed-options" open={Boolean(kind)}>
+              <summary>
+                <SlidersHorizontal size={16} aria-hidden="true" />
+                投稿を絞り込む
+                {kind && (
+                  <span className="as-filter-selection">
+                    {communityLabels[kind]}
+                  </span>
+                )}
+                <ChevronDown
+                  size={16}
+                  className="as-disclosure-chevron"
+                  aria-hidden="true"
+                />
+              </summary>
+              <nav
+                aria-label="投稿の種類"
+                className="as-feed-tabs as-feed-subtabs"
+              >
+                {(
+                  [
+                    [undefined, 'すべて'],
+                    ['tip', '便利な使い方'],
+                    ['learning', 'できたこと'],
+                    ['question', '質問'],
+                  ] as const
+                ).map(([k, label]) => (
+                  <Link
+                    key={k ?? 'all'}
+                    href={communityFeedPath(view, k)}
+                    aria-current={k === kind ? 'page' : undefined}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </nav>
+            </details>
+          )}
         </div>
-        {view === 'following' && !me && (
-          <p className="as-panel">
-            公開プロフィールを作ってフォローすると、ここに投稿が並びます。
-            <Link href="/mypage#account">マイページへ →</Link>
-          </p>
-        )}
         <div className="as-feed-list">{items}</div>
-        {!items.length && (
-          <section className="as-panel">
-            <h2>まだ投稿はありません。</h2>
-            <p>
-              最初の「やってみた」も、困ったことも。ここから話してみませんか。
-            </p>
-            <Link href={composeHref} className="as-secondary">
-              投稿を書く →
-            </Link>
-          </section>
-        )}
+        {!items.length &&
+          (view === 'following' ? (
+            <section className="as-panel as-feed-empty">
+              <h2>{followingEmpty.title}</h2>
+              <p>{followingEmpty.body}</p>
+              <Link href={followingEmpty.href} className="as-secondary">
+                {followingEmpty.label} →
+              </Link>
+            </section>
+          ) : (
+            <section className="as-panel">
+              <h2>まだ投稿はありません。</h2>
+              <p>
+                最初の「やってみた」も、困ったことも。ここから話してみませんか。
+              </p>
+              <Link href={composeHref} className="as-secondary">
+                投稿を書く →
+              </Link>
+            </section>
+          ))}
         <nav className="as-action-row" aria-label="フィードのページ">
           {page > 1 && <Link href={pageHref(page - 1)}>← 前へ</Link>}
           {feed.hasMore && <Link href={pageHref(page + 1)}>もっと見る →</Link>}
         </nav>
-        <p className="as-feed-end">
-          {!feed.hasMore && 'ここまでが今回の投稿です。'}
-          <br />
-          <Link href={composeHref}>あなたの発見も、聞かせてください。</Link>
-        </p>
+        {!!items.length && (
+          <p className="as-feed-end">
+            {!feed.hasMore && 'ここまでが今回の投稿です。'}
+            <br />
+            <Link href={composeHref}>あなたの発見も、聞かせてください。</Link>
+          </p>
+        )}
       </div>
       <LearningRail />
     </main>
