@@ -6,6 +6,7 @@
 
 - 本番URL：`https://mon-ai.jp/aistock`（2026年9月5日公開）
 - スマホ・表示密度の調整を本番反映済み：[公開記録](docs/RELEASE_2026_09_05_UI.md)。
+- デザイン・技術の合同レビューによる検索と操作の改善を第25版として公開：[9月6日の公開記録](docs/RELEASE_2026_09_06_DISCOVERY.md)。
 - 旧`/aijuku`は新しい同じ下層ページへの入口として維持。旧APIは転送せず既存Sitesへ接続します。
 - GitHub：`https://github.com/fujimoto198904-hash/aijuku`（mainが正本）
 - 既存SitesプロジェクトIDを維持し、D1とR2で動作します。

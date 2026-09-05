@@ -1,6 +1,6 @@
 # AIstock 引き継ぎ
 
-更新：2026年9月5日。現行仕様は[AIstock統合の現在地](AISTOCK_INTEGRATION.md)です。旧学校の仕様書は`docs/history/school-handoff-2026-09-05.md`へ保管しました。
+更新：2026年9月6日。現行仕様は[AIstock統合の現在地](AISTOCK_INTEGRATION.md)です。旧学校の仕様書は`docs/history/school-handoff-2026-09-05.md`へ保管しました。
 
 9月6日の表示・操作改善：教科書検索の12件ページ送り／0件表示、非表示タブのDB取得省略、フォロー中の空表示を一本化、保存直後の一覧リンク、有効な教材への新タブ導線を追加。認証・DB・公開同意・教材本文は変更していません。公開状況は下の「公開状態」を参照してください。
 
@@ -24,7 +24,7 @@ Node.js 22.13以上、npm lockfileを使います。`npm ci` → `npm run db:mig
 
 ## 公開状態と残りの運用確認
 
-最新の表示調整はSites版24として本番反映済みです。対象ソース・正式URLの検証結果は[スマホUI公開記録](RELEASE_2026_09_05_UI.md)を参照してください。
+最新の検索・操作改善はSites版25として本番反映済みです。対象ソース・正式URLの検証結果は[9月6日の公開記録](RELEASE_2026_09_06_DISCOVERY.md)を参照してください。スマホの基本レイアウトは[版24の公開記録](RELEASE_2026_09_05_UI.md)を継続しています。
 
 デザイン調整は[AISTOCK_DESIGN.md](AISTOCK_DESIGN.md)、交流機能は[AISTOCK_SOCIAL.md](AISTOCK_SOCIAL.md)を参照。教材紹介と会員投稿を混在させ、公開プロフィール・いいね・DMを追加。個人状態を含む公開ページとDMはキャッシュ禁止です。`npm run check:ui`を通常の検証へ追加しています。定期投稿は未稼働です。
 
