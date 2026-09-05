@@ -7,7 +7,7 @@ import { SiteHeader } from '@/components/site-header';
 import { canonicalPublicPath } from '@/lib/site-paths';
 
 export const metadata: Metadata = {
-  title: '基礎理解チェック｜藤本実学塾',
+  title: '基礎理解チェック｜AIstock',
   description:
     'AIを安全に仕事で使うための、情報確認と判断の基礎理解チェックです。',
   alternates: { canonical: canonicalPublicPath('/level-test') },

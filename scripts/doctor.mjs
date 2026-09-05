@@ -104,7 +104,7 @@ try {
   warnings.push('Git状態を確認できませんでした');
 }
 
-console.log('\n藤本実学塾 移行・公開前チェック\n');
+console.log('\nAIstock 移行・公開前チェック\n');
 for (const detail of details) console.log('  OK  ' + detail);
 for (const warning of warnings) console.log('  注意  ' + warning);
 for (const failure of failures) console.log('  エラー  ' + failure);

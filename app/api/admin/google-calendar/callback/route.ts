@@ -1,3 +1,7 @@
+import {
+  paidServicesEnabled,
+  paidServiceUnavailable,
+} from '@/lib/site-features';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { upsertGoogleCalendarConnection } from '@/db/google-calendar';
 import {
@@ -45,6 +49,7 @@ function publicResultForError(error: unknown): string {
 }
 
 export async function GET(request: Request) {
+  if (!paidServicesEnabled) return paidServiceUnavailable();
   if (isVercelRuntime()) {
     return Response.redirect(
       `${canonicalMemberUrl('/admin')}#google-calendar`,

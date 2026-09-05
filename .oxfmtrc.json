@@ -4,6 +4,8 @@
   "printWidth": 80,
   "sortPackageJson": false,
   "ignorePatterns": [
+    "archives/**",
+    "docs/references/aitock/outputs/**",
     "package-lock.json",
     "pnpm-lock.yaml",
     "yarn.lock",

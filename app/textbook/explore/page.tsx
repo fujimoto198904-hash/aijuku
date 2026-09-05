@@ -19,7 +19,7 @@ import { canonicalPublicPath } from '@/lib/site-paths';
 import { textbookGuidePath, textbookLessonPath } from '@/lib/textbook-routes';
 
 export const metadata: Metadata = {
-  title: '学ぶことを探す｜Web教科書｜藤本実学塾',
+  title: '学ぶことを探す｜Web教科書｜AIstock',
   description:
     '作りたいものや仕事の悩みから、自分に合うChatGPTの課題を探せます。',
   alternates: { canonical: canonicalPublicPath('/textbook/explore') },

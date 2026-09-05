@@ -92,7 +92,7 @@ export function AdminSkillReview({
           </p>
         </div>
         <div className="soft-panel border border-rule bg-paper-white px-5 py-4 text-xs">
-          <p>講師確認待ち {pendingEvidenceTotal}件</p>
+          <p>運営確認待ち {pendingEvidenceTotal}件</p>
           {pendingEvidenceTotal > pendingEvidence.length ? (
             <p className="mt-2 leading-5 text-quiet">
               画面には古い順に最大200件を表示します。保存後に再読込すると次の対象が表示されます。
@@ -127,7 +127,7 @@ export function AdminSkillReview({
               <p className="text-xs font-semibold text-sapphire">
                 INSTRUCTOR CHECK
               </p>
-              <h3 className="mt-2 font-mincho text-3xl">講師確認待ち</h3>
+              <h3 className="mt-2 font-mincho text-3xl">運営確認待ち</h3>
             </div>
             <UserRoundCheck
               className="size-6 text-sapphire"
@@ -137,7 +137,7 @@ export function AdminSkillReview({
 
           {pendingEvidence.length === 0 ? (
             <p className="soft-panel mt-6 border border-rule bg-paper-white p-7 text-sm text-quiet">
-              現在、講師確認待ちの成果物はありません。
+              現在、運営確認待ちの成果物はありません。
             </p>
           ) : (
             <div className="mt-6 grid gap-5">
@@ -148,7 +148,7 @@ export function AdminSkillReview({
                 >
                   {item.memberId === currentUserId ? (
                     <p className="soft-control mb-5 border border-human-coral/40 bg-human-coral-soft p-4 text-xs leading-6 text-brand-dark">
-                      自分の成果物は確認できません。別の管理者・講師へ依頼してください。
+                      自分の成果物は確認できません。別の管理者・運営へ依頼してください。
                     </p>
                   ) : null}
                   <div className="flex flex-wrap items-center gap-2">
@@ -280,7 +280,7 @@ export function AdminSkillReview({
       {canReviewEvidence && verifiedEvidence.length > 0 ? (
         <details className="soft-panel mt-10 border border-rule bg-paper-white p-6">
           <summary className="cursor-pointer text-sm font-semibold">
-            講師確認済みの履歴 {verifiedEvidence.length}件
+            運営確認済みの履歴 {verifiedEvidence.length}件
           </summary>
           <div className="mt-5 grid gap-3">
             {verifiedEvidence.map((item) => (

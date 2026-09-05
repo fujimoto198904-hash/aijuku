@@ -1,94 +1,82 @@
-import { BrandMark } from '@/components/brand-mark';
-import { MobileSiteNav } from '@/components/mobile-site-nav';
+'use client';
+import { usePathname } from 'next/navigation';
+import {
+  House,
+  Search,
+  SquarePlus,
+  BookOpen,
+  UserRound,
+  ArrowUpRight,
+} from 'lucide-react';
 import Link from '@/components/site-link';
-import { textbookColumnsPath, textbookGuidePath } from '@/lib/textbook-routes';
-
-const navItems = [
-  { href: '/#goals', label: '学んだ先' },
-  { href: '/#curriculum', label: '始め方' },
-  { href: textbookGuidePath, label: 'Web教科書' },
-  { href: textbookColumnsPath, label: 'ChatGPTコラム' },
-  { href: '/#learning', label: '学び方' },
-  { href: '/#services', label: '受講方法' },
-  { href: '/#faq', label: 'よくある質問' },
-] as const;
-
-export function SiteHeader() {
+import { withoutSiteBasePath } from '@/lib/site-paths';
+const items = [
+  { href: '/', label: 'ホーム', Icon: House },
+  { href: '/discover', label: '見つける', Icon: Search },
+  { href: '/community/new', label: '投稿する', Icon: SquarePlus },
+  { href: '/learn', label: '学ぶ', Icon: BookOpen },
+  { href: '/mypage', label: 'マイページ', Icon: UserRound },
+];
+export function AistockLogo() {
   return (
-    <header className="relative z-40 border-b border-rule bg-paper/95 text-ink backdrop-blur-xl">
-      <div className="mx-auto flex min-h-[78px] w-full max-w-[1440px] items-center justify-between gap-5 px-5 sm:px-8 lg:px-12">
-        <Link
-          className="flex min-w-0 items-center gap-3"
-          href="/"
-          aria-label="藤本実学塾 トップ"
-        >
-          <BrandMark />
-          <span className="min-w-0">
-            <span className="block truncate font-mincho text-lg font-semibold tracking-[0.04em]">
-              藤本実学塾
-            </span>
-            <span className="desktop-compact-tagline hidden text-xs tracking-[0.06em] text-quiet sm:block">
-              AIが初めてでも、作りたいものから。
-            </span>
-          </span>
+    <span className="aistock-logo">
+      AIstock<span aria-hidden="true">✦</span>
+    </span>
+  );
+}
+export function SiteHeader() {
+  const pathname = withoutSiteBasePath(usePathname() || '/');
+  return (
+    <>
+      <header className="as-header">
+        <Link href="/" aria-label="AIstock ホーム">
+          <AistockLogo />
         </Link>
-
-        <nav
-          className="hidden items-center gap-6 text-xs font-semibold xl:flex xl:gap-8"
-          aria-label="メインナビゲーション"
-        >
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
-              href={item.href}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <nav
-          className="desktop-compact-nav items-center gap-4 text-xs font-semibold"
-          aria-label="メインナビゲーション（コンパクト）"
-        >
-          <Link
-            className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
-            href={textbookGuidePath}
-          >
-            Web教科書
-          </Link>
-          <Link
-            className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
-            href={textbookColumnsPath}
-          >
-            コラム
-          </Link>
-          <Link
-            className="border-b border-transparent py-2 transition-colors hover:border-sapphire hover:text-sapphire"
-            href="/#services"
-          >
-            受講方法
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <Link
-            className="desktop-compact-login hidden min-h-11 items-center justify-center px-3 text-xs font-semibold text-quiet transition-colors hover:text-sapphire md:inline-flex"
-            href="/login"
-          >
-            ログイン
-          </Link>
-          <Link
-            className="button-glow hidden min-h-11 items-center justify-center px-5 text-xs font-semibold text-white min-[430px]:inline-flex"
-            href="/join"
-          >
+        <p className="as-brand-note">ひとりの「できた」が、みんなのヒント。</p>
+        <Link href="/join" className="as-join">
+          無料で参加 <ArrowUpRight size={16} />
+        </Link>
+      </header>
+      <nav className="as-navigation" aria-label="メインナビゲーション">
+        <Link href="/" className="as-desktop-logo" aria-label="AIstock ホーム">
+          <AistockLogo />
+        </Link>
+        <div className="as-nav-items">
+          {items.map(({ href, label, Icon }) => {
+            const selected =
+              href === '/'
+                ? pathname === '/'
+                : href === '/learn'
+                  ? pathname.startsWith('/textbook') || pathname === '/learn'
+                  : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={selected ? 'page' : undefined}
+                className={selected ? 'as-nav-item is-active' : 'as-nav-item'}
+              >
+                <Icon size={23} strokeWidth={selected ? 2.2 : 1.7} />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="as-nav-bottom">
+          <p>
+            小さな発見を、
+            <br />
+            自分の力に。
+          </p>
+          <Link href="/join" className="as-primary">
             無料会員登録
           </Link>
-
-          <MobileSiteNav items={navItems} />
+          <Link href="/login" className="as-login">
+            ログイン
+          </Link>
+          <small>運営：MON-ai</small>
         </div>
-      </div>
-    </header>
+      </nav>
+    </>
   );
 }

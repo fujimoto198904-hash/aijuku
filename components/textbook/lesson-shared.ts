@@ -13,7 +13,7 @@ export const lessonSections = [
   { id: 'check', number: '06', label: 'やりがちなミス' },
   { id: 'complete', number: '07', label: 'ここまでできたら完成' },
   { id: 'application', number: '08', label: '自分の仕事なら' },
-  { id: 'ask', number: '09', label: '困ったら講師に聞く' },
+  { id: 'ask', number: '09', label: '困ったらみんなに聞く' },
   { id: 'stepup', number: '10', label: '次に進みたい方へ' },
 ] as const;
 

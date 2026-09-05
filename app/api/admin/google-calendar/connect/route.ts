@@ -1,3 +1,7 @@
+import {
+  paidServicesEnabled,
+  paidServiceUnavailable,
+} from '@/lib/site-features';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import {
   appendSetCookieHeaders,
@@ -22,6 +26,7 @@ function adminRedirect(request: Request, result: string): Response {
 }
 
 export async function POST(request: Request) {
+  if (!paidServicesEnabled) return paidServiceUnavailable();
   if (isVercelRuntime()) {
     return Response.redirect(
       `${canonicalMemberUrl('/admin')}#google-calendar`,

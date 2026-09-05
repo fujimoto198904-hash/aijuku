@@ -466,7 +466,7 @@ export function MemberLearningProgress({
       <div className="soft-panel mt-8 border border-future-mint/55 bg-future-mint-soft p-6 text-sm leading-7">
         <p className="font-semibold">「完了」は、自分の学習メモです。</p>
         <p className="mt-2 text-xs leading-6 text-quiet">
-          正式な修了や講師の確認とは別です。作ったものは、下の欄へ記録できます。
+          正式な修了や運営の確認とは別です。作ったものは、下の欄へ記録できます。
         </p>
         <a
           className="mt-4 inline-flex min-h-11 items-center gap-2 font-semibold text-sapphire"

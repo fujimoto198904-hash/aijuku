@@ -114,8 +114,8 @@ type RawAdminApplication = Omit<AdminApplication, 'offerSnapshot'> & {
   offerSnapshot: string;
 };
 
-export const membershipTermsVersion = '2026-09-03-portal-v7';
-export const privacyPolicyVersion = '2026-09-03-portal-v6';
+export const membershipTermsVersion = '2026-09-05-aistock-v1';
+export const privacyPolicyVersion = '2026-09-05-aistock-v1';
 
 export function hasCurrentMembershipConsent(
   member: Pick<MemberProfile, 'termsVersion' | 'privacyVersion'>,
@@ -883,8 +883,7 @@ export async function updateAdminApplication(input: {
   if (
     input.status === 'confirmed' &&
     (!input.scheduledAt ||
-      (minimumScheduledAt !== null &&
-        input.scheduledAt < minimumScheduledAt) ||
+      (minimumScheduledAt !== null && input.scheduledAt < minimumScheduledAt) ||
       ((current.status !== 'confirmed' ||
         input.scheduledAt !== current.scheduledAt) &&
         input.scheduledAt <= Date.now()))

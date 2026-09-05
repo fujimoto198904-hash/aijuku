@@ -39,13 +39,13 @@ export async function generateMetadata({
 
   if (!task) {
     return {
-      title: '教科書が見つかりません｜藤本実学塾',
+      title: '教科書が見つかりません｜AIstock',
       robots: { index: false, follow: false },
     };
   }
 
   return {
-    title: `${task.id} ${task.title}｜Web教科書｜藤本実学塾`,
+    title: `${task.id} ${task.title}｜Web教科書｜AIstock`,
     description: `${task.action} できあがるもの: ${task.outcome}`,
     alternates: {
       canonical: canonicalPublicPath(textbookLessonPath(task.id)),

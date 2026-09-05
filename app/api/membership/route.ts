@@ -25,7 +25,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   if (isVercelRuntime()) {
     return Response.json(
-      { error: '会員登録は藤本実学塾の正規会員サイトから行ってください。' },
+      { error: '会員登録はAIstockの正規会員サイトから行ってください。' },
       { status: 503 },
     );
   }
@@ -182,7 +182,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   if (isVercelRuntime()) {
     return Response.json(
-      { error: '会員情報は藤本実学塾の正規会員サイトで変更してください。' },
+      { error: '会員情報はAIstockの正規会員サイトで変更してください。' },
       { status: 503 },
     );
   }

@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { withSiteBasePath } from '@/lib/site-paths';
+import { paidServicesEnabled } from '@/lib/site-features';
 import { redirect } from 'next/navigation';
 import { CreditCard, LogOut, ShieldCheck } from 'lucide-react';
 
@@ -17,7 +19,7 @@ import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '支払い・契約管理｜藤本実学塾',
+  title: '支払い・契約管理｜AIstock',
   description:
     'Stripeサンドボックスの支払い・契約情報を確認する会員専用ページです。',
   robots: { index: false, follow: false },
@@ -32,6 +34,7 @@ const memberStatusLabels = {
 } as const;
 
 export default async function BillingManagementPage() {
+  if (!paidServicesEnabled) redirect(withSiteBasePath('/mypage'));
   if (isVercelRuntime()) redirect(canonicalMemberUrl(billingPath));
 
   const user = await requireBillingAuthenticatedUser(billingPath);
@@ -61,7 +64,7 @@ export default async function BillingManagementPage() {
       <section className="soft-panel w-full max-w-2xl border border-rule bg-paper-white p-7 sm:p-10">
         <Link className="flex items-center gap-3 font-mincho text-xl" href="/">
           <BrandMark framed />
-          藤本実学塾
+          AIstock
         </Link>
 
         <div className="mt-10 flex items-start gap-4">

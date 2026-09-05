@@ -1,20 +1,22 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { ArrowLeft, LogOut, ShieldCheck } from "lucide-react";
+import type { Metadata } from 'next';
+import { withSiteBasePath } from '@/lib/site-paths';
+import { paidServicesEnabled } from '@/lib/site-features';
+import { redirect } from 'next/navigation';
+import { ArrowLeft, LogOut, ShieldCheck } from 'lucide-react';
 
-import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
-import { BrandMark } from "@/components/brand-mark";
-import { MemberApplicationForm } from "@/components/member-application-form";
-import Link from "@/components/site-link";
-import { getMember, hasCurrentMembershipConsent } from "@/db/membership";
-import { canonicalMemberUrl, isVercelRuntime } from "@/lib/site-runtime";
+import { chatGPTSignOutPath, requireChatGPTUser } from '@/app/chatgpt-auth';
+import { BrandMark } from '@/components/brand-mark';
+import { MemberApplicationForm } from '@/components/member-application-form';
+import Link from '@/components/site-link';
+import { getMember, hasCurrentMembershipConsent } from '@/db/membership';
+import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "受講を申し込む｜藤本実学塾",
+  title: '受講を申し込む｜AIstock',
   description:
-    "無料会員マイページから、対面・オンライン・教科書自習式の受講希望を送れます。",
+    '無料会員マイページから、対面・オンライン・教科書自習式の受講希望を送れます。',
   robots: { index: false, follow: false },
 };
 
@@ -23,21 +25,22 @@ export default async function ReservePage({
 }: {
   searchParams?: Promise<{ service?: string }>;
 }) {
+  if (!paidServicesEnabled) redirect(withSiteBasePath('/community'));
   if (isVercelRuntime()) {
     const params = (await searchParams) ?? {};
     const service = params.service
       ? `?service=${encodeURIComponent(params.service)}`
-      : "";
+      : '';
     redirect(canonicalMemberUrl(`/reserve${service}`));
   }
-  const user = await requireChatGPTUser("/reserve");
+  const user = await requireChatGPTUser('/reserve');
   const member = await getMember(user.userId);
   if (
     !member ||
-    member.status !== "active" ||
+    member.status !== 'active' ||
     !hasCurrentMembershipConsent(member)
   ) {
-    redirect("/mypage/onboarding");
+    redirect('/mypage/onboarding');
   }
   const params = (await searchParams) ?? {};
 
@@ -48,7 +51,7 @@ export default async function ReservePage({
           <Link className="flex items-center gap-3" href="/mypage">
             <BrandMark framed />
             <span>
-              <span className="block font-mincho text-lg">藤本実学塾</span>
+              <span className="block font-mincho text-lg">AIstock</span>
               <span className="block text-[10px] tracking-[0.12em] text-white/55">
                 MEMBER APPLICATION
               </span>
@@ -56,7 +59,7 @@ export default async function ReservePage({
           </Link>
           <Link
             className="inline-flex items-center gap-2 text-xs text-white/60 hover:text-white"
-            href={chatGPTSignOutPath("/")}
+            href={chatGPTSignOutPath('/')}
             target="_top"
           >
             <LogOut className="size-4" aria-hidden="true" />
@@ -87,7 +90,7 @@ export default async function ReservePage({
               aria-hidden="true"
             />
             <p>
-              登録中の連絡先は {user.email}{" "}
+              登録中の連絡先は {user.email}{' '}
               です。電話番号やカード情報は、この画面では入力しません。
             </p>
           </div>

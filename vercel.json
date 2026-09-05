@@ -3,19 +3,19 @@
   "buildCommand": "npm exec vite build",
   "rewrites": [
     {
-      "source": "/aijuku/brand/:path*",
+      "source": "/aistock/brand/:path*",
       "destination": "/brand/:path*"
     },
     {
-      "source": "/aijuku/downloads/:path*",
+      "source": "/aistock/downloads/:path*",
       "destination": "/downloads/:path*"
     },
     {
-      "source": "/aijuku/og.png",
+      "source": "/aistock/og.png",
       "destination": "/og.png"
     },
     {
-      "source": "/aijuku/favicon.svg",
+      "source": "/aistock/favicon.svg",
       "destination": "/favicon.svg"
     }
   ]

@@ -12,7 +12,7 @@ import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'パスワード変更｜藤本実学塾',
+  title: 'パスワード変更｜AIstock',
   robots: { index: false, follow: false },
 };
 
@@ -79,7 +79,7 @@ export default async function PasswordPage({
           href="/"
         >
           <BrandMark framed />
-          藤本実学塾
+          AIstock
         </Link>
 
         <section className="soft-panel mt-8 border border-rule bg-paper-white p-6 sm:p-10 lg:p-12">

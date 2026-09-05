@@ -147,7 +147,7 @@ export function MemberLoginForm({
           aria-hidden="true"
         />
         <p className="text-xs leading-6 text-quiet">
-          初期パスワードは誕生日8桁（YYYYMMDD）で、72時間有効です。初回ログイン後、8文字以上の新しいパスワードに変更してください。
+          登録時に決めたパスワードでログインしてください。以前のアカウントで初期パスワードをお使いの場合は、ログイン後に変更してください。
         </p>
       </div>
 
@@ -197,7 +197,7 @@ export function MemberLoginForm({
             className="font-semibold text-sapphire underline underline-offset-4"
             href="/join"
           >
-            ChatGPTで本人確認から始める
+            無料会員登録へ進む
           </Link>
         </p>
       </div>

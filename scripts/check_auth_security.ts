@@ -402,14 +402,14 @@ for (const adminSourcePath of [
 const myPageSource = await readFile('app/mypage/page.tsx', 'utf8');
 assert.match(
   myPageSource,
-  /getAuthenticatedStaffPermissions\(user\)\.isOwner\) redirect\('\/aikanri'\)/,
-  'the owner account must use the management home instead of the member page',
+  /getAuthenticatedStaffPermissions\(user\)\.isOwner[\s\S]+isOwner &&[\s\S]+href="\/aikanri"/,
+  'the owner must retain a protected management entry while being able to use personal learning records',
 );
 
 const ownerEntrySource = await readFile('app/aikanri/page.tsx', 'utf8');
 assert.match(
   ownerEntrySource,
-  /isVercelRuntime\(\)[\s\S]+canonicalMemberUrl\('\/aikanri'\)[\s\S]+redirect\('\/admin'\)/,
+  /isVercelRuntime\(\)[\s\S]+canonicalMemberUrl\('\/aikanri'\)[\s\S]+redirect\(withSiteBasePath\('\/admin'\)\)/,
   'the owner entry must hand Vercel traffic to Sites before opening the protected admin page',
 );
 const ownerLoginRouteSource = await readFile(
@@ -500,11 +500,11 @@ assert.match(
   'a verified bootstrap collision must be resolved before a member row is written',
 );
 
-const mypageSource = await readFile('app/mypage/page.tsx', 'utf8');
+const mypageSource = await readFile('app/chatgpt-auth.ts', 'utf8');
 assert.match(
   mypageSource,
-  /getMemberAuthAccount\(user\.userId\)[\s\S]+!authAccount/,
-  'mypage must send members without a password account back to onboarding',
+  /getChatGPTUser[\s\S]+!\s*\(?await getMemberAuthAccount\(user\.userId\)[\s\S]+return null/,
+  'normal ChatGPT member access must reject identities without a password account',
 );
 
 const loginPageSource = await readFile('app/login/page.tsx', 'utf8');
@@ -515,8 +515,8 @@ assert.match(
 );
 assert.match(
   loginPageSource,
-  /href="\/mypage\/billing"[\s\S]+請求管理専用ページへ/,
-  'the login screen must expose the billing-only recovery path',
+  /href="\/textbook"/,
+  'the free community login must keep a public learning entry',
 );
 
 const billingAuthSource = await readFile('app/chatgpt-auth.ts', 'utf8');
@@ -528,8 +528,8 @@ assert.match(
 const billingPageSource = await readFile('app/mypage/billing/page.tsx', 'utf8');
 assert.match(
   billingPageSource,
-  /requireBillingAuthenticatedUser\(billingPath\)[\s\S]+memberStatus === 'active'[\s\S]+isOwner[\s\S]+getBillingCustomer\([\s\S]+<BillingPortalButton/,
-  'the billing-only page must retain active-owner routing and show the portal only for the member-owned D1 customer mapping',
+  /redirect\(withSiteBasePath\('\/mypage'\)\)/,
+  'the retired billing page must return to the free mypage without a payment action',
 );
 const billingRouteSource = await readFile('lib/stripe-route.ts', 'utf8');
 assert.match(

@@ -1,3 +1,7 @@
+import {
+  paidServicesEnabled,
+  paidServiceUnavailable,
+} from '@/lib/site-features';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import {
   cancelMemberApplication,
@@ -15,9 +19,10 @@ import { isVercelRuntime } from '@/lib/site-runtime';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+  if (!paidServicesEnabled) return paidServiceUnavailable();
   if (isVercelRuntime()) {
     return Response.json(
-      { error: '受講申込は藤本実学塾の正規会員サイトから行ってください。' },
+      { error: '受講申込はAIstockの正規会員サイトから行ってください。' },
       { status: 503 },
     );
   }
@@ -156,9 +161,10 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  if (!paidServicesEnabled) return paidServiceUnavailable();
   if (isVercelRuntime()) {
     return Response.json(
-      { error: '申込変更は藤本実学塾の正規会員サイトで行ってください。' },
+      { error: '申込変更はAIstockの正規会員サイトで行ってください。' },
       { status: 503 },
     );
   }

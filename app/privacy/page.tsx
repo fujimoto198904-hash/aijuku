@@ -1,79 +1,55 @@
-import type { Metadata } from 'next';
-
-import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
+import { SiteFooter } from '@/components/site-footer';
 import { canonicalPublicPath } from '@/lib/site-paths';
-
-export const metadata: Metadata = {
-  title: 'プライバシーポリシー｜藤本実学塾',
-  description:
-    '藤本実学塾の会員情報、申込情報、学習記録の取扱いについて説明します。',
+export const metadata = {
+  title: 'プライバシーポリシー｜AIstock',
   alternates: { canonical: canonicalPublicPath('/privacy') },
 };
-
 const sections = [
   [
     '1. 取得する情報',
-    'ChatGPTによる初回本人確認で提供される利用者識別子、メールアドレス、表示名、ログインID、パスワードとセッショントークンのハッシュ値、会員登録日時、学びたい目的、受講申込、希望日時、対応状況、担当講師、確定日時、会場・Google Meet案内、学習記録、成果物、公開設定、講師確認記録を取得または生成します。運営者のGoogleカレンダー連携では、確認済みGoogleメールアドレス、Google利用者識別子、許可範囲、暗号化した更新用トークン、Google予定ID、同期状態、暗号化したMeet URLを保存します。不正ログイン対策ではIPアドレスそのものを保存せず、秘密情報で保護した識別子と試行回数だけを保存します。初回パスワードに使う生年月日8桁も保存しません。電話番号は取得しません。',
+    '会員のメールアドレス、ニックネーム、規約への同意日時、パスワードの検証用データ、ログイン記録、学習記録、投稿・返信とその操作記録を取得します。Googleでログインする場合は、Googleが発行するユーザー識別子と確認済みメールアドレスを利用します。Googleカレンダーや連絡先へのアクセスは求めません。',
   ],
   [
     '2. 利用目的',
-    '無料会員の本人確認と認証、マイページ提供、学習記録の管理、受講希望の受付・確認・連絡、講師確認、本人が選んだ応募用プロフィールのURL共有、授業予定とGoogle Meetの作成、料金等の案内、問い合わせ対応、不正利用の防止、安全な運営と改善、法令上必要な対応のために利用します。',
+    '本人確認、ログイン、学習の続きや保存課題の表示、コミュニティの投稿・返信、問い合わせへの対応、不正利用の防止と障害対応のために使います。会員登録の確認メールをお送りする場合があります。',
   ],
   [
-    '3. 第三者提供と委託',
-    '本人の同意がある場合または法令に基づく場合を除き、個人データを第三者へ提供しません。授業を確定すると、Googleへ固定の授業名、開始・終了日時、個人を直接示さない申込識別子を送信します。受講生の氏名、メールアドレス、学習目的、補足内容は送りません。受講生をGoogle予定の参加者にせず、受講生のGoogleカレンダーにも書き込みません。応募用プロフィールは、本人が共有を有効にし、掲載を選んだ情報だけを表示します。サイト運営、データ保存、メール配信、決済等を外部事業者へ委託する場合は、必要な安全管理を行います。',
+    '3. 公開される情報',
+    'コミュニティでは投稿時に指定した名前、本文、添付画像、投稿日時、関連課題、運営回答の印が公開されます。質問だけでなく返信も公開です。登録メールやログインIDは公開データに含めません。画像の位置情報などは取り除きますが、本文や画像に含まれる個人情報は自分で確認してください。',
   ],
   [
-    '4. 安全管理',
-    'アクセス権限の分離、本人ごとのデータ制御、通信の保護、秘密情報の分離、操作記録、バックアップ等を行います。パスワードとセッショントークンの原文は保存せず、比較用のハッシュ値だけを保存します。Googleの更新用トークンとMeet URLは暗号化し、接続と申込にひも付けて保護します。Googleカレンダーの接続・解除と申込確定は運営者本人だけが操作できます。デモアカウントのデータ変更はサーバー側で拒否します。',
+    '4. 非公開の学習記録',
+    '自分用ノートと保存した投稿の一覧は本人の画面だけに表示します。ノートをみんなに共有するには、別の公開操作が必要です。ブックマークや完了状況、未公開の成果物も本人の記録で、必要な権限を持つ運営が運用上必要な範囲で確認する場合があります。共有プロフィールには、本人が公開を選んだ記録だけを表示します。',
   ],
   [
-    '5. 保存期間',
-    '会員機能、受講対応、学習記録、確認履歴に必要な期間、または法令・紛争対応に必要な期間に限って保存します。受講生は共有ページや個別成果物を非公開へ戻せます。退会後は、保持する必要がなくなった情報から順次削除または識別できない形へ処理します。',
+    '5. 外部サービス',
+    'サイトの配信とデータ保存にはSites・Cloudflare・Vercelを利用します。Googleログインと確認メールの配信を有効にした場合は、Googleとメール配信サービスに処理に必要な情報を渡します。メール配信にはResendを使用する構成です。パスワードの平文は保存しません。',
   ],
   [
-    '6. 開示・訂正・削除等',
-    '本人の情報について、利用目的の通知、開示、訂正、利用停止、削除等を希望する場合は、登録メールアドレスから運営本部へ連絡してください。本人確認後、法令に従って対応します。パスワードを忘れた場合のメール相談も同じ窓口で受け付けますが、自動再設定メールと具体的な復旧方法は現在準備中です。',
+    '6. 保存と削除',
+    'ログインのためにCookieを使います。投稿の削除で通常の公開を停止しますが、不正利用の調査や復旧に必要な記録は残る場合があります。退会・訂正・削除の希望は、登録メールアドレスからお問い合わせください。本人確認後、法令や運用上必要な保存の有無を確認して対応します。',
   ],
   [
-    '7. 成果物と外部リンク',
-    '成果物ファイルの直接アップロードは現在行わず、受講生が指定した外部URLを記録します。受講生は、顧客情報、社外秘、第三者の個人情報、権利未確認素材を含めず、外部サービス側の共有権限も確認してください。当塾は外部URLの公開範囲や保存期間を管理できないため、必要に応じてリンク先でも共有を停止してください。',
-  ],
-  [
-    '8. 改定',
-    '取扱う情報やサービス内容の変更に応じて本方針を改定する場合があります。重要な変更は、サイトまたは登録メールで案内します。',
-  ],
-  [
-    '9. 連絡先',
-    '運営本部：藤本実学塾／愛知県豊田市東梅坪町10-4-9／info@mon-ai.jp。個人情報に関する連絡はメールで受け付け、電話での受付は行っていません。',
+    '7. 運営者とお問い合わせ',
+    'MON-ai／愛知県豊田市東梅坪町10-4-9／info@mon-ai.jp。情報の扱いに重要な変更がある場合は、サイトで案内します。',
   ],
 ] as const;
-
-export default function PrivacyPage() {
+export default function Privacy() {
   return (
     <>
       <SiteHeader />
-      <main id="main-content" className="min-h-screen bg-paper text-ink">
-        <article className="soft-panel mx-auto my-8 w-[calc(100%_-_2rem)] max-w-[920px] border border-rule bg-paper-white px-6 py-12 sm:my-12 sm:px-10 sm:py-16">
-          <p className="text-xs font-semibold tracking-[0.16em] text-sapphire">
-            PRIVACY POLICY
-          </p>
-          <h1 className="text-soft-glow mt-5 font-mincho text-4xl sm:text-5xl">
-            プライバシーポリシー
-          </h1>
-          <p className="mt-5 text-sm leading-7 text-quiet">
-            制定日：2026年9月1日／最終改定日：2026年9月3日
-          </p>
-          <div className="mt-12 grid max-w-[68ch] gap-9">
-            {sections.map(([title, body]) => (
-              <section className="border-t border-rule pt-6" key={title}>
-                <h2 className="font-mincho text-2xl">{title}</h2>
-                <p className="mt-4 text-base leading-8 text-quiet">{body}</p>
-              </section>
-            ))}
-          </div>
-        </article>
+      <main id="main-content" className="mx-auto max-w-3xl px-5 py-12">
+        <h1 className="text-3xl font-bold">プライバシーポリシー</h1>
+        <p className="mt-4 text-sm text-quiet">最終改定日：2026年9月5日</p>
+        <div className="mt-10 grid gap-8">
+          {sections.map(([title, body]) => (
+            <section key={title} className="border-t border-rule pt-6">
+              <h2 className="text-xl font-bold">{title}</h2>
+              <p className="mt-4 leading-8 text-quiet">{body}</p>
+            </section>
+          ))}
+        </div>
       </main>
       <SiteFooter />
     </>

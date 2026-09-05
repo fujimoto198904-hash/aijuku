@@ -24,7 +24,7 @@ import {
 } from '@/lib/textbook-routes';
 
 export const metadata: Metadata = {
-  title: 'ChatGPTコラム｜Web教科書｜藤本実学塾',
+  title: 'ChatGPTコラム｜Web教科書｜AIstock',
   description:
     'ChatGPTの画面、設定、モデル、Codex、GitHubなど、教科書で出てくる言葉を約2分で確認できます。',
   alternates: { canonical: canonicalPublicPath(textbookColumnsPath) },

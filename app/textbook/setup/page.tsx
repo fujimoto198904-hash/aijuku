@@ -22,7 +22,7 @@ import { canonicalPublicPath } from '@/lib/site-paths';
 import { textbookExplorePath, textbookLessonPath } from '@/lib/textbook-routes';
 
 export const metadata: Metadata = {
-  title: 'ChatGPTの始め方・設定・プラン｜Web教科書｜藤本実学塾',
+  title: 'ChatGPTの始め方・設定・プラン｜Web教科書｜AIstock',
   description:
     'ChatGPTの無料・有料プランの違い、Chat・Work・Codexの使い分け、最初に確認する設定を初心者向けに案内します。',
   alternates: { canonical: canonicalPublicPath('/textbook/setup') },

@@ -1,3 +1,7 @@
+import {
+  paidServicesEnabled,
+  paidServiceUnavailable,
+} from '@/lib/site-features';
 import Stripe from 'stripe';
 
 import { getBillingCustomer, markBillingCustomerDeleted } from '@/db/billing';
@@ -19,6 +23,7 @@ import { withSiteBasePath } from '@/lib/site-paths';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+  if (!paidServicesEnabled) return paidServiceUnavailable();
   const auth = await requireBillingPortalMember(request);
   if ('response' in auth) return auth.response;
 

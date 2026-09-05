@@ -7,7 +7,7 @@ import Link from '@/components/site-link';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '評価機能について｜藤本実学塾',
+  title: '評価機能について｜AIstock',
   description: '第三者評価機能は提供していません。',
   robots: { index: false, follow: false },
 };
@@ -27,13 +27,13 @@ export default function ReviewUnavailablePage() {
           第三者評価は提供していません
         </h1>
         <p className="mt-4 text-sm leading-7 text-quiet">
-          藤本実学塾では、本人の実践記録と講師が確認した範囲を分けて残します。外部の方への評価依頼と評価の受付は行っていません。
+          AIstockでは、本人の実践記録と講師が確認した範囲を分けて残します。外部の方への評価依頼と評価の受付は行っていません。
         </p>
         <Link
           className="mt-7 inline-flex text-sm font-semibold text-sapphire"
           href="/"
         >
-          藤本実学塾へ
+          AIstockへ
         </Link>
       </section>
     </main>

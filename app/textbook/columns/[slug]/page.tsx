@@ -55,13 +55,13 @@ export async function generateMetadata({
 
   if (!column) {
     return {
-      title: 'コラムが見つかりません｜藤本実学塾',
+      title: 'コラムが見つかりません｜AIstock',
       robots: { index: false, follow: false },
     };
   }
 
   return {
-    title: `${column.title}｜ChatGPTコラム｜藤本実学塾`,
+    title: `${column.title}｜ChatGPTコラム｜AIstock`,
     description: column.lead,
     alternates: {
       canonical: canonicalPublicPath(textbookColumnPath(column.slug)),

@@ -100,7 +100,7 @@ export function MemberProfileSettings({
               className="soft-control inline-flex min-h-12 items-center justify-between border border-rule bg-paper px-4 text-xs font-semibold text-sapphire hover:border-sapphire"
               href="/mypage/onboarding?mode=edit&return_to=%2Fmypage%23account"
             >
-              学び方・興味を変更
+              参加情報・利用規約を確認
               <SlidersHorizontal className="size-4" aria-hidden="true" />
             </Link>
             <Link

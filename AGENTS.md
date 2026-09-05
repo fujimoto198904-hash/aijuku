@@ -2,10 +2,10 @@
 
 ## Project
 
-- This repository contains the public website for 藤本実学塾.
+- This repository is the single active application for AIstock, the free AI learning community operated by MON-ai. The former paid school is preserved only for recovery.
 - Use Japanese for customer-facing copy and handoff notes.
 - The source of truth is the GitHub `main` branch.
-- The target public URL is https://mon-ai.jp/aijuku; until that path rollout is published and verified, the current production URL remains https://toyota-ai-school.mondism.chatgpt.site.
+- The target public URL is https://mon-ai.jp/aistock. Until the new parent rewrite and Sites version are published and verified, production remains the existing https://mon-ai.jp/aijuku service. Do not treat local integration as publication.
 
 ## Setup and validation
 
@@ -21,7 +21,7 @@
 - Reuse the existing Sites project in `.openai/hosting.json`.
 - Do not create a new Site or replace `project_id` unless the user explicitly requests a migration.
 - A GitHub push does not publish the production Site. Sites deployment is a separate step.
-- The Vercel build alone does not activate `mon-ai.jp/aijuku`; the parent `mon-ai` Vercel project must also publish its rewrite.
+- The Vercel build alone does not activate `mon-ai.jp/aistock`; the parent `mon-ai` Vercel project must also publish its rewrite.
 - Never persist Sites write credentials, GitHub tokens, API keys, or payment secrets in the repository.
 
 ## Editing boundaries
@@ -29,3 +29,4 @@
 - Do not edit or commit `node_modules/`, `dist/`, `.next/`, `.vinext/`, `.wrangler/`, `output/`, or `tmp/`.
 - Preserve the visible demo disclosures until authentication, persistence, reservation delivery, and payments are actually implemented.
 - Update `README.md` and `docs/HANDOFF.md` when setup, hosting, routes, or feature status changes materially.
+- Read `docs/AISTOCK_INTEGRATION.md` before changing identity, paid features, community privacy or migration. Do not edit the recovery-only `archives/` tree or apply the old Aitock database migrations.

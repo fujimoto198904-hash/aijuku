@@ -8,6 +8,50 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
 
+export const learningNotes = sqliteTable(
+  'learning_notes',
+  {
+    id: text('id').primaryKey(),
+    memberId: text('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'cascade' }),
+    requestId: text('request_id').notNull(),
+    legacyId: text('legacy_id'),
+    body: text('body').notNull(),
+    tool: text('tool').notNull(),
+    outcome: text('outcome').notNull(),
+    humanFix: text('human_fix').notNull(),
+    taskId: text('task_id'),
+    sourceRef: text('source_ref'),
+    createdAt: integer('created_at').notNull(),
+    testedOn: text('tested_on'),
+    topic: text('topic'),
+    deletedAt: integer('deleted_at'),
+  },
+  (t) => [
+    uniqueIndex('learning_notes_request_unique').on(t.memberId, t.requestId),
+    uniqueIndex('learning_notes_legacy_unique').on(t.memberId, t.legacyId),
+    index('learning_notes_member_created').on(t.memberId, t.createdAt),
+    check(
+      'learning_notes_outcome_check',
+      sql`${t.outcome} in ('worked','adjusted','learned')`,
+    ),
+  ],
+);
+export const postStocks = sqliteTable(
+  'post_stocks',
+  {
+    memberId: text('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'cascade' }),
+    postRef: text('post_ref').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('post_stocks_member_ref_unique').on(t.memberId, t.postRef),
+  ],
+);
+
 export const members = sqliteTable(
   'members',
   {
@@ -898,3 +942,138 @@ export const applicationCalendarEvents = sqliteTable(
     ),
   ],
 );
+
+export const communityMedia = sqliteTable(
+  'community_media',
+  {
+    id: text('id').primaryKey(),
+    memberId: text('member_id')
+      .notNull()
+      .references(() => members.id),
+    objectKey: text('object_key').notNull(),
+    width: integer('width').notNull(),
+    height: integer('height').notNull(),
+    byteSize: integer('byte_size').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [index('community_media_created_idx').on(t.createdAt)],
+);
+export const communityPosts = sqliteTable(
+  'community_posts',
+  {
+    id: text('id').primaryKey(),
+    authorId: text('author_id')
+      .notNull()
+      .references(() => members.id),
+    requestId: text('request_id').notNull(),
+    kind: text('kind').notNull(),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    taskId: text('task_id'),
+    mediaId: text('media_id').references(() => communityMedia.id),
+    authorName: text('author_name').notNull(),
+    authorRole: text('author_role').notNull(),
+    createdAt: integer('created_at').notNull(),
+    deletedAt: integer('deleted_at'),
+    deletedBy: text('deleted_by'),
+  },
+  (table) => [
+    uniqueIndex('community_posts_request_unique').on(
+      table.authorId,
+      table.requestId,
+    ),
+    index('community_posts_feed_idx').on(
+      table.deletedAt,
+      table.createdAt,
+      table.id,
+    ),
+    index('community_posts_kind_idx').on(
+      table.kind,
+      table.deletedAt,
+      table.createdAt,
+    ),
+    index('community_posts_media_idx').on(table.mediaId),
+    check(
+      'community_posts_kind_check',
+      sql`${table.kind} in ('question','tip','learning')`,
+    ),
+    check(
+      'community_posts_role_check',
+      sql`${table.authorRole} in ('member','staff')`,
+    ),
+  ],
+);
+export const communityReplies = sqliteTable(
+  'community_replies',
+  {
+    id: text('id').primaryKey(),
+    postId: text('post_id')
+      .notNull()
+      .references(() => communityPosts.id),
+    authorId: text('author_id')
+      .notNull()
+      .references(() => members.id),
+    requestId: text('request_id').notNull(),
+    body: text('body').notNull(),
+    authorName: text('author_name').notNull(),
+    authorRole: text('author_role').notNull(),
+    createdAt: integer('created_at').notNull(),
+    deletedAt: integer('deleted_at'),
+    deletedBy: text('deleted_by'),
+  },
+  (table) => [
+    uniqueIndex('community_replies_request_unique').on(
+      table.authorId,
+      table.requestId,
+    ),
+    index('community_replies_post_idx').on(
+      table.postId,
+      table.deletedAt,
+      table.createdAt,
+    ),
+    check(
+      'community_replies_role_check',
+      sql`${table.authorRole} in ('member','staff')`,
+    ),
+  ],
+);
+export const communityWriteLimits = sqliteTable('community_write_limits', {
+  memberId: text('member_id')
+    .primaryKey()
+    .references(() => members.id),
+  windowStart: integer('window_start').notNull(),
+  requestCount: integer('request_count').notNull(),
+});
+export const registrationTickets = sqliteTable(
+  'registration_tickets',
+  {
+    tokenHash: text('token_hash').primaryKey(),
+    email: text('email').notNull(),
+    provider: text('provider').notNull(),
+    subject: text('subject'),
+    expiresAt: integer('expires_at').notNull(),
+    usedAt: integer('used_at'),
+  },
+  (table) => [index('registration_tickets_expiry_idx').on(table.expiresAt)],
+);
+export const memberAuthIdentities = sqliteTable(
+  'member_auth_identities',
+  {
+    provider: text('provider').notNull(),
+    subject: text('subject').notNull(),
+    memberId: text('member_id')
+      .notNull()
+      .references(() => members.id),
+  },
+  (table) => [
+    uniqueIndex('member_auth_identities_subject_unique').on(
+      table.provider,
+      table.subject,
+    ),
+  ],
+);
+export const registrationRateLimits = sqliteTable('registration_rate_limits', {
+  keyHash: text('key_hash').primaryKey(),
+  windowStart: integer('window_start').notNull(),
+  requestCount: integer('request_count').notNull(),
+});

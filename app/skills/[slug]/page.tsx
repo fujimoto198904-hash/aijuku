@@ -16,9 +16,9 @@ import { canonicalMemberUrl, isVercelRuntime } from '@/lib/site-runtime';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'AI実学パスポート｜藤本実学塾',
+  title: 'AI実学パスポート｜AIstock',
   description:
-    '作った成果物と、講師が確認した範囲を分けて示すURL共有プロフィールです。',
+    '作った成果物と、運営が確認した範囲を分けて示すURL共有プロフィールです。',
   robots: { index: false, follow: false },
 };
 
@@ -34,7 +34,7 @@ function formatDate(value: number) {
 }
 
 function publicVerifierName(value: string | null) {
-  if (!value || value.includes('@')) return '藤本実学塾 講師・運営';
+  if (!value || value.includes('@')) return 'MON-ai 運営';
   return value;
 }
 
@@ -64,7 +64,7 @@ function UnavailablePassport() {
           className="mt-7 inline-flex text-sm font-semibold text-sapphire"
           href="/"
         >
-          藤本実学塾へ
+          AIstockへ
         </Link>
       </section>
     </main>
@@ -103,14 +103,14 @@ export default async function PublicSkillPassportPage({
           <Link className="flex items-center gap-3" href="/">
             <BrandMark className="size-10" />
             <span>
-              <span className="block font-mincho text-lg">藤本実学塾</span>
+              <span className="block font-mincho text-lg">AIstock</span>
               <span className="block text-[10px] tracking-[0.12em] text-quiet">
                 AI PRACTICE PASSPORT
               </span>
             </span>
           </Link>
           <span className="soft-badge border border-future-mint bg-future-mint-soft px-3 py-1.5 text-[11px] font-semibold text-brand-dark">
-            講師確認済みのみ表示
+            運営確認済みのみ表示
           </span>
         </div>
       </header>
@@ -154,13 +154,13 @@ export default async function PublicSkillPassportPage({
               </h2>
             </div>
             <p className="max-w-lg text-xs leading-6 text-quiet">
-              棒グラフの点数ではなく、講師が確認した成果物数を示します。
+              棒グラフの点数ではなく、運営が確認した成果物数を示します。
             </p>
           </div>
 
           {visibleSkills.length === 0 ? (
             <p className="soft-panel mt-8 border border-rule bg-paper-white p-7 text-sm text-quiet">
-              共有できる講師確認済み成果物は、まだありません。
+              共有できる運営確認済み成果物は、まだありません。
             </p>
           ) : (
             <div className="mt-8 grid gap-4 md:grid-cols-2">
@@ -183,7 +183,7 @@ export default async function PublicSkillPassportPage({
                   </div>
                   <div className="mt-5 text-xs">
                     <div className="soft-control bg-sapphire-soft p-4">
-                      <p className="text-quiet">講師確認済み</p>
+                      <p className="text-quiet">運営確認済み</p>
                       <p className="numeric-text mt-1 text-2xl text-sapphire">
                         {skill.evidence}件
                       </p>
@@ -205,7 +205,7 @@ export default async function PublicSkillPassportPage({
 
           {passport.evidence.length === 0 ? (
             <p className="soft-panel mt-8 border border-rule bg-paper-white p-7 text-sm leading-7 text-quiet">
-              本人が共有できる講師確認済み成果物は、まだありません。記録が確認・共有された後に、この場所へ表示されます。
+              本人が共有できる運営確認済み成果物は、まだありません。記録が確認・共有された後に、この場所へ表示されます。
             </p>
           ) : null}
 
@@ -221,7 +221,7 @@ export default async function PublicSkillPassportPage({
                       {evidence.taskId ?? '実務・自主制作'}
                     </span>
                     <span className="soft-badge bg-future-mint-soft px-3 py-1 text-[11px] font-semibold text-brand-dark">
-                      講師確認済み {formatDate(evidence.verifiedAt!)}
+                      運営確認済み {formatDate(evidence.verifiedAt!)}
                     </span>
                   </div>
                   <h3 className="mt-5 font-mincho text-3xl">
@@ -248,7 +248,7 @@ export default async function PublicSkillPassportPage({
                   <div className="mt-6 grid gap-5 border-t border-rule pt-6 md:grid-cols-[1fr_auto]">
                     <div>
                       <p className="text-[11px] font-semibold text-sapphire">
-                        講師が確認した範囲
+                        運営が確認した範囲
                       </p>
                       <p className="mt-2 text-sm leading-7 text-quiet">
                         {evidence.instructorNote}
@@ -281,7 +281,7 @@ export default async function PublicSkillPassportPage({
           <ShieldCheck className="size-6 text-sapphire" aria-hidden="true" />
           <h2 className="mt-4 font-mincho text-2xl">このページの読み方</h2>
           <p className="mt-3 text-sm leading-7 text-brand-dark/75">
-            「講師確認済み」は、藤本実学塾の講師・運営が記載範囲を確認した記録です。能力全体、勤務先、資格、雇用関係そのものを証明するものではありません。
+            「運営確認済み」は、AIstockの運営が記載範囲を確認した記録です。能力全体、勤務先、資格、雇用関係そのものを証明するものではありません。
           </p>
         </section>
       </div>

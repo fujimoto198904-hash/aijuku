@@ -1,6 +1,6 @@
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle } from 'lucide-react';
 
-import { BrandMark } from "@/components/brand-mark";
+import { BrandMark } from '@/components/brand-mark';
 
 export default function MyPageLoading() {
   return (
@@ -16,7 +16,7 @@ export default function MyPageLoading() {
         />
         <p className="mt-4 font-mincho text-2xl">マイページを準備しています</p>
         <p className="mt-3 text-sm leading-7 text-quiet">
-          申込状況と学習記録を安全に読み込んでいます。
+          学習記録と投稿を読み込んでいます。
         </p>
       </div>
     </main>

@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   if (isVercelRuntime()) {
     return noStoreJson(
-      { error: 'ログインは藤本実学塾の正規会員サイトで行ってください。' },
+      { error: 'ログインはAIstockの正規会員サイトで行ってください。' },
       { status: 503 },
     );
   }

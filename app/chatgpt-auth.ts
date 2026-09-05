@@ -67,6 +67,7 @@ export async function getAuthenticatedUser(): Promise<ChatGPTUser | null> {
   const identity = readChatGPTIdentityHeaders(await headers());
   if (!identity) return null;
   const linkedAccount = await getMemberAuthAccount(identity.userId);
+  if (linkedAccount?.status === 'disabled') return null;
 
   return {
     ...identity,
@@ -101,7 +102,13 @@ export function readChatGPTIdentityHeaders(
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const user = await getAuthenticatedUser();
-  return user && !user.mustChangePassword ? user : null;
+  if (!user || user.mustChangePassword) return null;
+  if (
+    user.authMethod === 'chatgpt' &&
+    !(await getMemberAuthAccount(user.userId))
+  )
+    return null;
+  return user;
 }
 
 export async function getBillingAuthenticatedUser(): Promise<BillingAuthenticatedUser | null> {
@@ -173,7 +180,12 @@ export async function requireChatGPTUser(
   if (user?.mustChangePassword) {
     redirect(passwordChangePath(returnTo));
   }
-  if (user) return user;
+  if (
+    user &&
+    (user.authMethod === 'password' ||
+      (await getMemberAuthAccount(user.userId)))
+  )
+    return user;
 
   redirect(memberLoginPath(returnTo));
 }

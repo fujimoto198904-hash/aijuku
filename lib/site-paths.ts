@@ -1,4 +1,4 @@
-export const publicSiteBasePath = '/aijuku';
+export const publicSiteBasePath = '/aistock';
 
 export const siteBasePath = process.env.NEXT_PUBLIC_SITE_BASE_PATH ?? '';
 
@@ -8,8 +8,7 @@ export const canonicalPublicUrl = `https://mon-ai.jp${publicSiteBasePath}`;
 // production origin. Vercel builds point at the target path; either runtime can
 // be overridden explicitly when a deployment is promoted.
 const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '');
-export const canonicalSiteUrl =
-  configuredSiteUrl || canonicalPublicUrl;
+export const canonicalSiteUrl = configuredSiteUrl || canonicalPublicUrl;
 
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z\d+.-]*:/i;
 

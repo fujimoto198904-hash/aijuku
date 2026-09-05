@@ -273,6 +273,26 @@ export async function resolveVerifiedMemberAuthAccount(input: {
   };
 }
 
+// Call only after a server-verified provider identity or consumed email ticket.
+export async function issueVerifiedMemberSession(
+  memberId: string,
+): Promise<IssuedPasswordSession | null> {
+  const account = await getStoredAccountByMemberId(memberId);
+  if (
+    !account ||
+    account.status !== 'active' ||
+    account.accountKind !== 'member' ||
+    account.passwordState !== 'personal'
+  )
+    return null;
+  const member = await getD1()
+    .prepare('SELECT status FROM members WHERE id=?')
+    .bind(memberId)
+    .first<{ status: string }>();
+  if (member?.status !== 'active') return null;
+  return issueSession(account, 'member');
+}
+
 async function issueSession(
   account: StoredMemberAuthAccount,
   sessionKind: 'member' | 'password-change',

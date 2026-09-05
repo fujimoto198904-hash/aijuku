@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { RotateCcw, Send } from "lucide-react";
-import { type SubmitEvent, useState } from "react";
+import { RotateCcw, Send } from 'lucide-react';
+import { type SubmitEvent, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import type { SkillEvidenceRecord } from "@/db/skill-passport";
-import { withSiteBasePath } from "@/lib/site-paths";
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import type { SkillEvidenceRecord } from '@/db/skill-passport';
+import { withSiteBasePath } from '@/lib/site-paths';
 
 export function EvidenceRevisionForm({
   evidence,
@@ -17,41 +17,41 @@ export function EvidenceRevisionForm({
 }) {
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [status, setStatus] = useState<
-    "idle" | "sending" | "success" | "error"
-  >("idle");
-  const [message, setMessage] = useState("");
+    'idle' | 'sending' | 'success' | 'error'
+  >('idle');
+  const [message, setMessage] = useState('');
 
   async function resubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("sending");
-    setMessage("");
+    setStatus('sending');
+    setMessage('');
     const form = new FormData(event.currentTarget);
     try {
-      const response = await fetch(withSiteBasePath("/api/skills/evidence"), {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
+      const response = await fetch(withSiteBasePath('/api/skills/evidence'), {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          action: "resubmit",
+          action: 'resubmit',
           evidenceId: evidence.id,
           expectedUpdatedAt: evidence.updatedAt,
-          title: form.get("title"),
-          summary: form.get("summary"),
-          evidenceUrl: form.get("evidenceUrl"),
+          title: form.get('title'),
+          summary: form.get('summary'),
+          evidenceUrl: form.get('evidenceUrl'),
           rightsConfirmed,
         }),
       });
       const body = (await response.json()) as { error?: string };
       if (!response.ok) {
-        throw new Error(body.error ?? "再提出できませんでした。");
+        throw new Error(body.error ?? '再提出できませんでした。');
       }
-      setStatus("success");
+      setStatus('success');
       setMessage(
-        "修正内容を保存し、講師確認待ちへ戻しました。以前の未回答評価リンクは失効しています。",
+        '修正内容を保存し、運営確認待ちへ戻しました。以前の未回答評価リンクは失効しています。',
       );
     } catch (error) {
-      setStatus("error");
+      setStatus('error');
       setMessage(
-        error instanceof Error ? error.message : "再提出できませんでした。",
+        error instanceof Error ? error.message : '再提出できませんでした。',
       );
     }
   }
@@ -63,7 +63,7 @@ export function EvidenceRevisionForm({
     >
       <div className="flex items-center gap-2 text-sm font-semibold">
         <RotateCcw className="size-4 text-human-coral" aria-hidden="true" />
-        講師メモを反映して再提出
+        運営メモを反映して再提出
       </div>
       <label
         className="grid gap-2 text-xs font-semibold"
@@ -103,7 +103,7 @@ export function EvidenceRevisionForm({
         <Input
           className="min-h-11 bg-white px-3 font-normal"
           id={`revision-url-${evidence.id}`}
-          defaultValue={evidence.evidenceUrl ?? ""}
+          defaultValue={evidence.evidenceUrl ?? ''}
           maxLength={2_000}
           name="evidenceUrl"
           type="url"
@@ -125,13 +125,13 @@ export function EvidenceRevisionForm({
       </label>
       {message ? (
         <p
-          className={`soft-control border-l-4 p-4 text-xs leading-6 ${status === "error" ? "border-human-coral bg-white" : "border-future-mint bg-future-mint-soft"}`}
-          role={status === "error" ? "alert" : "status"}
+          className={`soft-control border-l-4 p-4 text-xs leading-6 ${status === 'error' ? 'border-human-coral bg-white' : 'border-future-mint bg-future-mint-soft'}`}
+          role={status === 'error' ? 'alert' : 'status'}
         >
           {message}
         </p>
       ) : null}
-      {status === "success" ? (
+      {status === 'success' ? (
         <Button
           onClick={() => window.location.reload()}
           type="button"
@@ -142,11 +142,11 @@ export function EvidenceRevisionForm({
       ) : (
         <Button
           className="min-h-11 bg-human-coral text-white"
-          disabled={status === "sending" || !rightsConfirmed}
+          disabled={status === 'sending' || !rightsConfirmed}
           type="submit"
         >
           <Send className="size-4" aria-hidden="true" />
-          {status === "sending" ? "再提出しています…" : "修正して再提出"}
+          {status === 'sending' ? '再提出しています…' : '修正して再提出'}
         </Button>
       )}
     </form>

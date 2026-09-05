@@ -1,3 +1,7 @@
+import {
+  paidServicesEnabled,
+  paidServiceUnavailable,
+} from '@/lib/site-features';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import {
   applicationStatusValues,
@@ -20,6 +24,7 @@ import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(request: Request) {
+  if (!paidServicesEnabled) return paidServiceUnavailable();
   if (isVercelRuntime()) {
     return Response.json(
       { error: '申込管理は正規会員サイトで行ってください。' },

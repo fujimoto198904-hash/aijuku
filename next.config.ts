@@ -3,8 +3,7 @@ import type { NextConfig } from 'next';
 const isVercelBuild =
   process.env.VERCEL === '1' || process.env.NITRO_PRESET === 'vercel';
 const isDevelopment = process.env.NODE_ENV !== 'production';
-const publicLinkBasePath =
-  isDevelopment && !isVercelBuild ? '' : '/aijuku';
+const publicLinkBasePath = isDevelopment && !isVercelBuild ? '' : '/aistock';
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -46,6 +45,7 @@ const privateRouteRoots = [
   '/login',
   '/account',
   '/join',
+  '/community/new',
   '/reserve',
   '/mypage',
   '/aikanri',
@@ -60,10 +60,10 @@ const privateRoutes = privateRouteRoots.flatMap((root) => [
 ]);
 
 const nextConfig: NextConfig = {
-  basePath: isVercelBuild ? '/aijuku' : '',
+  basePath: isVercelBuild ? '/aistock' : '',
   env: {
     // Sites serves the application at its root, while mon-ai.jp exposes it
-    // through a reverse proxy below /aijuku. Keep links and browser requests
+    // through a reverse proxy below /aistock. Keep links and browser requests
     // on the public branded path in every production build.
     NEXT_PUBLIC_SITE_BASE_PATH: publicLinkBasePath,
   },
@@ -84,7 +84,12 @@ const nextConfig: NextConfig = {
       ...privateRoutes.map((source) => ({
         source,
         headers:
-          source === '/review' || source === '/review/:path*'
+          source === '/review' ||
+          source === '/review/:path*' ||
+          source === '/join' ||
+          source === '/join/:path*' ||
+          source.startsWith('/api') ||
+          source.startsWith('/community/new')
             ? [
                 ...privateNoStoreHeaders,
                 { key: 'Referrer-Policy', value: 'no-referrer' },
@@ -108,7 +113,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        destination: '/aijuku',
+        destination: '/aistock',
         permanent: false,
         basePath: false,
       },

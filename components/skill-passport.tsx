@@ -63,7 +63,7 @@ function hostnameFromUrl(value: string) {
 }
 
 function safeVerifierName(value: string | null) {
-  if (!value || value.includes('@')) return '藤本実学塾 講師・運営';
+  if (!value || value.includes('@')) return 'MON-ai 運営';
   return value;
 }
 
@@ -220,7 +220,7 @@ export function SkillPassport({
       }
       setEvidenceStatus('success');
       setEvidenceMessage(
-        '作ったものを保存し、講師の確認待ちにしました。確認が終わるまでは共有ページに出ません。',
+        '作ったものを保存し、運営の確認待ちにしました。確認が終わるまでは共有ページに出ません。',
       );
     } catch (error) {
       setEvidenceStatus('error');
@@ -240,7 +240,7 @@ export function SkillPassport({
     if (
       visibility === 'shared' &&
       !window.confirm(
-        'この成果物の名前・説明・外部URLと講師確認範囲が、共有プロフィールのURLを知る人へ表示されます。内容を確認して共有しますか？',
+        'この成果物の名前・説明・外部URLと運営確認範囲が、共有プロフィールのURLを知る人へ表示されます。内容を確認して共有しますか？',
       )
     ) {
       return;
@@ -304,7 +304,7 @@ export function SkillPassport({
             作ったものを、あとで見せられる形に。
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-            教科書で作ったものも、これまでの仕事や作品も記録できます。自分の記録と、講師が確認した内容は分けて表示します。
+            教科書で作ったものも、これまでの仕事や作品も記録できます。自分の記録と、運営が確認した内容は分けて表示します。
           </p>
         </div>
         {savedProfile.shareEnabled ? (
@@ -331,7 +331,7 @@ export function SkillPassport({
             className="size-5 text-future-mint"
             aria-hidden="true"
           />
-          <p className="mt-4 text-[11px] text-quiet">講師確認済み</p>
+          <p className="mt-4 text-[11px] text-quiet">運営確認済み</p>
           <p className="numeric-text mt-2 text-3xl">{verifiedCount}件</p>
         </div>
       </div>
@@ -370,7 +370,7 @@ export function SkillPassport({
                   />
                 </div>
                 <div className="mt-1 flex items-center justify-between text-quiet">
-                  <span>講師確認済み</span>
+                  <span>運営確認済み</span>
                   <span className="numeric-text">{skill.verified}</span>
                 </div>
               </div>
@@ -385,7 +385,7 @@ export function SkillPassport({
             デモでは、作ったものの追加・編集はできません。
           </p>
           <p className="mt-2 text-xs leading-6 text-quiet">
-            本登録後は、作ったものと講師の確認状況を分けて記録できます。
+            本登録後は、作ったものと運営の確認状況を分けて記録できます。
           </p>
         </div>
       ) : (
@@ -480,7 +480,7 @@ export function SkillPassport({
                   }
                 />
                 <span>
-                  URL共有ページを有効にする。検索エンジンには掲載しませんが、URLを知る人は閲覧できます。共有を選んだ講師確認済み成果物だけを表示します。
+                  URL共有ページを有効にする。検索エンジンには掲載しませんが、URLを知る人は閲覧できます。共有を選んだ運営確認済み成果物だけを表示します。
                 </span>
               </label>
               {profileStatus === 'success' || profileStatus === 'error' ? (
@@ -702,13 +702,13 @@ export function SkillPassport({
                 </span>
               </label>
               <label className="grid gap-2 text-sm font-semibold">
-                講師確認後の公開範囲
+                運営確認後の公開範囲
                 <select
                   className="min-h-12 border border-input bg-white px-4 font-normal outline-none focus:border-sapphire focus:ring-3 focus:ring-sapphire/20"
                   defaultValue="private"
                   name="visibility"
                 >
-                  <option value="private">自分と講師だけ</option>
+                  <option value="private">自分と運営だけ</option>
                   <option value="shared">URL共有プロフィールへ掲載</option>
                 </select>
               </label>
@@ -761,7 +761,7 @@ export function SkillPassport({
                   ? '保存しています…'
                   : evidenceStatus === 'success'
                     ? '保存済みです'
-                    : '保存して講師の確認へ'}
+                    : '保存して運営の確認へ'}
               </Button>
             </div>
           </form>
@@ -795,7 +795,7 @@ export function SkillPassport({
             </p>
             <p className="mt-3 text-sm leading-7 text-quiet">
               {readOnly
-                ? '本登録後に記録すると、ここに作ったものと講師の確認状況が表示されます。'
+                ? '本登録後に記録すると、ここに作ったものと運営の確認状況が表示されます。'
                 : '一つ記録すると、できたことが一覧に加わります。'}
             </p>
           </div>
@@ -841,7 +841,7 @@ export function SkillPassport({
 
                   {item.instructorNote ? (
                     <div className="soft-control mt-5 border border-future-mint bg-future-mint-soft p-4 text-xs leading-6">
-                      <p className="font-semibold">講師・運営の記録</p>
+                      <p className="font-semibold">運営の記録</p>
                       <p className="mt-2 text-quiet">{item.instructorNote}</p>
                       {item.verifiedAt ? (
                         <p className="mt-2 text-xs text-quiet">
@@ -914,7 +914,7 @@ export function SkillPassport({
             className="mt-0.5 size-4 shrink-0 text-sapphire"
             aria-hidden="true"
           />
-          URL共有ページには、本人が選んだ講師確認済み記録だけを載せます。URLを知る人は閲覧できます。
+          URL共有ページには、本人が選んだ運営確認済み記録だけを載せます。URLを知る人は閲覧できます。
         </p>
         <p className="flex items-start gap-3">
           <BadgeCheck

@@ -949,10 +949,10 @@ export function LessonReader({
               <div>
                 <p className="numeric-text text-xs text-rust">09</p>
                 <h3 className="mt-3 font-mincho text-3xl">
-                  困ったら講師に聞く
+                  困ったらみんなに聞く
                 </h3>
                 <p className="mt-4 text-sm leading-7 text-quiet">
-                  止まった画面のスクショと、一言だけで大丈夫です。
+                  どこまでできて、どこで止まったか。短い言葉で大丈夫です。
                 </p>
               </div>
               <div className="soft-card soft-dark-glow bg-deep-green p-6 text-white sm:p-8">
@@ -961,7 +961,7 @@ export function LessonReader({
                     className="size-5 text-human-coral-bright"
                     aria-hidden="true"
                   />
-                  <h4 className="font-mincho text-2xl">講師に見せる内容</h4>
+                  <h4 className="font-mincho text-2xl">質問の下書き</h4>
                 </div>
                 <label className="mt-6 block">
                   <span className="text-xs text-white/65">
@@ -985,8 +985,17 @@ export function LessonReader({
                   相談メモをコピー
                 </button>
                 <p className="mt-3 text-xs leading-5 text-white/55">
-                  ここからは送信されません。コピーした文と画面のスクショを、相談する時に見せてください。
+                  メモをコピーして、質問の本文に貼れます。公開できる内容か確認してから投稿してください。
                 </p>
+                <Link
+                  href={
+                    '/community/new?kind=question&task=' +
+                    encodeURIComponent(task.id)
+                  }
+                  className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-white px-5 font-semibold text-sapphire"
+                >
+                  みんなに質問する →
+                </Link>
                 <p
                   className="mt-2 min-h-5 text-xs text-human-coral-bright"
                   aria-live="polite"
@@ -1299,7 +1308,7 @@ export function LessonReader({
             <div className="mt-8 border-t border-rule pt-5">
               <p className="text-xs font-semibold">止まっても大丈夫</p>
               <p className="mt-2 text-xs leading-6 text-quiet">
-                画面のスクショと、止まった所を講師に見せればOKです。
+                どこで止まったかを、コミュニティで聞いてみましょう。
               </p>
               <a
                 className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-rust"

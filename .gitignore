@@ -44,3 +44,6 @@ next-env.d.ts
 /output/
 /tmp/
 /work/
+/archives/
+/docs/references/aitock/outputs/
+/docs/references/aitock/supabase-security-design.md

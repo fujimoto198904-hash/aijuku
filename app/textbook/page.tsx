@@ -60,7 +60,7 @@ function requestedTaskIdFrom(
 }
 
 export const metadata: Metadata = {
-  title: 'Web教科書の使い方｜藤本実学塾',
+  title: 'Web教科書の使い方｜AIstock',
   description:
     '登録なしで無料で学べるWeb教科書。好きな課題を一つずつ、別タブで開いて学べます。',
   alternates: { canonical: canonicalPublicPath('/textbook') },
