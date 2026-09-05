@@ -86,6 +86,8 @@ export const memberAuthAccounts = sqliteTable(
     status: text('status').notNull(),
     temporaryPasswordExpiresAt: integer('temporary_password_expires_at'),
     passwordChangedAt: integer('password_changed_at'),
+    recoveryCodeHash: text('recovery_code_hash'),
+    recoveryCodeCreatedAt: integer('recovery_code_created_at'),
     lastLoginAt: integer('last_login_at'),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull(),
@@ -971,6 +973,8 @@ export const communityPosts = sqliteTable(
     body: text('body').notNull(),
     taskId: text('task_id'),
     mediaId: text('media_id').references(() => communityMedia.id),
+    profileHandle: text('profile_handle'),
+    exampleDate: text('example_date'),
     authorName: text('author_name').notNull(),
     authorRole: text('author_role').notNull(),
     createdAt: integer('created_at').notNull(),
@@ -1077,3 +1081,154 @@ export const registrationRateLimits = sqliteTable('registration_rate_limits', {
   windowStart: integer('window_start').notNull(),
   requestCount: integer('request_count').notNull(),
 });
+
+// Public identities are separate from sign-in identities. Official AI profiles
+// have no member_id, password, or staff privileges.
+export const socialProfiles = sqliteTable(
+  'social_profiles',
+  {
+    handle: text('handle').primaryKey(),
+    memberId: text('member_id').references(() => members.id),
+    name: text('name').notNull(),
+    bio: text('bio').notNull().default(''),
+    kind: text('kind').notNull().default('member'),
+    avatar: text('avatar'),
+    isPublic: integer('is_public').notNull().default(0),
+    dmEnabled: integer('dm_enabled').notNull().default(0),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('social_profiles_member').on(t.memberId),
+    check(
+      'social_profiles_kind',
+      sql`${t.kind} in ('member','official','official_ai')`,
+    ),
+  ],
+);
+export const socialFollows = sqliteTable(
+  'social_follows',
+  {
+    follower: text('follower')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    following: text('following')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('social_follow_pair').on(t.follower, t.following),
+    index('social_follow_target').on(t.following, t.follower),
+    check('social_follow_self', sql`${t.follower} <> ${t.following}`),
+  ],
+);
+export const socialLikes = sqliteTable(
+  'social_likes',
+  {
+    memberId: text('member_id')
+      .notNull()
+      .references(() => members.id),
+    postRef: text('post_ref').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('social_like_pair').on(t.memberId, t.postRef),
+    index('social_like_post').on(t.postRef),
+  ],
+);
+export const socialBlocks = sqliteTable(
+  'social_blocks',
+  {
+    blocker: text('blocker')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    blocked: text('blocked')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('social_block_pair').on(t.blocker, t.blocked),
+    index('social_block_target').on(t.blocked, t.blocker),
+  ],
+);
+export const socialThreads = sqliteTable(
+  'social_threads',
+  {
+    id: text('id').primaryKey(),
+    personA: text('person_a')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    personB: text('person_b')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    initiator: text('initiator').notNull(),
+    acceptedAt: integer('accepted_at'),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('social_thread_pair').on(t.personA, t.personB),
+    index('social_thread_b').on(t.personB),
+  ],
+);
+export const socialMessages = sqliteTable(
+  'social_messages',
+  {
+    id: text('id').primaryKey(),
+    threadId: text('thread_id')
+      .notNull()
+      .references(() => socialThreads.id),
+    sender: text('sender')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    requestId: text('request_id').notNull(),
+    body: text('body').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('social_message_request').on(t.sender, t.requestId),
+    index('social_message_thread').on(t.threadId, t.createdAt, t.id),
+  ],
+);
+export const socialReports = sqliteTable(
+  'social_reports',
+  {
+    id: text('id').primaryKey(),
+    reporterId: text('reporter_id')
+      .notNull()
+      .references(() => members.id),
+    targetType: text('target_type').notNull(),
+    targetId: text('target_id').notNull(),
+    reason: text('reason').notNull(),
+    snapshot: text('snapshot').notNull(),
+    createdAt: integer('created_at').notNull(),
+    resolvedAt: integer('resolved_at'),
+    resolvedBy: text('resolved_by'),
+  },
+  (t) => [index('social_reports_open').on(t.resolvedAt, t.createdAt)],
+);
+export const officialQueue = sqliteTable(
+  'official_queue',
+  {
+    id: text('id').primaryKey(),
+    profileHandle: text('profile_handle')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    taskId: text('task_id'),
+    publishAfter: integer('publish_after').notNull(),
+    approvedBy: text('approved_by')
+      .notNull()
+      .references(() => members.id),
+    publishedAt: integer('published_at'),
+    cancelledAt: integer('cancelled_at'),
+  },
+  (t) => [
+    index('official_queue_due').on(
+      t.publishedAt,
+      t.cancelledAt,
+      t.publishAfter,
+    ),
+  ],
+);

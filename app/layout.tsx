@@ -4,6 +4,7 @@ import { canonicalSiteUrl, withSiteBasePath } from '@/lib/site-paths';
 
 import './globals.css';
 import './aistock.css';
+import './social.css';
 
 const siteUrl = canonicalSiteUrl;
 export const metadata: Metadata = {

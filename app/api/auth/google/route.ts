@@ -8,7 +8,10 @@ export async function GET(request: Request) {
     const user = linking ? await getChatGPTUser() : null;
     if (linking && (!user || user.isDemo))
       return Response.redirect(canonicalPublicPath('/login'), 303);
-    const flow = await beginGoogleFlow(user?.userId ?? null);
+    const flow = await beginGoogleFlow(
+      user?.userId ?? null,
+      new URL(request.url).searchParams.get('return_to') ?? '/mypage',
+    );
     return new Response(null, {
       status: 303,
       headers: {

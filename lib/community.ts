@@ -18,7 +18,10 @@ export function publicNickname(
     .normalize('NFKC')
     .toLowerCase()
     .replace(/[\s\p{Dash_Punctuation}]/gu, '');
-  if (!allowStaffName && /monai|aistock|運営|管理者/.test(normalized))
+  if (
+    !allowStaffName &&
+    /monai|aistock|aitock|アイトック|運営|管理者/.test(normalized)
+  )
     return null;
   return name.length >= 1 &&
     name.length <= 30 &&

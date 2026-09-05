@@ -15,6 +15,7 @@ import { noStoreJson } from '@/lib/auth-request';
 import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 import { findTextbookTask } from '@/lib/textbook-catalog';
 import { ownedCommunityMedia } from '@/db/community-media';
+import { ownSocialProfile, canInteractWithPost } from '@/db/social';
 export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request))
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   const user = await getChatGPTUser();
   if (!user)
     return noStoreJson({ error: 'ログインしてください。' }, { status: 401 });
-  if (user.isDemo)
+  if (user.isDemo || user.userId.startsWith('aistock-system-'))
     return noStoreJson({ error: 'デモでは投稿できません。' }, { status: 403 });
   const member = await getMember(user.userId);
   if (
@@ -45,11 +46,13 @@ export async function POST(request: Request) {
   }
   const permissions = getAuthenticatedStaffPermissions(user);
   const isOwner = permissions.isOwner;
+  const socialProfile = await ownSocialProfile(user.userId);
+  if (socialProfile?.isPublic) data.nickname = socialProfile.name;
   if (data.publicConsent === true && publicNickname(data.nickname, isOwner)) {
     const retry = await communityRetry(
       user.userId,
       data,
-      isOwner ? 'MON-ai 運営' : publicNickname(data.nickname, isOwner)!,
+      isOwner ? 'Aitock公式' : publicNickname(data.nickname, isOwner)!,
     );
     if (retry)
       return noStoreJson(
@@ -95,7 +98,7 @@ export async function POST(request: Request) {
         { error: '公開用の名前と公開への同意を確認してください。' },
         { status: 400 },
       );
-    const authorName = isOwner ? 'MON-ai 運営' : name,
+    const authorName = isOwner ? 'Aitock公式' : name,
       authorRole = isOwner ? 'staff' : 'member';
     const body = typeof data.body === 'string' ? data.body.trim() : '';
     const requestId = typeof data.requestId === 'string' ? data.requestId : '';
@@ -112,6 +115,11 @@ export async function POST(request: Request) {
         return noStoreJson(
           { error: '投稿が見つかりません。' },
           { status: 404 },
+        );
+      if (!(await canInteractWithPost(user.userId, data.postId)))
+        return noStoreJson(
+          { error: 'この投稿にはコメントできません。' },
+          { status: 403 },
         );
       const reply = await writeCommunityReply({
         postId: data.postId,
@@ -158,6 +166,11 @@ export async function POST(request: Request) {
       body,
       taskId,
       mediaId,
+      profileHandle: isOwner
+        ? 'aitock'
+        : socialProfile?.isPublic
+          ? socialProfile.handle
+          : null,
     });
     return noStoreJson(
       post

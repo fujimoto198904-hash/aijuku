@@ -15,6 +15,7 @@ import { getMember } from '@/db/membership';
 import { appendSessionCookie } from '@/lib/member-session-cookie';
 import { canonicalPublicPath } from '@/lib/site-paths';
 import { isPlausibleMemberEmail } from '@/lib/password-security';
+import { registrationReturnTo } from '@/lib/username-registration';
 export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const headers = new Headers({
@@ -41,6 +42,7 @@ export async function GET(request: Request) {
     if (!flow || params.get('state') !== flow.state || !params.get('code'))
       return go('/login?error=google-failed');
     const identity = await verifyGoogleCode(params.get('code')!, flow);
+    const returnTo = registrationReturnTo(flow.returnTo ?? '/mypage');
     if (!isPlausibleMemberEmail(identity.email))
       return go('/login?error=google-failed');
     const linked = await env.DB.prepare(
@@ -48,7 +50,10 @@ export async function GET(request: Request) {
     )
       .bind(identity.subject)
       .first<{ memberId: string }>();
-    if (!identity.authoritative) return go('/join?error=google-email');
+    if (!identity.authoritative)
+      return go(
+        '/join?error=google-email&return_to=' + encodeURIComponent(returnTo),
+      );
     if (flow.memberId) {
       const user = await getChatGPTUser(),
         member = user ? await getMember(user.userId) : null;
@@ -76,16 +81,20 @@ export async function GET(request: Request) {
         token: session.token,
         expiresAt: session.expiresAt,
       });
-      return go('/mypage');
+      return go(returnTo);
     }
     if (await existingRegistrationEmail(identity.email))
-      return go('/login?error=google-link');
+      return go(
+        '/login?error=google-link&return_to=' + encodeURIComponent(returnTo),
+      );
     const ticket = await createRegistrationTicket(
       identity.email,
       'google',
       identity.subject,
     );
-    return go('/join?ticket=' + ticket);
+    return go(
+      '/join?ticket=' + ticket + '&return_to=' + encodeURIComponent(returnTo),
+    );
   } catch {
     return go('/login?error=google-failed');
   }

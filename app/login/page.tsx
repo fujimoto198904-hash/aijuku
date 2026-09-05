@@ -124,6 +124,17 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <p className="mt-4 leading-7 text-quiet">
             学びの続きも、みんなとの会話も、ここから。
           </p>
+          {!hasVerifiedInitialIdentity && (
+            <p className="mt-4 text-sm">
+              初めての方は{' '}
+              <Link
+                href={'/join?return_to=' + encodeURIComponent(returnTo)}
+                className="font-semibold text-sapphire underline underline-offset-4"
+              >
+                無料会員登録
+              </Link>
+            </p>
+          )}
           {googleError && (
             <p role="alert" className="mt-5 leading-7 text-red-700">
               {googleError}
@@ -131,7 +142,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           )}
           {available.google && (
             <a
-              href={withSiteBasePath('/api/auth/google')}
+              href={withSiteBasePath(
+                '/api/auth/google?return_to=' + encodeURIComponent(returnTo),
+              )}
               target="_top"
               className="soft-outline-button mt-7 flex min-h-12 items-center justify-center border border-rule font-semibold"
             >

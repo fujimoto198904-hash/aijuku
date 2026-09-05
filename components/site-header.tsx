@@ -7,9 +7,11 @@ import {
   BookOpen,
   UserRound,
   ArrowUpRight,
+  MessageCircle,
 } from 'lucide-react';
 import Link from '@/components/site-link';
 import { withoutSiteBasePath } from '@/lib/site-paths';
+import { isAistockNavActive } from '@/lib/aistock-navigation';
 const items = [
   { href: '/', label: 'ホーム', Icon: House },
   { href: '/discover', label: '見つける', Icon: Search },
@@ -20,7 +22,13 @@ const items = [
 export function AistockLogo() {
   return (
     <span className="aistock-logo">
-      AIstock<span aria-hidden="true">✦</span>
+      <span className="aistock-logo-wordmark">
+        AIstock
+        <span className="aistock-logo-symbol" aria-hidden="true">
+          ✦
+        </span>
+      </span>
+      <span className="aistock-logo-reading">アイトック</span>
     </span>
   );
 }
@@ -29,26 +37,31 @@ export function SiteHeader() {
   return (
     <>
       <header className="as-header">
-        <Link href="/" aria-label="AIstock ホーム">
+        <Link href="/" aria-label="AIstock（アイトック）ホーム">
           <AistockLogo />
         </Link>
-        <p className="as-brand-note">ひとりの「できた」が、みんなのヒント。</p>
+        <Link href="/discover" className="as-header-search">
+          <Search size={18} aria-hidden="true" />
+          <span>やってみたいことを探す</span>
+        </Link>
+        <Link href="/messages" className="as-header-messages as-icon-button" aria-label="メッセージ">
+          <MessageCircle size={23} />
+        </Link>
         <Link href="/join" className="as-join">
           無料で参加 <ArrowUpRight size={16} />
         </Link>
       </header>
       <nav className="as-navigation" aria-label="メインナビゲーション">
-        <Link href="/" className="as-desktop-logo" aria-label="AIstock ホーム">
+        <Link
+          href="/"
+          className="as-desktop-logo"
+          aria-label="AIstock（アイトック）ホーム"
+        >
           <AistockLogo />
         </Link>
         <div className="as-nav-items">
           {items.map(({ href, label, Icon }) => {
-            const selected =
-              href === '/'
-                ? pathname === '/'
-                : href === '/learn'
-                  ? pathname.startsWith('/textbook') || pathname === '/learn'
-                  : pathname.startsWith(href);
+            const selected = isAistockNavActive(href, pathname);
             return (
               <Link
                 key={href}
@@ -56,7 +69,9 @@ export function SiteHeader() {
                 aria-current={selected ? 'page' : undefined}
                 className={selected ? 'as-nav-item is-active' : 'as-nav-item'}
               >
-                <Icon size={23} strokeWidth={selected ? 2.2 : 1.7} />
+                <span className="as-nav-icon" aria-hidden="true">
+                  <Icon size={23} strokeWidth={selected ? 2.2 : 1.7} />
+                </span>
                 <span>{label}</span>
               </Link>
             );

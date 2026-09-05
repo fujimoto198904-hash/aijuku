@@ -5,6 +5,7 @@ import {
   sha256Base64Url,
 } from '@/lib/password-security';
 import { canonicalPublicPath } from '@/lib/site-paths';
+import { registrationReturnTo } from '@/lib/username-registration';
 const encoder = new TextEncoder();
 const b64 = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes))
@@ -30,6 +31,7 @@ export type GoogleFlow = {
   nonce: string;
   expiresAt: number;
   memberId: string | null;
+  returnTo?: string;
 };
 export const googleFlowCookie = 'aistock_google_flow';
 export function googleCallbackUrl() {
@@ -43,7 +45,10 @@ export function googleConfig() {
     secret: env.AUTH_GOOGLE_CLIENT_SECRET,
   };
 }
-export async function beginGoogleFlow(memberId: string | null) {
+export async function beginGoogleFlow(
+  memberId: string | null,
+  returnTo = '/mypage',
+) {
   const config = googleConfig();
   const flow: GoogleFlow = {
     state: createSessionToken(),
@@ -51,6 +56,7 @@ export async function beginGoogleFlow(memberId: string | null) {
     nonce: createSessionToken(),
     expiresAt: Date.now() + 600000,
     memberId,
+    returnTo: registrationReturnTo(returnTo),
   };
   const encoded = b64(encoder.encode(JSON.stringify(flow)));
   const signature = b64(

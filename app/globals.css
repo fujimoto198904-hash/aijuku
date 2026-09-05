@@ -63,6 +63,16 @@
 }
 
 :root {
+  --as-green: #105747;
+  --as-ink: #19352c;
+  --as-muted: #53665d;
+  --as-canvas: #f6f7f4;
+  --as-surface: #ffffff;
+  --as-line: #dce5dd;
+  --as-tint: #eaf2e9;
+  --as-shadow: 0 4px 7px #163c2d03, 0 16px 40px -24px #163c2d33;
+  --as-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --as-sidebar-width: 232px;
   --paper: #f5f7f6;
   --paper-white: #ffffff;
   --ink: #192d29;

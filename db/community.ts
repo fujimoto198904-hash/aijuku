@@ -1,5 +1,7 @@
 import { env } from 'cloudflare:workers';
 import type { CommunityKind } from '@/lib/community';
+import { membershipTermsVersion, privacyPolicyVersion } from '@/db/membership';
+const visibleIdentity = `is_public=1 AND (member_id IS NULL OR EXISTS(SELECT 1 FROM members m WHERE m.id=social_profiles.member_id AND m.status='active' AND m.terms_version='${membershipTermsVersion}' AND m.privacy_version='${privacyPolicyVersion}'))`;
 
 export type CommunityPost = {
   id: string;
@@ -12,6 +14,10 @@ export type CommunityPost = {
   createdAt: number;
   replyCount: number;
   mediaId: string | null;
+  profileHandle: string | null;
+  profileKind: string | null;
+  avatar: string | null;
+  exampleDate: string | null;
 };
 export type CommunityReply = {
   id: string;
@@ -21,6 +27,10 @@ export type CommunityReply = {
   createdAt: number;
 };
 const columns = `p.id, p.kind, p.title, p.body, p.task_id AS taskId,p.media_id AS mediaId, p.author_name AS authorName,
+  (SELECT handle FROM social_profiles WHERE handle=p.profile_handle AND ${visibleIdentity}) AS profileHandle,
+  (SELECT kind FROM social_profiles WHERE handle=p.profile_handle) AS profileKind,
+  (SELECT avatar FROM social_profiles WHERE handle=p.profile_handle AND ${visibleIdentity}) AS avatar,
+  p.example_date AS exampleDate,
   p.author_role AS authorRole, p.created_at AS createdAt,
   (SELECT count(*) FROM community_replies r WHERE r.post_id=p.id AND r.deleted_at IS NULL) AS replyCount`;
 export async function listCommunityPosts(
@@ -28,9 +38,30 @@ export async function listCommunityPosts(
   page = 1,
   memberId?: string,
   query = '',
+  options: { profileHandle?: string; source?: string; following?: string } = {},
 ) {
   const filters = ['p.deleted_at IS NULL'];
+  if (!options.profileHandle && !options.following)
+    filters.push("p.id NOT LIKE 'official-%'");
   const binds: (string | number)[] = [];
+  if (options.profileHandle) {
+    filters.push('p.profile_handle=?');
+    binds.push(options.profileHandle);
+  }
+  if (options.source === 'members')
+    filters.push(
+      "COALESCE((SELECT kind FROM social_profiles WHERE handle=p.profile_handle),'member')='member'",
+    );
+  if (options.source === 'ai')
+    filters.push(
+      "(SELECT kind FROM social_profiles WHERE handle=p.profile_handle)='official_ai'",
+    );
+  if (options.following) {
+    filters.push(
+      'p.profile_handle IN (SELECT following FROM social_follows WHERE follower=?)',
+    );
+    binds.push(options.following);
+  }
   if (kind) {
     filters.push('p.kind = ?');
     binds.push(kind);
@@ -155,11 +186,12 @@ export async function writeCommunityPost(input: {
   body: string;
   taskId: string | null;
   mediaId?: string | null;
+  profileHandle?: string | null;
 }) {
   const id = crypto.randomUUID(),
     now = Date.now();
-  await env.DB.prepare(`INSERT INTO community_posts(id,author_id,request_id,kind,title,body,task_id,author_name,author_role,created_at,media_id)
-    SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE ? IS NULL OR EXISTS(SELECT 1 FROM community_media WHERE id=? AND member_id=?) ON CONFLICT(author_id,request_id) DO NOTHING`)
+  await env.DB.prepare(`INSERT INTO community_posts(id,author_id,request_id,kind,title,body,task_id,author_name,author_role,created_at,media_id,profile_handle)
+    SELECT ?,?,?,?,?,?,?,?,?,?,?,? WHERE ? IS NULL OR EXISTS(SELECT 1 FROM community_media WHERE id=? AND member_id=?) ON CONFLICT(author_id,request_id) DO NOTHING`)
     .bind(
       id,
       input.authorId,
@@ -172,6 +204,7 @@ export async function writeCommunityPost(input: {
       input.authorRole,
       now,
       input.mediaId ?? null,
+      input.profileHandle ?? null,
       input.mediaId ?? null,
       input.mediaId ?? null,
       input.authorId,
@@ -202,6 +235,7 @@ export async function writeCommunityReply(input: {
 }) {
   await env.DB.prepare(`INSERT INTO community_replies(id,post_id,author_id,request_id,body,author_name,author_role,created_at)
     SELECT ?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM community_posts WHERE id=? AND deleted_at IS NULL)
+    AND NOT EXISTS(SELECT 1 FROM social_blocks b JOIN social_profiles me ON me.member_id=? JOIN community_posts p ON p.id=? LEFT JOIN social_profiles author ON author.member_id=p.author_id WHERE (b.blocker=me.handle AND b.blocked=COALESCE(p.profile_handle,author.handle)) OR (b.blocked=me.handle AND b.blocker=COALESCE(p.profile_handle,author.handle)))
     ON CONFLICT(author_id,request_id) DO NOTHING`)
     .bind(
       crypto.randomUUID(),
@@ -212,6 +246,8 @@ export async function writeCommunityReply(input: {
       input.authorName,
       input.authorRole,
       Date.now(),
+      input.postId,
+      input.authorId,
       input.postId,
     )
     .run();

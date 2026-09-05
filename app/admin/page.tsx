@@ -67,6 +67,12 @@ async function AdminContent() {
         </p>
         <div className="my-7 flex flex-wrap gap-3">
           <Link
+            href="/admin/social"
+            className="soft-outline-button border border-rule px-5 py-3"
+          >
+            公式アカウント・投稿予約・通報
+          </Link>
+          <Link
             href="/community/new"
             className="button-glow px-5 py-3 text-white"
           >
@@ -81,6 +87,13 @@ async function AdminContent() {
         </div>
         <section className="soft-panel border border-rule bg-white p-6">
           <h2 className="text-xl font-bold">会員登録の準備</h2>
+          <p className="mt-4">
+            ユーザー名・パスワード登録：
+            {availability.username
+              ? '設定あり（本番での通し確認が必要）'
+              : '未設定'}
+            。メール配信の設定は不要です。
+          </p>
           <p className="mt-4">
             Googleログイン：
             {availability.google

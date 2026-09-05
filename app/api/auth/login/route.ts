@@ -1,10 +1,11 @@
-import { authenticatePassword } from '@/db/member-auth';
+import { authenticatePassword, passwordAuthEmail } from '@/db/member-auth';
 import { getMember } from '@/db/membership';
 import { requestClientAddress, noStoreJson } from '@/lib/auth-request';
 import { appendSessionCookie } from '@/lib/member-session-cookie';
 import { cleanRequestText, isSameOriginRequest } from '@/lib/request-security';
 import { isVercelRuntime } from '@/lib/site-runtime';
 import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
+import { readBoundedJson } from '@/lib/limited-json';
 import {
   readChatGPTIdentityHeaders,
   safeRelativeReturnPath,
@@ -26,8 +27,16 @@ export async function POST(request: Request) {
     );
   }
 
+  let body: Record<string, unknown>;
   try {
-    const body = (await request.json()) as Record<string, unknown>;
+    body = await readBoundedJson(request, 5000);
+  } catch {
+    return noStoreJson(
+      { error: '入力内容を確認してください。' },
+      { status: 400 },
+    );
+  }
+  try {
     const result = await authenticatePassword({
       loginId: cleanRequestText(body.loginId, 320),
       password: typeof body.password === 'string' ? body.password : '',
@@ -70,7 +79,7 @@ export async function POST(request: Request) {
     const staffPermissions = getAuthenticatedStaffPermissions({
       userId: result.session.user.memberId,
       authMethod: 'password',
-      email: result.session.user.contactEmail ?? result.session.user.loginId,
+      email: passwordAuthEmail(result.session.user),
       loginId: result.session.user.loginId,
       isDemo: result.session.user.accountKind === 'demo',
     });

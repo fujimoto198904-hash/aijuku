@@ -7,9 +7,26 @@ import {
   MessageCircle,
   Plus,
   Sparkles,
+  ArrowRight,
+  Mail,
+  Check,
+  ListChecks,
+  Table2,
+  PanelsTopLeft,
 } from 'lucide-react';
-import { officialPosts, type OfficialPost } from '@/lib/official-posts';
+import {
+  officialPosts,
+  findOfficialPost,
+  type OfficialPost,
+} from '@/lib/official-posts';
 import { CommunityAuthor } from '@/components/community-author';
+import { PostStock } from '@/components/post-stock';
+import { getPostStockViewer } from '@/lib/post-stock-viewer';
+import { postLikeStates, ownSocialProfile } from '@/db/social';
+import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { PostReactions } from '@/components/social-actions';
+import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
+import { mixLearningFeed } from '@/lib/social-feed';
 import { listCommunityPosts, type CommunityPost } from '@/db/community';
 import { communityLabels, type CommunityKind } from '@/lib/community';
 import { withSiteBasePath } from '@/lib/site-paths';
@@ -30,103 +47,228 @@ export function OfficialVisual({ post }: { post: OfficialPost }) {
           width={960}
           height={640}
         />
-        <span>教材の説明用イメージ</span>
+        <span className="as-photo-topic">{post.topic}</span>
+        <span className="as-photo-note">教材の説明用イメージ</span>
       </div>
     );
   return (
     <div className={'as-post-visual visual-' + post.visual}>
-      <span className="as-visual-label">教科書でつくるもの</span>
+      <span className="as-visual-label">{post.topic}の小さな一歩</span>
       <div className="as-visual-document">
         {post.visual === 'email' ? (
           <>
-            <span>返信の下書き</span>
-            <strong>
-              伝えたいことを、
+            <span className="as-example-heading">
+              <Mail size={17} aria-hidden="true" /> メールの下書き · 例
+            </span>
+            <div className="as-memo-example">火曜15時 OK。資料ありがとう。</div>
+            <span className="as-example-flow">
+              <ArrowRight size={15} aria-hidden="true" /> 相手に伝わる言葉へ
+            </span>
+            <p className="as-email-example">
+              資料をお送りいただき、ありがとうございます。
               <br />
-              ちゃんと伝わる言葉に。
-            </strong>
-            <i />
-            <i />
-            <i />
+              火曜日の15時に、よろしくお願いいたします。
+            </p>
           </>
         ) : post.visual === 'sheet' ? (
           <>
-            <span>売上データを整理</span>
-            <strong>
-              「この数字、何だろう？」
-              <br />
-              から始めよう。
-            </strong>
-            <div className="as-mini-table">
-              <b>日付</b>
-              <b>商品</b>
-              <b>売上</b>
-              <span>04.01</span>
-              <span>サンプル A</span>
-              <span>12,000</span>
-              <span>04.02</span>
-              <span>サンプル B</span>
-              <span>8,500</span>
+            <span className="as-example-heading">
+              <Table2 size={17} aria-hidden="true" /> 売上の見える化 · 例
+            </span>
+            <table className="as-example-table">
+              <caption className="sr-only">練習用の売上例、金額は円</caption>
+              <thead>
+                <tr>
+                  <th scope="col">商品</th>
+                  <th scope="col">売上</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">サンプル A</th>
+                  <td>12,000</td>
+                </tr>
+                <tr>
+                  <th scope="row">サンプル B</th>
+                  <td>8,500</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row">合計</th>
+                  <td>20,500</td>
+                </tr>
+              </tfoot>
+            </table>
+            <div className="as-example-bars" aria-hidden="true">
+              <span />
+              <span />
             </div>
           </>
         ) : post.visual === 'meeting' ? (
           <>
-            <span>会議のあとに</span>
-            <strong>
-              決まったこと。
-              <br />
-              まだ決まっていないこと。
-            </strong>
-            <div className="as-checkline">✓ 結論を確認</div>
-            <div className="as-checkline">✓ 未決事項を確認</div>
+            <span className="as-example-heading">
+              <ListChecks size={17} aria-hidden="true" /> 会議の整理 · 例
+            </span>
+            <div className="as-meeting-example">
+              <div>
+                <span>目的</span>
+                <p>お知らせの準備</p>
+              </div>
+              <div>
+                <span>話したこと</span>
+                <p>伝え方と日程</p>
+              </div>
+              <div>
+                <span>
+                  <Check size={13} aria-hidden="true" /> 結論
+                </span>
+                <p>まず下書きを作る</p>
+              </div>
+              <div>
+                <span>未決</span>
+                <p>公開日は確認する</p>
+              </div>
+            </div>
           </>
         ) : (
           <>
-            <span>{post.topic}のアイデア</span>
-            <strong>{post.title}</strong>
-            <p>考える → 試す → 自分らしく直す</p>
+            <span className="as-example-heading">
+              <PanelsTopLeft size={17} aria-hidden="true" /> 最初の画面を比べる
+              · 例
+            </span>
+            <div className="as-web-examples">
+              {['写真で伝える', '言葉で伝える', '特徴を並べる'].map(
+                (label, index) => (
+                  <div
+                    className={'as-web-example example-' + index}
+                    key={label}
+                  >
+                    <span className="as-browser-bar" aria-hidden="true">
+                      •••
+                    </span>
+                    <div className="as-wireframe" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </div>
+                    <strong>{label}</strong>
+                  </div>
+                ),
+              )}
+            </div>
           </>
         )}
       </div>
-      <span className="as-visual-note">教材の内容を紹介するイメージです</span>
+      <span className="as-visual-note">教材の説明用イメージ</span>
     </div>
   );
 }
-export function OfficialCard({ post }: { post: OfficialPost }) {
+type CardStockProps = {
+  canSave?: boolean;
+  initialSaved?: boolean;
+  likeState?: { count: number; liked: boolean };
+};
+function PostCardActions({
+  postRef,
+  detailHref,
+  questionHref,
+  official = false,
+  canSave,
+  initialSaved,
+  likeState,
+}: CardStockProps & {
+  postRef: string;
+  detailHref: string;
+  questionHref: string;
+  official?: boolean;
+}) {
   return (
-    <article className="as-post">
+    <div className="as-social-actions">
+      <PostReactions
+        postRef={postRef}
+        path={detailHref}
+        canInteract={canSave}
+        {...likeState}
+      />
+      <Link
+        href={detailHref}
+        className="as-social-try"
+        aria-label={official ? 'この教材を見て試す' : '投稿の続きを見る'}
+      >
+        {official ? (
+          <BookOpen size={24} strokeWidth={1.7} aria-hidden="true" />
+        ) : (
+          <ArrowUpRight size={24} strokeWidth={1.7} aria-hidden="true" />
+        )}
+        <span>{official ? '試す' : '読む'}</span>
+      </Link>
+      <Link
+        href={questionHref}
+        className="as-social-question as-legacy-question"
+        aria-label={
+          official ? 'この課題について質問する' : 'この投稿の返信を見る'
+        }
+      >
+        <MessageCircle size={24} strokeWidth={1.7} aria-hidden="true" />
+      </Link>
+      <PostStock
+        postRef={postRef}
+        canSave={canSave}
+        initialSaved={initialSaved}
+        compact
+      />
+    </div>
+  );
+}
+export function OfficialCard({
+  post,
+  canSave,
+  initialSaved,
+  likeState,
+}: { post: OfficialPost } & CardStockProps) {
+  return (
+    <article className="as-post as-official-post">
       <header className="as-post-author">
-        <span className="as-avatar">✦</span>
+        <Link href="/u/aitock" aria-label="Aitock公式のプロフィール">
+          <SocialAvatar name="Aitock公式" kind="official" />
+        </Link>
         <div>
           <strong>
-            MON-ai <span className="as-staff">公式</span>
+            <Link href="/u/aitock">
+              Aitock <AccountBadge kind="official" />
+            </Link>
           </strong>
           <span>教科書からのヒント · {post.topic}</span>
         </div>
         <span className="as-level">{post.level}</span>
       </header>
-      <Link href={'/posts/' + post.id} aria-label={post.title}>
+      <Link
+        href={'/posts/' + post.id}
+        aria-label={post.title}
+        className="as-post-media-link"
+      >
         <OfficialVisual post={post} />
       </Link>
+      <PostCardActions
+        postRef={post.id}
+        detailHref={'/posts/' + post.id}
+        questionHref={
+          '/community/new?kind=question&task=' + encodeURIComponent(post.taskId)
+        }
+        official
+        canSave={canSave}
+        initialSaved={initialSaved}
+        likeState={likeState}
+      />
       <div className="as-post-copy">
         <h2>
           <Link href={'/posts/' + post.id}>{post.title}</Link>
         </h2>
-        <p>{post.body}</p>
-        <div className="as-post-actions">
-          <Link href={'/posts/' + post.id} className="as-try">
-            自分もやってみる <ArrowUpRight size={18} />
-          </Link>
-          <Link
-            href={
-              '/community/new?kind=question&task=' +
-              encodeURIComponent(post.taskId)
-            }
-            aria-label="この課題について質問する"
-          >
-            <MessageCircle size={22} />
-          </Link>
-        </div>
+        <p className="as-user-excerpt">{post.body}</p>
+        <Link href={'/posts/' + post.id} className="as-caption-link">
+          教科書でやってみる →
+        </Link>
       </div>
     </article>
   );
@@ -134,7 +276,10 @@ export function OfficialCard({ post }: { post: OfficialPost }) {
 export function LearningRail() {
   return (
     <aside className="as-learning-rail">
-      <section className="as-next-card">
+      <section className="as-next-card as-rail-start">
+        <span className="as-rail-emblem" aria-hidden="true">
+          <Sparkles size={23} />
+        </span>
         <span className="as-eyebrow">AIが初めてなら</span>
         <h2>
           最初の一歩は、
@@ -177,20 +322,55 @@ export function LearningRail() {
   );
 }
 
-export function MemberPostCard({ post }: { post: CommunityPost }) {
+export function MemberPostCard({
+  post,
+  canSave,
+  initialSaved,
+  likeState,
+}: { post: CommunityPost } & CardStockProps) {
+  const actions = (
+    <PostCardActions
+      postRef={post.id}
+      detailHref={'/community/' + post.id}
+      questionHref={'/community/' + post.id + '#replies'}
+      canSave={canSave}
+      initialSaved={initialSaved}
+      likeState={likeState}
+    />
+  );
   return (
     <article className="as-post">
       <header className="as-post-author">
-        <span className="as-avatar as-member-avatar">
-          {post.authorName.slice(0, 1)}
-        </span>
+        {post.profileHandle ? (
+          <Link
+            href={'/u/' + post.profileHandle}
+            aria-label={post.authorName + 'のプロフィール'}
+          >
+            <SocialAvatar
+              name={post.authorName}
+              kind={post.profileKind}
+              avatar={post.avatar}
+            />
+          </Link>
+        ) : (
+          <SocialAvatar name={post.authorName} />
+        )}
         <div>
-          <CommunityAuthor role={post.authorRole} name={post.authorName} />
+          {post.profileHandle ? (
+            <Link href={'/u/' + post.profileHandle}>
+              <strong>{post.authorName}</strong>{' '}
+              <AccountBadge kind={post.profileKind} />
+            </Link>
+          ) : (
+            <CommunityAuthor role={post.authorRole} name={post.authorName} />
+          )}
           <span>
             {communityLabels[post.kind]} ·{' '}
-            {new Date(post.createdAt).toLocaleDateString('ja-JP', {
-              timeZone: 'Asia/Tokyo',
-            })}
+            {post.exampleDate
+              ? '投稿例 · 設定日 ' + post.exampleDate
+              : new Date(post.createdAt).toLocaleDateString('ja-JP', {
+                  timeZone: 'Asia/Tokyo',
+                })}
           </span>
         </div>
       </header>
@@ -206,50 +386,82 @@ export function MemberPostCard({ post }: { post: CommunityPost }) {
           />
         </Link>
       )}
+      {post.mediaId ? actions : null}
       <div className="as-post-copy">
         <h2>
           <Link href={'/community/' + post.id}>{post.title}</Link>
         </h2>
         <p className="as-user-excerpt">{post.body}</p>
-        <div className="as-post-actions">
-          <Link href={'/community/' + post.id} className="as-try">
-            続きを見る <ArrowUpRight size={18} />
-          </Link>
-          <Link
-            href={'/community/' + post.id + '#replies'}
-            className="as-reply-count"
-          >
-            <MessageCircle size={20} />
-            {post.replyCount}件の返信
-          </Link>
-        </div>
+        <Link
+          href={'/community/' + post.id + '#replies'}
+          className="as-caption-link"
+        >
+          {post.replyCount
+            ? `返信${post.replyCount}件を見る`
+            : '最初の返信を書く'}
+        </Link>
       </div>
+      {!post.mediaId ? actions : null}
     </article>
   );
 }
 export async function CommunityFeed({
   kind,
   page = 1,
-}: { kind?: CommunityKind; page?: number } = {}) {
-  const feed = await listCommunityPosts(kind, page);
+  view = 'all',
+}: { kind?: CommunityKind; page?: number; view?: string } = {}) {
+  const user = await getChatGPTUser();
+  const me =
+    view === 'following' && user ? await ownSocialProfile(user.userId) : null;
+  const [feed, viewer] = await Promise.all([
+    view === 'textbook' || (view === 'following' && !me)
+      ? Promise.resolve({ posts: [], hasMore: false })
+      : listCommunityPosts(kind, page, undefined, '', {
+          source: view,
+          following: view === 'following' ? me?.handle : undefined,
+        }),
+    getPostStockViewer(),
+  ]);
   const composeHref = '/community/new' + (kind ? '?kind=' + kind : '');
-  const official = page === 1 && (!kind || kind === 'tip') ? officialPosts : [];
-  // Real member posts come first. Official guides fill the initial feed, explicitly labelled.
-  const items: React.ReactNode[] = [];
-  const max = Math.max(feed.posts.length, official.length);
-  for (let i = 0; i < max; i++) {
-    if (feed.posts[i])
-      items.push(
-        <MemberPostCard key={feed.posts[i].id} post={feed.posts[i]} />,
-      );
-    if (official[i])
-      items.push(<OfficialCard key={official[i].id} post={official[i]} />);
-  }
+  const official =
+    (view === 'all' || view === 'textbook') && (!kind || kind === 'tip')
+      ? view === 'textbook'
+        ? officialPosts
+        : [
+            ...officialPosts.slice(((page - 1) * 3) % officialPosts.length),
+            ...officialPosts.slice(0, ((page - 1) * 3) % officialPosts.length),
+          ].slice(0, Math.max(1, Math.ceil(feed.posts.length / 3)))
+      : [];
+  const likes = await postLikeStates(
+    [...feed.posts.map((p) => p.id), ...official.map((p) => p.id)],
+    user?.isDemo ? undefined : user?.userId,
+  );
+  const items = mixLearningFeed(feed.posts, official).map((item) =>
+    item.type === 'member' && !findOfficialPost(item.value.id) ? (
+      <MemberPostCard
+        key={item.value.id}
+        post={item.value as CommunityPost}
+        canSave={viewer.canSave}
+        initialSaved={viewer.savedRefs.has(item.value.id)}
+        likeState={likes[item.value.id]}
+      />
+    ) : (
+      <OfficialCard
+        key={item.value.id}
+        post={
+          item.type === 'guide' ? item.value : findOfficialPost(item.value.id)!
+        }
+        canSave={viewer.canSave}
+        initialSaved={viewer.savedRefs.has(item.value.id)}
+        likeState={likes[item.value.id]}
+      />
+    ),
+  );
   const pageHref = (p: number) =>
     '/community?' +
-    new URLSearchParams({ ...(kind ? { kind } : {}), page: String(p) });
+    new URLSearchParams({ ...(kind ? { kind } : {}), view, page: String(p) });
   return (
-    <main id="main-content" className="as-feed-layout">
+    <main id="main-content" className="as-feed-layout as-social-feed">
       <div className="as-feed-main">
         <header className="as-feed-heading">
           <div>
@@ -264,7 +476,24 @@ export async function CommunityFeed({
             <Plus size={22} />
           </Link>
         </header>
-        <nav aria-label="投稿の種類" className="as-feed-tabs">
+        <nav aria-label="フィードの選択" className="as-feed-tabs">
+          {[
+            ['all', 'おすすめ'],
+            ['following', 'フォロー中'],
+            ['members', 'みんな'],
+            ['textbook', '教材'],
+            ['ai', '公式AI'],
+          ].map(([key, label]) => (
+            <Link
+              key={key}
+              aria-current={view === key ? 'page' : undefined}
+              href={'/community?view=' + key}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <nav aria-label="投稿の種類" className="as-feed-tabs as-feed-subtabs">
           {[
             [undefined, 'すべて'],
             ['tip', '便利な使い方'],
@@ -273,7 +502,7 @@ export async function CommunityFeed({
           ].map(([k, label]) => (
             <Link
               key={k ?? 'all'}
-              href={k ? '/community?kind=' + k : '/'}
+              href={'/community?view=' + view + (k ? '&kind=' + k : '')}
               aria-current={k === kind ? 'page' : undefined}
             >
               {label}
@@ -286,6 +515,12 @@ export async function CommunityFeed({
             はじめてのAI <ArrowUpRight size={16} />
           </strong>
         </Link>
+        {view === 'following' && !me && (
+          <p className="as-panel">
+            公開プロフィールを作ってフォローすると、ここに投稿が並びます。
+            <Link href="/mypage#account">マイページへ →</Link>
+          </p>
+        )}
         <div className="as-feed-list">{items}</div>
         {!items.length && (
           <section className="as-panel">

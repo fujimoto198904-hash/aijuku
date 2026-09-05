@@ -31,13 +31,16 @@ const securityHeaders = [
   },
 ];
 
-const privateNoStoreHeaders = [
+const noStoreHeaders = [
   {
     key: 'Cache-Control',
     value: 'private, no-cache, no-store, max-age=0, must-revalidate',
   },
   { key: 'Pragma', value: 'no-cache' },
   { key: 'Expires', value: '0' },
+];
+const privateNoStoreHeaders = [
+  ...noStoreHeaders,
   { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
 ];
 
@@ -48,6 +51,7 @@ const privateRouteRoots = [
   '/community/new',
   '/reserve',
   '/mypage',
+  '/messages',
   '/aikanri',
   '/admin',
   '/review',
@@ -81,6 +85,15 @@ const nextConfig: NextConfig = {
       // Keep `/` explicit so the public landing page receives the same baseline.
       { source: '/', headers: securityHeaders },
       { source: '/:path*', headers: securityHeaders },
+      // Public reading pages contain the current member's saved state, not a shared cache entry.
+      ...[
+        '/',
+        '/community',
+        '/community/:path*',
+        '/discover',
+        '/posts/:path*',
+        '/u/:path*',
+      ].map((source) => ({ source, headers: noStoreHeaders })),
       ...privateRoutes.map((source) => ({
         source,
         headers:

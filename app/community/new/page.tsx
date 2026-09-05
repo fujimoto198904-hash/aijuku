@@ -11,6 +11,7 @@ import { getMember, hasCurrentMembershipConsent } from '@/db/membership';
 import { getLearningNote } from '@/db/learning-notes';
 import { withSiteBasePath } from '@/lib/site-paths';
 import { isVercelRuntime, canonicalMemberUrl } from '@/lib/site-runtime';
+import { ownSocialProfile } from '@/db/social';
 export const dynamic = 'force-dynamic';
 export const metadata = {
   title: '投稿する｜AIstock',
@@ -65,6 +66,7 @@ async function NewPostContent({
   }
   const note =
     noteId && !user.isDemo ? await getLearningNote(user.userId, noteId) : null;
+  const profile = await ownSocialProfile(user.userId);
   return (
     <>
       <SiteHeader />
@@ -79,6 +81,11 @@ async function NewPostContent({
           </p>
         ) : (
           <CommunityForm
+            publicProfile={
+              profile?.isPublic
+                ? { name: profile.name, handle: profile.handle }
+                : null
+            }
             initialKind={kind}
             initialBody={
               note

@@ -4,7 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { withSiteBasePath } from '@/lib/site-paths';
 import Link from '@/components/site-link';
-export function CommunityConsent({ name }: { name: string }) {
+export function CommunityConsent({
+  name,
+  returnTo = '/mypage',
+}: {
+  name: string;
+  returnTo?: string;
+}) {
   const [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
   async function submit(e: SubmitEvent<HTMLFormElement>) {
@@ -22,7 +28,7 @@ export function CommunityConsent({ name }: { name: string }) {
       });
       const result = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(result.error);
-      window.location.assign(withSiteBasePath('/mypage'));
+      window.location.assign(withSiteBasePath(returnTo));
     } catch (e) {
       setError(e instanceof Error ? e.message : '保存できませんでした。');
       setBusy(false);

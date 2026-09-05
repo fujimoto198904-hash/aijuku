@@ -12,10 +12,14 @@ import { withSiteBasePath } from '@/lib/site-paths';
 export function MemberProfileSettings({
   displayName,
   email,
+  loginId,
+  hasRecovery = false,
   readOnly = false,
 }: {
   displayName: string;
   email: string;
+  loginId?: string;
+  hasRecovery?: boolean;
   readOnly?: boolean;
 }) {
   const router = useRouter();
@@ -55,7 +59,7 @@ export function MemberProfileSettings({
 
   return (
     <section
-      id="account"
+      id="member-account"
       className="mt-16 scroll-mt-24 border-t-2 border-brand-dark pt-8"
     >
       <p className="text-xs font-semibold tracking-[0.14em] text-sapphire">
@@ -89,7 +93,10 @@ export function MemberProfileSettings({
           />
         </label>
         <div className="border-y border-rule py-4 text-xs leading-6 text-quiet">
-          <p className="break-all">登録メール：{email}</p>
+          {loginId && (
+            <p className="break-all">ログインに使う名前：{loginId}</p>
+          )}
+          <p className="break-all">登録メール：{email || '未登録'}</p>
           <p className="mt-2">
             共有ページには、この表示名が出ます。見せたい名前に直してから共有してください。
           </p>
@@ -112,6 +119,14 @@ export function MemberProfileSettings({
             </Link>
           </div>
         ) : null}
+        {hasRecovery && !readOnly && (
+          <Link
+            href="/account/recover?mode=manage"
+            className="text-sm font-semibold text-sapphire underline underline-offset-4"
+          >
+            パスワードを忘れたときの備え（任意）
+          </Link>
+        )}
         {message ? (
           <p
             className={`soft-control border-l-4 p-4 text-sm ${status === 'error' ? 'border-human-coral bg-human-coral-soft' : 'border-future-mint bg-future-mint-soft'}`}

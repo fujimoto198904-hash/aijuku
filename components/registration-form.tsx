@@ -7,9 +7,11 @@ import { withSiteBasePath } from '@/lib/site-paths';
 export function RegistrationForm({
   ticket,
   email,
+  returnTo = '/mypage',
 }: {
   ticket?: string;
   email?: string;
+  returnTo?: string;
 }) {
   const [busy, setBusy] = useState(false),
     [message, setMessage] = useState(''),
@@ -37,8 +39,9 @@ export function RegistrationForm({
                 nickname: data.get('nickname'),
                 password: data.get('password'),
                 terms: data.get('terms') === 'on',
+                returnTo,
               }
-            : { action: 'email', email: data.get('email') },
+            : { action: 'email', email: data.get('email'), returnTo },
         ),
       });
       const result = (await response.json()) as {

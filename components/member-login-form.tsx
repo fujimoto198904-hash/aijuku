@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye, EyeOff, LoaderCircle, LogIn, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle, LogIn } from 'lucide-react';
 import { type SubmitEvent, useState } from 'react';
 
 import Link from '@/components/site-link';
@@ -35,6 +35,7 @@ export function MemberLoginForm({
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (status === 'sending') return;
     setStatus('sending');
     setMessage('');
     setVerificationRequired(false);
@@ -74,7 +75,7 @@ export function MemberLoginForm({
   return (
     <form className="mt-8 grid gap-5" onSubmit={handleSubmit}>
       <label className="grid gap-2 text-sm font-semibold" htmlFor="login-id">
-        メールアドレス／ログインID
+        ユーザー名／メールアドレス
         <input
           autoCapitalize="none"
           autoComplete="username"
@@ -87,7 +88,7 @@ export function MemberLoginForm({
             setStatus('idle');
             setVerificationRequired(false);
           }}
-          placeholder="name@example.com"
+          placeholder="ユーザー名、または登録したメール"
           readOnly={lockLoginId}
           required
           spellCheck={false}
@@ -128,7 +129,7 @@ export function MemberLoginForm({
             aria-label={
               showPassword ? 'パスワードを隠す' : 'パスワードを表示する'
             }
-            className="mr-2 grid size-10 place-items-center rounded-full text-quiet transition hover:bg-paper hover:text-ink"
+            className="mr-2 grid size-11 place-items-center rounded-full text-quiet transition hover:bg-paper hover:text-ink"
             onClick={() => setShowPassword((current) => !current)}
             type="button"
           >
@@ -140,16 +141,6 @@ export function MemberLoginForm({
           </button>
         </span>
       </label>
-
-      <div className="soft-control flex gap-3 border border-future-mint/45 bg-future-mint-soft/45 p-4">
-        <ShieldCheck
-          className="mt-0.5 size-5 shrink-0 text-sapphire"
-          aria-hidden="true"
-        />
-        <p className="text-xs leading-6 text-quiet">
-          登録時に決めたパスワードでログインしてください。以前のアカウントで初期パスワードをお使いの場合は、ログイン後に変更してください。
-        </p>
-      </div>
 
       {status === 'error' ? (
         <div className="soft-control border-l-4 border-human-coral bg-human-coral-soft p-4 text-sm leading-6 text-brand-dark">
@@ -177,25 +168,23 @@ export function MemberLoginForm({
         ) : (
           <LogIn className="size-4" aria-hidden="true" />
         )}
-        {status === 'sending' ? '確認しています…' : 'マイページへログイン'}
+        {status === 'sending' ? '確認しています…' : 'ログイン'}
       </button>
 
       <div className="border-t border-rule pt-5 text-center text-xs leading-6 text-quiet">
         <p>
-          パスワードを忘れた方、初期パスワードの72時間が過ぎた方は、
           <Link
             className="font-semibold text-sapphire underline underline-offset-4"
-            href="mailto:info@mon-ai.jp"
+            href={'/account/recover?return_to=' + encodeURIComponent(returnTo)}
           >
-            info@mon-ai.jp
+            パスワードを忘れた方
           </Link>
-          へ登録アドレスからご連絡ください。
         </p>
         <p className="mt-3">
           まだ無料会員ではない方は、
           <Link
             className="font-semibold text-sapphire underline underline-offset-4"
-            href="/join"
+            href={'/join?return_to=' + encodeURIComponent(returnTo)}
           >
             無料会員登録へ進む
           </Link>

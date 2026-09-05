@@ -11,18 +11,21 @@ import {
 } from '@/lib/community';
 import { PostImageInput } from '@/components/post-image-input';
 import { withSiteBasePath } from '@/lib/site-paths';
+import Link from '@/components/site-link';
 export function CommunityForm({
   postId,
   initialKind = 'question',
   taskId = '',
   isStaff = false,
   initialBody = '',
+  publicProfile,
 }: {
   postId?: string;
   initialKind?: CommunityKind;
   taskId?: string;
   isStaff?: boolean;
   initialBody?: string;
+  publicProfile?: { name: string; handle: string } | null;
 }) {
   const formId = useId();
   const router = useRouter(),
@@ -50,7 +53,9 @@ export function CommunityForm({
           kind: data.get('kind'),
           title: data.get('title'),
           body: data.get('body'),
-          nickname: isStaff ? 'MON-ai 運営' : data.get('nickname'),
+          nickname: isStaff
+            ? 'Aitock公式'
+            : (publicProfile?.name ?? data.get('nickname')),
           taskId,
           mediaId,
           publicConsent: data.get('publicConsent') === 'on',
@@ -105,7 +110,20 @@ export function CommunityForm({
         )}
         {isStaff ? (
           <p className="font-semibold text-sapphire">
-            MON-ai 運営として投稿します
+            Aitock公式として投稿します
+          </p>
+        ) : publicProfile ? (
+          <p className="as-private-note">
+            <strong>{publicProfile.name}</strong>として公開します。
+            {!postId && (
+              <>
+                投稿は
+                <Link href={'/u/' + publicProfile.handle}>
+                  自分の公開プロフィール
+                </Link>
+                にも並びます。
+              </>
+            )}
           </p>
         ) : (
           <label

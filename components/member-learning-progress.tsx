@@ -470,7 +470,7 @@ export function MemberLearningProgress({
         </p>
         <a
           className="mt-4 inline-flex min-h-11 items-center gap-2 font-semibold text-sapphire"
-          href="#skills"
+          href="/mypage#skills"
         >
           作ったものを記録
         </a>

@@ -4,6 +4,7 @@ import {
   createSessionToken,
   hashPassword,
   isValidInitialPassword,
+  isPlausibleMemberEmail,
   normalizeLoginId,
   protectedIdentifierHash,
   requirePasswordPepper,
@@ -67,7 +68,8 @@ function passwordPepper(): string {
 }
 
 function passwordUserEmail(account: MemberAuthAccount): string {
-  return account.contactEmail ?? account.loginId;
+  const email = account.contactEmail ?? account.loginId;
+  return isPlausibleMemberEmail(email) ? email : '';
 }
 
 function defaultDisplayName(account: MemberAuthAccount): string {
@@ -273,7 +275,7 @@ export async function resolveVerifiedMemberAuthAccount(input: {
   };
 }
 
-// Call only after a server-verified provider identity or consumed email ticket.
+// Server-only: call after verified credentials, a consumed ticket, or atomic new-account creation.
 export async function issueVerifiedMemberSession(
   memberId: string,
 ): Promise<IssuedPasswordSession | null> {
@@ -306,7 +308,7 @@ async function issueSession(
       ? memberSessionLifetimeMs
       : passwordChangeSessionLifetimeMs);
   const db = getD1();
-  await db
+  const issued = await db
     .prepare(
       `
       INSERT INTO member_auth_sessions (
@@ -317,11 +319,27 @@ async function issueSession(
         last_seen_at,
         expires_at,
         revoked_at
-      ) VALUES (?, ?, ?, ?, ?, ?, NULL)
+      ) SELECT ?, member_id, ?, ?, ?, ?, NULL FROM member_auth_accounts
+      WHERE member_id = ? AND password_digest = ? AND status = 'active'
+        AND account_kind = ? AND password_state = ?
+        AND (password_state = 'personal' OR temporary_password_expires_at > ?)
     `,
     )
-    .bind(tokenHash, account.memberId, sessionKind, now, now, expiresAt)
+    .bind(
+      tokenHash,
+      sessionKind,
+      now,
+      now,
+      expiresAt,
+      account.memberId,
+      account.passwordDigest,
+      account.accountKind,
+      account.passwordState,
+      now,
+    )
     .run();
+  if (issued.meta.changes !== 1)
+    throw new Error('認証情報が変更されました。もう一度ログインしてください。');
   await db
     .prepare(
       `
@@ -800,7 +818,7 @@ export async function changeMemberPassword(input: {
   const now = Date.now();
   const passwordDigest = await hashPassword(input.newPassword, pepper);
   const db = getD1();
-  await db.batch([
+  const changed = await db.batch([
     db
       .prepare(
         `
@@ -811,23 +829,38 @@ export async function changeMemberPassword(input: {
           temporary_password_expires_at = NULL,
           password_changed_at = ?,
           updated_at = ?
-        WHERE member_id = ? AND status = 'active'
+        WHERE member_id = ? AND status = 'active' AND password_digest = ?
+          AND account_kind = 'member'
+          AND (password_state = 'personal' OR temporary_password_expires_at > ?)
       `,
       )
-      .bind(passwordDigest, now, now, account.memberId),
+      .bind(
+        passwordDigest,
+        now,
+        now,
+        account.memberId,
+        account.passwordDigest,
+        now,
+      ),
     db
       .prepare(
         `
         UPDATE member_auth_sessions
         SET revoked_at = ?
         WHERE account_id = ? AND revoked_at IS NULL
+          AND EXISTS(SELECT 1 FROM member_auth_accounts WHERE member_id = ? AND password_digest = ?)
       `,
       )
-      .bind(now, account.memberId),
+      .bind(now, account.memberId, account.memberId, passwordDigest),
   ]);
+  if (changed[0].meta.changes !== 1)
+    return {
+      ok: false,
+      error: '認証情報が変更されました。もう一度ログインしてください。',
+    };
   await clearRateLimit('password-change', input.memberId);
   const updated = await getStoredAccountByMemberId(account.memberId);
-  if (!updated)
+  if (!updated || updated.passwordDigest !== passwordDigest)
     return { ok: false, error: 'パスワードを変更できませんでした。' };
   return { ok: true, session: await issueSession(updated, 'member') };
 }

@@ -6,14 +6,22 @@ import { officialPosts } from '@/lib/official-posts';
 import { textbookCatalog } from '@/lib/textbook-catalog';
 import { listCommunityPosts } from '@/db/community';
 import { withSiteBasePath } from '@/lib/site-paths';
+import { getPostStockViewer } from '@/lib/post-stock-viewer';
+import { postLikeStates, searchSocialProfiles } from '@/db/social';
+import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { MemberDirectory } from '@/components/social-profile';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '見つける｜AIstock' };
 export default async function Discover({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; view?: string }>;
 }) {
   const params = await searchParams;
+  const view =
+    params.view === 'people' || params.view === 'textbook'
+      ? params.view
+      : 'posts';
   const q = typeof params.q === 'string' ? params.q.trim().slice(0, 80) : '';
   const page = Math.max(
     1,
@@ -27,7 +35,16 @@ export default async function Discover({
         match(t.title + t.outcome + t.tags.join(' ')),
       )
     : [];
-  const feed = await listCommunityPosts(undefined, page, undefined, q);
+  const [feed, viewer] = await Promise.all([
+    listCommunityPosts(undefined, page, undefined, q),
+    getPostStockViewer(),
+  ]);
+  const user = await getChatGPTUser();
+  const likes = await postLikeStates(
+    [...feed.posts.map((p) => p.id), ...posts.map((p) => p.id)],
+    user?.isDemo ? undefined : user?.userId,
+  );
+  const people = view === 'people' ? await searchSocialProfiles(q, page) : null;
   return (
     <>
       <SiteHeader />
@@ -38,6 +55,7 @@ export default async function Discover({
           <p>メール、画像、調べもの。気になる言葉で探してみよう。</p>
         </header>
         <form action={withSiteBasePath('/discover')} className="as-search">
+          <input type="hidden" name="view" value={view} />
           <label className="sr-only" htmlFor="discover-query">
             投稿・教科書の検索
           </label>
@@ -51,17 +69,93 @@ export default async function Discover({
           <button type="submit">探す</button>
         </form>
         <nav className="as-action-row" aria-label="よく使うキーワード">
-          {['メール', '画像', 'Excel', '暮らし'].map((k) => (
+          {[
+            '仕事',
+            'メール',
+            '資料',
+            '会議',
+            'Excel',
+            '画像',
+            '動画',
+            '音楽',
+            'デザイン',
+            'Web',
+            'プログラミング',
+            '調べ',
+            '英語',
+            '暮らし',
+            '旅行',
+            '料理',
+            'お店',
+            'SNS',
+          ].map((k) => (
             <Link
-              href={'/discover?q=' + encodeURIComponent(k)}
+              href={'/discover?view=' + view + '&q=' + encodeURIComponent(k)}
               key={k}
               className="as-chip"
+              aria-current={q === k ? 'page' : undefined}
             >
               {k}
             </Link>
           ))}
         </nav>
-        {!!tasks.length && (
+        <nav className="as-feed-tabs" aria-label="検索対象">
+          {[
+            ['posts', '投稿'],
+            ['textbook', '教科書'],
+            ['people', 'メンバー'],
+          ].map(([key, label]) => (
+            <Link
+              key={key}
+              aria-current={view === key ? 'page' : undefined}
+              href={'/discover?view=' + key + '&q=' + encodeURIComponent(q)}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+        {view === 'people' && (
+          <section className="as-section">
+            <h2>学ぶ仲間を見つける</h2>
+            <MemberDirectory profiles={people?.profiles ?? []} />
+            {!people?.profiles.length && <p>まだ見つかりませんでした。</p>}
+            <nav className="as-action-row" aria-label="メンバー検索のページ">
+              {page > 1 && (
+                <Link
+                  href={
+                    '/discover?view=people&q=' +
+                    encodeURIComponent(q) +
+                    '&page=' +
+                    (page - 1)
+                  }
+                >
+                  ← 前へ
+                </Link>
+              )}
+              {people?.hasMore && (
+                <Link
+                  href={
+                    '/discover?view=people&q=' +
+                    encodeURIComponent(q) +
+                    '&page=' +
+                    (page + 1)
+                  }
+                >
+                  もっと見る →
+                </Link>
+              )}
+            </nav>
+          </section>
+        )}
+        {view === 'textbook' && (
+          <p className="as-private-note">
+            {q
+              ? '気になる課題から、始められます。'
+              : 'キーワードを選ぶか、教科書の一覧から探せます。'}{' '}
+            <Link href="/textbook/explore">教科書の一覧 →</Link>
+          </p>
+        )}
+        {view === 'textbook' && !!tasks.length && (
           <section className="as-section">
             <h2>教科書 · {tasks.length}件</h2>
             <div className="as-interest-grid">
@@ -84,41 +178,57 @@ export default async function Discover({
             )}
           </section>
         )}
-        <section className="as-section">
-          <h2>{q ? '「' + q + '」の投稿' : 'こんな使い方から、どうぞ。'}</h2>
-          <div className="as-discover-posts">
-            {feed.posts.map((p) => (
-              <MemberPostCard post={p} key={p.id} />
-            ))}
-            {page === 1 &&
-              posts.map((p) => <OfficialCard post={p} key={p.id} />)}
-          </div>
-          {!feed.posts.length && !posts.length && (
-            <p>まだ見つかりませんでした。別の言葉でも探してみてください。</p>
-          )}
-          <nav className="as-action-row" aria-label="検索結果のページ">
-            {page > 1 && (
-              <Link
-                href={
-                  '/discover?' +
-                  new URLSearchParams({ q, page: String(page - 1) })
-                }
-              >
-                ← 前へ
-              </Link>
+        {view === 'posts' && (
+          <section className="as-section">
+            <h2>{q ? '「' + q + '」の投稿' : 'こんな使い方から、どうぞ。'}</h2>
+            <div className="as-discover-posts">
+              {feed.posts.map((p) => (
+                <MemberPostCard
+                  post={p}
+                  key={p.id}
+                  canSave={viewer.canSave}
+                  initialSaved={viewer.savedRefs.has(p.id)}
+                  likeState={likes[p.id]}
+                />
+              ))}
+              {page === 1 &&
+                posts.map((p) => (
+                  <OfficialCard
+                    post={p}
+                    key={p.id}
+                    canSave={viewer.canSave}
+                    initialSaved={viewer.savedRefs.has(p.id)}
+                    likeState={likes[p.id]}
+                  />
+                ))}
+            </div>
+            {!feed.posts.length && !posts.length && (
+              <p>まだ見つかりませんでした。別の言葉でも探してみてください。</p>
             )}
-            {feed.hasMore && (
-              <Link
-                href={
-                  '/discover?' +
-                  new URLSearchParams({ q, page: String(page + 1) })
-                }
-              >
-                次へ →
-              </Link>
-            )}
-          </nav>
-        </section>
+            <nav className="as-action-row" aria-label="検索結果のページ">
+              {page > 1 && (
+                <Link
+                  href={
+                    '/discover?' +
+                    new URLSearchParams({ q, page: String(page - 1) })
+                  }
+                >
+                  ← 前へ
+                </Link>
+              )}
+              {feed.hasMore && (
+                <Link
+                  href={
+                    '/discover?' +
+                    new URLSearchParams({ q, page: String(page + 1) })
+                  }
+                >
+                  次へ →
+                </Link>
+              )}
+            </nav>
+          </section>
+        )}
       </main>
       <SiteFooter />
     </>

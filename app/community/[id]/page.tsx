@@ -17,6 +17,10 @@ import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import Link from '@/components/site-link';
 import { textbookLessonPath } from '@/lib/textbook-routes';
+import { postLikeStates, ownSocialProfile } from '@/db/social';
+import { PostReactions, ReportButton } from '@/components/social-actions';
+import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
+import { officialAiDisclosure } from '@/lib/official-characters';
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({
   params,
@@ -55,6 +59,11 @@ export default async function CommunityDetail({
     getChatGPTUser(),
   ]);
   const stocks = user ? await listPostStocks(user.userId) : [];
+  const profile = user ? await ownSocialProfile(user.userId) : null;
+  const likes = await postLikeStates(
+    [id],
+    user?.isDemo ? undefined : user?.userId,
+  );
   const staff = user ? getAuthenticatedStaffPermissions(user).isOwner : false;
   const owned =
     user && !user.isDemo
@@ -75,12 +84,38 @@ export default async function CommunityDetail({
             {post.title}
           </h1>
           <p className="mt-4 text-sm text-quiet">
-            <CommunityAuthor role={post.authorRole} name={post.authorName} /> ·{' '}
-            {new Date(post.createdAt).toLocaleDateString('ja-JP', {
-              timeZone: 'Asia/Tokyo',
-            })}
+            {post.profileHandle ? (
+              <Link
+                href={'/u/' + post.profileHandle}
+                className="as-detail-author"
+              >
+                <SocialAvatar
+                  name={post.authorName}
+                  avatar={post.avatar}
+                  kind={post.profileKind}
+                />
+                {post.authorName} <AccountBadge kind={post.profileKind} />
+              </Link>
+            ) : (
+              <CommunityAuthor role={post.authorRole} name={post.authorName} />
+            )}{' '}
+            ·{' '}
+            {post.exampleDate
+              ? '投稿例 · 設定日 ' + post.exampleDate
+              : new Date(post.createdAt).toLocaleDateString('ja-JP', {
+                  timeZone: 'Asia/Tokyo',
+                })}
           </p>
-          <div className="mt-5">
+          {post.profileKind === 'official_ai' && (
+            <p className="as-ai-disclosure">{officialAiDisclosure}</p>
+          )}
+          <div className="as-social-actions">
+            <PostReactions
+              postRef={id}
+              path={'/community/' + id}
+              canInteract={!!user && !user.isDemo}
+              {...likes[id]}
+            />
             <PostStock
               postRef={id}
               canSave={!!user && !user.isDemo}
@@ -128,7 +163,7 @@ export default async function CommunityDetail({
           </div>
         </article>
         <section id="replies" className="mt-10">
-          <h2 className="text-2xl font-bold">返信 {post.replyCount}件</h2>
+          <h2 className="text-2xl font-bold">コメント {post.replyCount}件</h2>
           <div className="my-6 grid gap-4">
             {replies.map((reply) => (
               <article
@@ -165,7 +200,15 @@ export default async function CommunityDetail({
             )}
           </nav>
           {user && !user.isDemo ? (
-            <CommunityForm postId={id} isStaff={staff} />
+            <CommunityForm
+              postId={id}
+              isStaff={staff}
+              publicProfile={
+                profile?.isPublic
+                  ? { name: profile.name, handle: profile.handle }
+                  : null
+              }
+            />
           ) : (
             <p className="soft-panel border border-rule bg-white p-6 leading-8">
               返信は無料会員になるとできます。
@@ -175,6 +218,7 @@ export default async function CommunityDetail({
             </p>
           )}
         </section>
+        {user && !user.isDemo && <ReportButton targetType="post" target={id} />}
       </main>
       <SiteFooter />
     </>

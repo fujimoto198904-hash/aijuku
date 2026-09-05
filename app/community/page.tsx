@@ -11,7 +11,7 @@ export const metadata = {
 export default async function CommunityPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string; page?: string }>;
+  searchParams: Promise<{ kind?: string; page?: string; view?: string }>;
 }) {
   const params = await searchParams;
   const kind = isCommunityKind(params.kind) ? params.kind : undefined;
@@ -22,7 +22,15 @@ export default async function CommunityPage({
   return (
     <>
       <SiteHeader />
-      <CommunityFeed kind={kind} page={page} />
+      <CommunityFeed
+        kind={kind}
+        page={page}
+        view={
+          ['following', 'members', 'textbook', 'ai'].includes(params.view ?? '')
+            ? params.view
+            : 'all'
+        }
+      />
       <SiteFooter />
     </>
   );
