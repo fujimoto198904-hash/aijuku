@@ -12,10 +12,12 @@ import {
 import { PostImageInput } from '@/components/post-image-input';
 import { withSiteBasePath } from '@/lib/site-paths';
 import Link from '@/components/site-link';
+import { textbookLessonPath } from '@/lib/textbook-routes';
 export function CommunityForm({
   postId,
   initialKind = 'question',
   taskId = '',
+  taskTitle,
   isStaff = false,
   initialBody = '',
   publicProfile,
@@ -23,6 +25,7 @@ export function CommunityForm({
   postId?: string;
   initialKind?: CommunityKind;
   taskId?: string;
+  taskTitle?: string;
   isStaff?: boolean;
   initialBody?: string;
   publicProfile?: { name: string; handle: string } | null;
@@ -35,6 +38,7 @@ export function CommunityForm({
   const [mediaId, setMediaId] = useState<string | null>(null),
     [imageBusy, setImageBusy] = useState(false);
   const [existingNext, setExistingNext] = useState<string | null>(null);
+  const [selectedKind, setSelectedKind] = useState(initialKind);
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || imageBusy) return;
@@ -99,7 +103,8 @@ export function CommunityForm({
                     type="radio"
                     name="kind"
                     value={kind}
-                    defaultChecked={kind === initialKind}
+                    checked={kind === selectedKind}
+                    onChange={() => setSelectedKind(kind)}
                     required
                   />
                   {communityLabels[kind]}
@@ -107,6 +112,22 @@ export function CommunityForm({
               ))}
             </div>
           </fieldset>
+        )}
+        {!postId && taskId && (
+          <div className="rounded-xl border border-sapphire/20 bg-sapphire-soft p-4">
+            <p className="text-xs font-semibold text-sapphire">
+              質問・投稿に付く教科書
+            </p>
+            <Link
+              href={textbookLessonPath(taskId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block text-base font-semibold text-sapphire underline underline-offset-4"
+            >
+              {taskId}
+              {taskTitle ? ` ${taskTitle}` : ''} ↗
+            </Link>
+          </div>
         )}
         {isStaff ? (
           <p className="font-semibold text-sapphire">
@@ -149,18 +170,26 @@ export function CommunityForm({
             htmlFor={formId + '-title'}
             className="grid gap-2 font-semibold"
           >
-            タイトル
+            {selectedKind === 'question' ? '何に困っていますか？' : 'タイトル'}
             <Input
               id={formId + '-title'}
               name="title"
-              placeholder="どんなことを話したいですか？"
+              placeholder={
+                selectedKind === 'question'
+                  ? '例：AIの返事に、元のメモにない日付が入ります'
+                  : 'どんなことを話したいですか？'
+              }
               maxLength={100}
               required
             />
           </label>
         )}
         <label htmlFor={formId + '-body'} className="grid gap-2 font-semibold">
-          {postId ? '返信' : '本文'}
+          {postId
+            ? '返信'
+            : selectedKind === 'question'
+              ? '試したこと・分からないところ'
+              : '本文'}
           <Textarea
             className="min-h-48 text-base"
             id={formId + '-body'}
@@ -169,7 +198,9 @@ export function CommunityForm({
             placeholder={
               postId
                 ? 'わかることや、試してみたことを書いてください。'
-                : '何を試して、どうなりましたか？気づきや困ったところを書いてください。'
+                : selectedKind === 'question'
+                  ? '例：ChatGPTにメモを貼って、返信文を作ってもらいました。日付を指定していないのに「金曜日」と出ます。どう頼めば防げますか？'
+                  : '何を試して、どうなりましたか？気づきや困ったところを書いてください。'
             }
             maxLength={5000}
             required
@@ -181,9 +212,6 @@ export function CommunityForm({
             onChange={setMediaId}
             onBusy={setImageBusy}
           />
-        )}
-        {taskId && (
-          <p className="text-sm text-sapphire">関連する課題：{taskId}</p>
         )}
         <label className="flex items-start gap-3 text-sm leading-6">
           <input
@@ -226,7 +254,13 @@ export function CommunityForm({
           disabled={busy || imageBusy}
           className="min-h-12 bg-sapphire text-white"
         >
-          {busy ? '保存しています…' : postId ? '返信する' : '公開する'}
+          {busy
+            ? '投稿しています…'
+            : postId
+              ? '返信する'
+              : selectedKind === 'question'
+                ? '質問を投稿する'
+                : '投稿する'}
         </Button>
       </fieldset>
     </form>

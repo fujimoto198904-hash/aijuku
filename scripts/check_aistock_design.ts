@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { build } from 'esbuild';
 import nextConfig from '../next.config';
 import { isAistockNavActive } from '../lib/aistock-navigation';
 import { createElement } from 'react';
@@ -21,6 +22,7 @@ import { mypageTabForAnchor } from '../components/mypage-tabs';
 import {
   textbookRecordPath,
   textbookWorkRecordPath,
+  textbookQuestionPath,
 } from '../lib/textbook-routes';
 
 const lessonFixture = {
@@ -30,6 +32,151 @@ const lessonFixture = {
   courseTitle: '基礎',
   trackLabel: '共通',
 };
+// Render the real composer without a browser. Only framework navigation/image
+// adapters are stubbed; React stays shared with renderToStaticMarkup.
+const composerBundle = await build({
+  stdin: {
+    contents: "export { CommunityForm } from './components/community-form';",
+    resolveDir: process.cwd(),
+    loader: 'tsx',
+  },
+  bundle: true,
+  write: false,
+  platform: 'node',
+  format: 'esm',
+  plugins: [
+    {
+      name: 'composer-render-adapters',
+      setup(plugin) {
+        plugin.onResolve({ filter: /^[^./]/ }, ({ path }) => {
+          if (path.startsWith('@/') || path.startsWith('next/')) return;
+          return {
+            path: import.meta.resolve(path),
+            external: true,
+          };
+        });
+        plugin.onResolve(
+          { filter: /^next\/(navigation|image)$/ },
+          ({ path }) => ({ path, namespace: 'composer-check' }),
+        );
+        plugin.onLoad(
+          { filter: /.*/, namespace: 'composer-check' },
+          ({ path }) => ({
+            contents:
+              path === 'next/navigation'
+                ? 'export function useRouter(){return {refresh(){}}}'
+                : 'export default function Image(){return null}',
+            loader: 'js',
+          }),
+        );
+      },
+    },
+  ],
+});
+const { CommunityForm } = (await import(
+  'data:text/javascript;base64,' +
+    Buffer.from(
+      composerBundle.outputFiles[0].text +
+        '\n//# sourceURL=aistock-composer-check.mjs',
+    ).toString('base64')
+)) as {
+  CommunityForm: typeof import('../components/community-form').CommunityForm;
+};
+assert.equal(
+  textbookQuestionPath(lessonFixture.id),
+  '/community/new?kind=question&task=Lv.05',
+);
+const questionMarkup = renderToStaticMarkup(
+  createElement(CommunityForm, {
+    initialKind: 'question',
+    taskId: lessonFixture.id,
+    taskTitle: lessonFixture.title,
+    publicProfile: { name: '学ぶひと', handle: 'learner' },
+  }),
+);
+assert(
+  questionMarkup.includes('質問を投稿する') &&
+    questionMarkup.includes('試したこと・分からないところ'),
+);
+assert(
+  questionMarkup.includes('Lv.05 メールの返信') &&
+    questionMarkup.includes('target="_blank"'),
+);
+assert(
+  !/<input[^>]*name="publicConsent"[^>]*checked/.test(questionMarkup),
+  'public consent must be unchecked',
+);
+assert.match(
+  questionMarkup,
+  /<textarea[^>]*name="body"[^>]*><\/textarea>/,
+  'question body must not claim actions the learner never did',
+);
+const noteShareMarkup = renderToStaticMarkup(
+  createElement(CommunityForm, {
+    initialKind: 'learning',
+    initialBody: '自分で試したこと\n\n自分で直したところ',
+    taskId: lessonFixture.id,
+    taskTitle: lessonFixture.title,
+  }),
+);
+assert(
+  noteShareMarkup.includes('自分で試したこと\n\n自分で直したところ') &&
+    !noteShareMarkup.includes('質問を投稿する'),
+);
+const replyMarkup = renderToStaticMarkup(
+  createElement(CommunityForm, { postId: 'fixture-post' }),
+);
+assert(
+  replyMarkup.includes('返信する') &&
+    !replyMarkup.includes('何に困っていますか？'),
+);
+const composerSource = readFileSync(
+  new URL('../components/community-form.tsx', import.meta.url),
+  'utf8',
+);
+assert.match(composerSource, /checked=\{kind === selectedKind\}/);
+assert.match(composerSource, /onChange=\{\(\) => setSelectedKind\(kind\)\}/);
+assert.match(
+  composerSource,
+  /defaultValue=\{initialBody\}/,
+  'changing kind must not overwrite a note or typed text',
+);
+const questionPageSource = readFileSync(
+  new URL('../app/community/new/page.tsx', import.meta.url),
+  'utf8',
+);
+assert.match(questionPageSource, /getLearningNote\(user.userId, noteId\)/);
+assert.match(questionPageSource, /\[note.body, note.humanFix\]/);
+assert.match(questionPageSource, /noteId && !note/);
+assert.match(
+  questionPageSource,
+  /'\/join\?return_to=' \+ encodeURIComponent\(returnTo\)/,
+);
+assert.match(
+  questionPageSource,
+  /'\/mypage\/onboarding\?return_to=' \+ encodeURIComponent\(returnTo\)/,
+);
+const onboardingSource = readFileSync(
+  new URL('../app/mypage/onboarding/page.tsx', import.meta.url),
+  'utf8',
+);
+assert.match(
+  onboardingSource,
+  /registrationReturnTo\(params\?\.return_to \?\? '\/mypage'\)/,
+);
+assert.match(
+  onboardingSource,
+  /'\/mypage\/onboarding\?return_to=' \+ encodeURIComponent\(returnTo\)/,
+);
+const questionReaderSource = readFileSync(
+  new URL('../components/textbook/lesson-reader.tsx', import.meta.url),
+  'utf8',
+);
+assert.match(questionReaderSource, /href=\{textbookQuestionPath\(task.id\)\}/);
+assert(
+  !questionReaderSource.includes('質問の下書き') &&
+    !questionReaderSource.includes('相談メモをコピー'),
+);
 assert.equal(
   textbookRecordPath(lessonFixture.id),
   '/mypage?task=Lv.05#learning',

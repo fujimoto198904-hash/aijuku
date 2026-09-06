@@ -61,13 +61,21 @@ async function NewPostContent({
   const user = await requireChatGPTUser(returnTo);
   if (!user.isDemo) {
     const member = await getMember(user.userId);
-    if (!member) redirect(withSiteBasePath('/join'));
+    if (!member)
+      redirect(
+        withSiteBasePath('/join?return_to=' + encodeURIComponent(returnTo)),
+      );
     if (member.status !== 'active' || !hasCurrentMembershipConsent(member))
-      redirect(withSiteBasePath('/mypage/onboarding'));
+      redirect(
+        withSiteBasePath(
+          '/mypage/onboarding?return_to=' + encodeURIComponent(returnTo),
+        ),
+      );
   }
   const note =
     noteId && !user.isDemo ? await getLearningNote(user.userId, noteId) : null;
   const profile = await ownSocialProfile(user.userId);
+  const relatedTask = findTextbookTask(taskId ?? note?.taskId ?? '');
   return (
     <>
       <SiteHeader />
@@ -75,10 +83,22 @@ async function NewPostContent({
         <Link href="/community" className="text-sapphire">
           ← みんなの投稿
         </Link>
-        <h1 className="my-7 text-3xl font-bold">気づきを、持ち寄ろう。</h1>
+        <h1 className="mb-3 mt-7 text-3xl font-bold">
+          みんなに投稿する
+        </h1>
+        <p className="mb-6 text-sm leading-6 text-quiet">
+          内容を確認して、最後に投稿ボタンを押してください。
+        </p>
         {user.isDemo ? (
           <p>
             デモは閲覧専用です。投稿するにはご自身のアカウントでログインしてください。
+          </p>
+        ) : noteId && !note ? (
+          <p role="alert">
+            このノートは見つかりません。
+            <Link href="/mypage/notebook" className="text-sapphire underline">
+              自分のノートへ戻る
+            </Link>
           </p>
         ) : (
           <CommunityForm
@@ -93,7 +113,8 @@ async function NewPostContent({
                 ? [note.body, note.humanFix].filter(Boolean).join('\n\n')
                 : ''
             }
-            taskId={taskId ?? note?.taskId ?? undefined}
+            taskId={relatedTask?.id}
+            taskTitle={relatedTask?.title}
             isStaff={getAuthenticatedStaffPermissions(user).isOwner}
           />
         )}

@@ -19,7 +19,15 @@ export default async function Onboarding(
   props: Parameters<typeof PaidOnboarding>[0],
 ) {
   if (paidServicesEnabled) return <PaidOnboarding {...props} />;
-  if (isVercelRuntime()) redirect(canonicalMemberUrl('/mypage/onboarding'));
+  if (isVercelRuntime()) {
+    const params = await props.searchParams;
+    const returnTo = registrationReturnTo(params?.return_to ?? '/mypage');
+    redirect(
+      canonicalMemberUrl(
+        '/mypage/onboarding?return_to=' + encodeURIComponent(returnTo),
+      ),
+    );
+  }
   return <Content searchParams={props.searchParams} />;
 }
 async function Content({ searchParams }: Parameters<typeof PaidOnboarding>[0]) {

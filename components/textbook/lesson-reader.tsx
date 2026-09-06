@@ -17,7 +17,6 @@ import {
   Lightbulb,
   ListOrdered,
   MessageCircleQuestion,
-  PenLine,
   RotateCcw,
   Sparkles,
   X,
@@ -41,12 +40,12 @@ import {
   textbookExplorePath,
   textbookLessonPath,
   textbookRecordPath,
+  textbookQuestionPath,
   textbookPlanGuidePath,
   textbookSetupPath,
 } from '@/lib/textbook-routes';
 import { MaterialPreview } from '@/components/textbook/material-preview';
 import {
-  humanFileName,
   lessonSections,
   readStoredChecks,
   writeStoredChecks,
@@ -111,9 +110,7 @@ export function LessonReader({
   const [promptCopyStatus, setPromptCopyStatus] = useState('');
   const [nextPromptCopyStatus, setNextPromptCopyStatus] = useState('');
   const [saveCopyStatus, setSaveCopyStatus] = useState('');
-  const [questionCopyStatus, setQuestionCopyStatus] = useState('');
   const [stepUpCopyStatus, setStepUpCopyStatus] = useState('');
-  const [question, setQuestion] = useState('');
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   const [currentSection, setCurrentSection] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
@@ -234,10 +231,6 @@ export function LessonReader({
   );
   const modeLabel =
     lesson.recommendedMode === 'chat' ? '作業画面：Chat' : '作業画面：Work';
-  const materialSummary =
-    lesson.files.length > 0
-      ? lesson.files.map(humanFileName).join('、')
-      : (lesson.carryIn ?? '材料なし');
   const startBadge =
     lesson.files.length > 0
       ? '架空のデモファイルですぐ試せます'
@@ -246,7 +239,6 @@ export function LessonReader({
         : '材料なしですぐ始められます';
   const checksStorageStatus =
     checksStorage.taskId === task.id ? checksStorage.status : 'checking';
-  const questionMemo = `${task.id}「${task.title}」で止まりました。\n使った材料：${materialSummary}\n材料の渡し方：中身を貼った・ファイルを添付した（当てはまるものを残す）\n作業画面：Chat・Work（使った方を残す）\nここで止まった：${question || 'まだうまく説明できない'}\n画面のスクショも一緒に送ります。`;
 
   const sectionVisible = useMemo(
     () =>
@@ -943,46 +935,22 @@ export function LessonReader({
                     className="size-5 text-human-coral-bright"
                     aria-hidden="true"
                   />
-                  <h4 className="font-mincho text-2xl">質問の下書き</h4>
+                  <h4 className="font-mincho text-2xl">
+                    この課題について質問する
+                  </h4>
                 </div>
-                <label className="mt-6 block">
-                  <span className="text-xs text-white/65">
-                    どこで止まった？
-                  </span>
-                  <textarea
-                    className="mt-2 min-h-28 w-full resize-y border border-white/25 bg-white/5 p-4 text-sm leading-7 text-white outline-none placeholder:text-white/60 focus:border-human-coral-bright"
-                    value={question}
-                    onChange={(event) => setQuestion(event.target.value)}
-                    placeholder="例：元のメモにない日付が増えた"
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={() =>
-                    copyText(questionMemo, '相談メモ', setQuestionCopyStatus)
-                  }
-                  className="soft-button mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 bg-white px-5 text-xs font-semibold text-deep-green hover:bg-sapphire-soft"
-                >
-                  <PenLine className="size-4" aria-hidden="true" />
-                  相談メモをコピー
-                </button>
-                <p className="mt-3 text-xs leading-5 text-white/55">
-                  メモをコピーして、質問の本文に貼れます。公開できる内容か確認してから投稿してください。
+                <p className="mt-5 text-base leading-7 text-white/85">
+                  課題名は自動で付きます。次の画面で困ったことを書いて、みんなに聞いてみましょう。
                 </p>
                 <Link
-                  href={
-                    '/community/new?kind=question&task=' +
-                    encodeURIComponent(task.id)
-                  }
-                  className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-white px-5 font-semibold text-sapphire"
+                  href={textbookQuestionPath(task.id)}
+                  className="soft-button mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-white px-5 font-semibold text-sapphire"
                 >
-                  みんなに質問する →
+                  質問を書く
+                  <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
-                <p
-                  className="mt-2 min-h-5 text-xs text-human-coral-bright"
-                  aria-live="polite"
-                >
-                  {questionCopyStatus}
+                <p className="mt-3 text-sm leading-6 text-white/75">
+                  無料会員向け。内容を確認して投稿するまでは公開されません。
                 </p>
               </div>
             </div>

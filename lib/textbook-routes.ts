@@ -22,3 +22,7 @@ export function textbookRecordPath(taskId: string): string {
 export function textbookWorkRecordPath(taskId: string): string {
   return `/mypage?task=${encodeURIComponent(taskId)}#skill-record`;
 }
+
+export function textbookQuestionPath(taskId: string): string {
+  return `/community/new?kind=question&task=${encodeURIComponent(taskId)}`;
+}

@@ -227,7 +227,11 @@ try {
     (await api.communityPost(request(post({ taskId: 'not-a-task' })))).status,
     400,
   );
-  const input = post();
+  const input = post({
+    taskId: 'Lv.05',
+    title: '元のメモにない日付が返事に入ります',
+    body: 'ChatGPTにメモを貼って返信文を頼みました。日付を足さずに書いてもらうには、どう頼めばいいですか？',
+  });
   const response = await api.communityPost(request(input));
   assert.equal(response.status, 200);
   const saved = await response.json();
@@ -242,6 +246,10 @@ try {
   const feed = await api.listCommunityPosts();
   assert.equal(feed.posts.length, 1);
   assert.equal(feed.posts[0].authorRole, 'member');
+  assert.equal(feed.posts[0].kind, 'question');
+  assert.equal(feed.posts[0].taskId, 'Lv.05');
+  assert.equal(feed.posts[0].body, input.body);
+  assert.equal((await api.getCommunityPost(id)).title, input.title);
   for (const field of ['authorId', 'email', 'requestId'])
     assert.equal(field in feed.posts[0], false);
   asUser('test-two');
