@@ -48,7 +48,7 @@ async function RecoveryContent({ searchParams }: Props) {
           <p className="mt-4 text-sm leading-7 text-quiet">
             {manage
               ? '設定は任意です。パスワードを忘れたときに使うコードを発行できます。'
-              : 'ユーザー名と復旧コードがあれば、新しいパスワードに変えられます。'}
+              : 'ユーザーIDと復旧コードがあれば、新しいパスワードに変えられます。'}
           </p>
           {available ? (
             <AccountRecoveryForm returnTo={returnTo} manage={manage} />

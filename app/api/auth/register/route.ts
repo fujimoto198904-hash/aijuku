@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       const username = registrationUsername(data.username);
       if (!username || typeof data.password !== 'string' || data.terms !== true)
         return noStoreJson(
-          { error: 'ユーザー名、パスワード、規約への同意を確認してください。' },
+          { error: 'ユーザーID、パスワード、規約への同意を確認してください。' },
           { status: 400 },
         );
       if (!(await registrationAllowance('username:' + username, 5)))
@@ -78,6 +78,8 @@ export async function POST(request: Request) {
       const result = await registerUsername({
         username,
         password: data.password,
+        displayName:
+          typeof data.displayName === 'string' ? data.displayName : undefined,
       });
       const headers = new Headers();
       appendSessionCookie(headers, {

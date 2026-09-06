@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { publicNickname } from '@/lib/community';
 
 import type { ChatGPTUser } from '@/app/chatgpt-auth';
 
@@ -353,8 +354,10 @@ export async function registerMember(input: {
   if (currentMember?.status === 'withdrawn') {
     throw new Error('Withdrawn membership requires explicit reactivation.');
   }
+  const name = publicNickname(input.displayName, false);
+  if (!name) throw new Error('表示名は30文字以内で入力してください。');
   const now = Date.now();
-  await getD1()
+  const memberStatement = getD1()
     .prepare(
       `
       INSERT INTO members (
@@ -383,15 +386,22 @@ export async function registerMember(input: {
     .bind(
       input.user.userId,
       input.user.email,
-      input.displayName,
+      name,
       membershipTermsVersion,
       now,
       privacyPolicyVersion,
       now,
       now,
       now,
-    )
-    .run();
+    );
+  await getD1().batch([
+    memberStatement,
+    getD1()
+      .prepare(
+        "UPDATE social_profiles SET name=?,revision=revision+1 WHERE member_id=? AND kind='member' AND EXISTS(SELECT 1 FROM members WHERE id=? AND status='active')",
+      )
+      .bind(name, input.user.userId, input.user.userId),
+  ]);
 
   const member = await getMember(input.user.userId);
   if (!member) throw new Error('Member could not be saved.');
@@ -417,17 +427,21 @@ export async function updateMemberDisplayName(input: {
   displayName: string;
 }): Promise<boolean> {
   await ensureMembershipSchema();
-  const result = await getD1()
-    .prepare(
-      `
-      UPDATE members
-      SET display_name = ?, updated_at = ?
-      WHERE id = ? AND status = 'active'
-    `,
-    )
-    .bind(input.displayName, Date.now(), input.memberId)
-    .run();
-  return Number(result.meta.changes ?? 0) > 0;
+  const name = publicNickname(input.displayName, false);
+  if (!name) return false;
+  const results = await getD1().batch([
+    getD1()
+      .prepare(
+        "UPDATE members SET display_name=?,updated_at=? WHERE id=? AND status='active'",
+      )
+      .bind(name, Date.now(), input.memberId),
+    getD1()
+      .prepare(
+        "UPDATE social_profiles SET name=?,revision=revision+1 WHERE member_id=? AND kind='member' AND EXISTS(SELECT 1 FROM members WHERE id=? AND status='active')",
+      )
+      .bind(name, input.memberId, input.memberId),
+  ]);
+  return Number(results[0].meta.changes ?? 0) > 0;
 }
 
 export async function listMemberApplications(

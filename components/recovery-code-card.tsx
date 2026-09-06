@@ -24,7 +24,7 @@ export function RecoveryCodeCard({
   async function copy() {
     try {
       await navigator.clipboard.writeText(
-        `AIstock\nユーザー名：${username}\n復旧コード：${code}`,
+        `AIstock\nログインID：${username}\n復旧コード：${code}`,
       );
       setCopied(true);
       setError('');
@@ -47,7 +47,7 @@ export function RecoveryCodeCard({
         パスワードを忘れたときに使います。必要ならコピーして保管してください。
       </p>
       <div className="rounded-2xl border border-rule bg-paper p-5">
-        <p className="text-xs text-quiet">ユーザー名</p>
+        <p className="text-xs text-quiet">ログインID</p>
         <p className="mt-1 break-all font-semibold">{username}</p>
         <label
           htmlFor="account-recovery-code"
@@ -76,7 +76,7 @@ export function RecoveryCodeCard({
           ) : (
             <Copy size={16} aria-hidden="true" />
           )}
-          {copied ? 'コピーしました' : 'ユーザー名とコードをコピー'}
+          {copied ? 'コピーしました' : 'ログインIDとコードをコピー'}
         </Button>
       </div>
       <p className="text-xs leading-6 text-quiet">

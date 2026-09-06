@@ -9,6 +9,7 @@ import {
 } from '@/components/social-actions';
 import { memberThread, threadMessages, relationship } from '@/db/social';
 import { requireSocialMember } from '@/lib/social-member';
+import { profileUserId } from '@/lib/public-profile';
 export const dynamic = 'force-dynamic';
 export const metadata = {
   title: '会話｜AIstock',
@@ -46,13 +47,13 @@ export default async function Conversation({
         <header className="as-message-header">
           <h1>
             {other.isPublic ? (
-              <Link href={'/u/' + other.handle}>{other.name}</Link>
+              <Link href={'/u/' + profileUserId(other)}>{other.name}</Link>
             ) : (
               other.name
             )}
           </h1>
           <ProfileActions
-            handle={other.handle}
+            handle={profileUserId(other)}
             relation={relation}
             canInteract={!user.isDemo}
           />

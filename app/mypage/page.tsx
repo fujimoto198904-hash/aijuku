@@ -4,6 +4,7 @@ import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { MemberLearningProgress } from '@/components/member-learning-progress';
 import { MemberProfileSettings } from '@/components/member-profile-settings';
+import { profileUserId } from '@/lib/public-profile';
 import { SkillPassport } from '@/components/skill-passport';
 import { MypageTabs } from '@/components/mypage-tabs';
 import { ProfileIdentity, ProfilePostGrid } from '@/components/social-profile';
@@ -116,12 +117,15 @@ async function MemberContent({
   const settings = (
     <>
       <div id="account" className="as-tab-section">
-        <SocialProfileSettings profile={social} readOnly={!!user.isDemo} />
+        <SocialProfileSettings
+          profile={social}
+          displayName={member.displayName}
+          readOnly={!!user.isDemo}
+        />
       </div>
       <MemberProfileSettings
-        displayName={member.displayName}
         email={member.email}
-        loginId={user.loginId}
+        loginId={social?.publicId ? '@' + social.publicId : user.loginId}
         hasRecovery={hasRecovery}
         readOnly={user.isDemo}
       />
@@ -168,7 +172,10 @@ async function MemberContent({
               プロフィールを編集
             </Link>
             {social?.isPublic ? (
-              <Link className="as-secondary" href={'/u/' + social.handle}>
+              <Link
+                className="as-secondary"
+                href={'/u/' + profileUserId(social)}
+              >
                 公開ページを見る ↗
               </Link>
             ) : (

@@ -11,10 +11,13 @@ import {
 } from '@/lib/password-security';
 import {
   registrationUsername,
+  recoveryUsername,
   reservedRegistrationUsername,
 } from '@/lib/username-registration';
+import { publicNickname } from '@/lib/community';
+import { publicIdAvailable } from '@/db/social';
 
-const recoveryError = 'ユーザー名と復旧コードを確認してください。';
+const recoveryError = 'ユーザーIDと復旧コードを確認してください。';
 function recoveryHash(memberId: string, code: string) {
   return protectedIdentifierHash(
     `account-recovery:${memberId}:${code}`,
@@ -25,14 +28,22 @@ function recoveryHash(memberId: string, code: string) {
 export async function registerUsername(input: {
   username: string;
   password: string;
+  displayName?: string;
 }) {
   const username = registrationUsername(input.username);
+  const displayName =
+    input.displayName === undefined
+      ? 'メンバー'
+      : publicNickname(input.displayName, false);
+  if (!displayName) throw new Error('表示名は1〜30文字で入力してください。');
+  if (!(await publicIdAvailable(username)))
+    throw new Error('このユーザーIDは使えません。別のIDをお試しください。');
   if (
     !username ||
     reservedRegistrationUsername(username, env.AUTH_OWNER_LOGIN_ID)
   )
     throw new Error(
-      '別のユーザー名を入力してください。半角英数字・_・-の3〜24文字が使えます。',
+      '別のユーザーIDを入力してください。半角英数字・_・-の3〜24文字が使えます。',
     );
   const invalid = validatePersonalPassword({
     password: input.password,
@@ -46,8 +57,9 @@ export async function registerUsername(input: {
       .bind(username)
       .first()
   )
-    throw new Error('このユーザー名は使えません。別の名前をお試しください。');
+    throw new Error('このユーザーIDは使えません。別のIDをお試しください。');
   const id = crypto.randomUUID(),
+    handle = 'profile-' + crypto.randomUUID(),
     now = Date.now();
   const digest = await hashPassword(
     input.password,
@@ -57,8 +69,9 @@ export async function registerUsername(input: {
   try {
     await env.DB.batch([
       env.DB.prepare(`INSERT INTO members(id,email,display_name,status,terms_version,terms_accepted_at,privacy_version,privacy_accepted_at,created_at,updated_at)
-        VALUES(?,'','メンバー','active',?,?,?,?,?,?)`).bind(
+        VALUES(?,'',?,'active',?,?,?,?,?,?)`).bind(
         id,
+        displayName,
         membershipTermsVersion,
         now,
         privacyPolicyVersion,
@@ -75,16 +88,22 @@ export async function registerUsername(input: {
         now,
         now,
       ),
+      env.DB.prepare(
+        'INSERT INTO social_profiles(handle,member_id,name,public_id,created_at) VALUES(?,?,?,?,?)',
+      ).bind(handle, id, displayName, username, now),
+      env.DB.prepare(
+        'INSERT INTO social_public_ids(id,profile_handle,created_at) VALUES(?,?,?)',
+      ).bind(username, handle, now),
     ]);
   } catch (error) {
-    if (String(error).includes('UNIQUE'))
-      throw new Error('このユーザー名は使えません。別の名前をお試しください。');
+    if (/UNIQUE|reserved_public_id/.test(String(error)))
+      throw new Error('このユーザーIDは使えません。別のIDをお試しください。');
     throw error;
   }
   const session = await issueVerifiedMemberSession(id);
   if (!session)
     throw new Error(
-      '登録後のログインに失敗しました。入力したユーザー名とパスワードでログインしてください。',
+      '登録後のログインに失敗しました。@ユーザーIDとパスワードでログインしてください。',
     );
   return { session, username };
 }
@@ -98,9 +117,13 @@ type RecoveryAccount = {
 async function recoveryAccount(username: string) {
   return env.DB.prepare(`SELECT a.member_id AS memberId,a.login_id AS loginId,a.password_digest AS passwordDigest,a.recovery_code_hash AS codeHash
     FROM member_auth_accounts a JOIN members m ON m.id=a.member_id
-    WHERE a.login_id=? AND a.account_kind='member' AND a.password_state='personal' AND a.status='active' AND m.status='active'
+    WHERE (a.login_id=? OR (?=1 AND a.member_id=(SELECT member_id FROM social_profiles WHERE public_id=? AND kind='member'))) AND a.account_kind='member' AND a.password_state='personal' AND a.status='active' AND m.status='active'
       AND a.contact_email IS NULL`)
-    .bind(username)
+    .bind(
+      username.startsWith('@') ? '' : username,
+      +username.startsWith('@'),
+      username.slice(1),
+    )
     .first<RecoveryAccount>();
 }
 
@@ -123,10 +146,13 @@ export async function recoverUsernamePassword(input: {
   code: string;
   password: string;
 }) {
-  const username = registrationUsername(input.username);
+  const username = recoveryUsername(input.username);
   if (
     !username ||
-    reservedRegistrationUsername(username, env.AUTH_OWNER_LOGIN_ID) ||
+    reservedRegistrationUsername(
+      username.replace(/^@/, ''),
+      env.AUTH_OWNER_LOGIN_ID,
+    ) ||
     !/^[A-Za-z0-9_-]{43}$/.test(input.code)
   )
     throw new Error(recoveryError);

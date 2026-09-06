@@ -1088,6 +1088,9 @@ export const socialProfiles = sqliteTable(
   'social_profiles',
   {
     handle: text('handle').primaryKey(),
+    publicId: text('public_id'),
+    revision: integer('revision').notNull().default(0),
+    avatarMediaId: text('avatar_media_id').references(() => communityMedia.id),
     memberId: text('member_id').references(() => members.id),
     name: text('name').notNull(),
     bio: text('bio').notNull().default(''),
@@ -1099,11 +1102,24 @@ export const socialProfiles = sqliteTable(
   },
   (t) => [
     uniqueIndex('social_profiles_member').on(t.memberId),
+    uniqueIndex('social_profiles_public_id').on(t.publicId),
     check(
       'social_profiles_kind',
       sql`${t.kind} in ('member','official','official_ai')`,
     ),
   ],
+);
+// Previous public IDs remain reserved to the same immutable social identity.
+export const socialPublicIds = sqliteTable(
+  'social_public_ids',
+  {
+    id: text('id').primaryKey(),
+    profileHandle: text('profile_handle')
+      .notNull()
+      .references(() => socialProfiles.handle),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [index('social_public_ids_profile').on(t.profileHandle)],
 );
 export const socialFollows = sqliteTable(
   'social_follows',

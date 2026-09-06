@@ -7,7 +7,7 @@ import {
 import { noStoreJson, requestClientAddress } from '@/lib/auth-request';
 import { readBoundedJson } from '@/lib/limited-json';
 import { isSameOriginRequest } from '@/lib/request-security';
-import { registrationUsername } from '@/lib/username-registration';
+import { recoveryUsername } from '@/lib/username-registration';
 
 export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         { error: '操作を確認してください。' },
         { status: 400 },
       );
-    const username = registrationUsername(data.username);
+    const username = recoveryUsername(data.username);
     if (
       !(await registrationAllowance(
         'recovery-name:' + (username || 'invalid'),

@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { membershipTermsVersion, privacyPolicyVersion } from '@/db/membership';
 export type PostMedia = {
   id: string;
   objectKey: string;
@@ -43,22 +44,23 @@ export async function ownedCommunityMedia(id: string, memberId: string) {
 }
 export async function readCommunityMedia(id: string, memberId?: string) {
   const row = await env.DB.prepare(
-    `SELECT m.id,m.object_key AS objectKey,m.width,m.height FROM community_media m WHERE m.id=? AND (m.member_id=? OR EXISTS(SELECT 1 FROM community_posts p WHERE p.media_id=m.id AND p.deleted_at IS NULL))`,
+    `SELECT m.id,m.object_key AS objectKey,m.width,m.height FROM community_media m WHERE m.id=? AND (m.member_id=? OR EXISTS(SELECT 1 FROM community_posts p WHERE p.media_id=m.id AND p.deleted_at IS NULL)
+    OR EXISTS(SELECT 1 FROM social_profiles s JOIN members u ON u.id=s.member_id WHERE s.avatar_media_id=m.id AND s.is_public=1 AND u.status='active' AND u.terms_version=? AND u.privacy_version=?))`,
   )
-    .bind(id, memberId ?? '')
+    .bind(id, memberId ?? '', membershipTermsVersion, privacyPolicyVersion)
     .first<PostMedia>();
   return row ? env.MEDIA.get(row.objectKey) : null;
 }
 export async function cleanUnusedCommunityMedia() {
   const { results } = await env.DB.prepare(
-    'SELECT m.id,m.object_key AS objectKey FROM community_media m WHERE m.created_at<? AND NOT EXISTS(SELECT 1 FROM community_posts p WHERE p.media_id=m.id) LIMIT 10',
+    'SELECT m.id,m.object_key AS objectKey FROM community_media m WHERE m.created_at<? AND NOT EXISTS(SELECT 1 FROM community_posts p WHERE p.media_id=m.id) AND NOT EXISTS(SELECT 1 FROM social_profiles s WHERE s.avatar_media_id=m.id) LIMIT 10',
   )
     .bind(Date.now() - 86400000)
     .all<{ id: string; objectKey: string }>();
   // Delete only rows still unreferenced; a concurrently published image must survive.
   for (const row of results) {
     const deleted = await env.DB.prepare(
-      'DELETE FROM community_media WHERE id=? AND NOT EXISTS(SELECT 1 FROM community_posts p WHERE p.media_id=community_media.id) RETURNING id',
+      'DELETE FROM community_media WHERE id=? AND NOT EXISTS(SELECT 1 FROM community_posts p WHERE p.media_id=community_media.id) AND NOT EXISTS(SELECT 1 FROM social_profiles s WHERE s.avatar_media_id=community_media.id) RETURNING id',
     )
       .bind(row.id)
       .first();

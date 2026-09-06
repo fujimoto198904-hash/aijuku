@@ -75,7 +75,7 @@ export function MemberLoginForm({
   return (
     <form className="mt-8 grid gap-5" onSubmit={handleSubmit}>
       <label className="grid gap-2 text-sm font-semibold" htmlFor="login-id">
-        ユーザー名／メールアドレス
+        ユーザーID／メールアドレス
         <input
           autoCapitalize="none"
           autoComplete="username"
@@ -88,13 +88,17 @@ export function MemberLoginForm({
             setStatus('idle');
             setVerificationRequired(false);
           }}
-          placeholder="ユーザー名、または登録したメール"
+          placeholder="@ai_sora、または登録したメール"
           readOnly={lockLoginId}
           required
           spellCheck={false}
           value={loginId}
         />
       </label>
+      <p className="text-xs leading-6 text-quiet">
+        ユーザーIDには @
+        を付けてください。以前のログイン名も、そのまま使えます。
+      </p>
 
       {verifiedInitialIdentity ? (
         <output className="soft-control block border border-future-mint bg-future-mint-soft p-4 text-xs leading-6 text-brand-dark">

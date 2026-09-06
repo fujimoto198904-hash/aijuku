@@ -23,6 +23,7 @@ export function UsernameRegistrationForm({ returnTo }: { returnTo: string }) {
         body: JSON.stringify({
           action: 'username',
           username: values.get('username'),
+          displayName: values.get('displayName'),
           password: values.get('password'),
           terms: values.get('terms') === 'on',
           returnTo,
@@ -43,10 +44,27 @@ export function UsernameRegistrationForm({ returnTo }: { returnTo: string }) {
   }
   return (
     <form onSubmit={submit} className="grid gap-5">
-      <h2 className="mb-1 text-2xl font-bold">まずは、この2つだけ。</h2>
+      <h2 className="mb-1 text-2xl font-bold">あなたのアカウントを作ろう。</h2>
+      <div className="grid gap-2">
+        <label htmlFor="signup-display-name" className="text-sm font-semibold">
+          表示名
+        </label>
+        <Input
+          id="signup-display-name"
+          name="displayName"
+          autoComplete="nickname"
+          required
+          maxLength={30}
+          placeholder="例：そら"
+          className="min-h-12"
+        />
+        <p className="text-xs leading-6 text-quiet">
+          本名でなくてOK。あとから変更できます。
+        </p>
+      </div>
       <div className="grid gap-2">
         <label htmlFor="signup-username" className="text-sm font-semibold">
-          ユーザー名
+          ユーザーID（@）
         </label>
         <Input
           id="signup-username"
@@ -63,7 +81,7 @@ export function UsernameRegistrationForm({ returnTo }: { returnTo: string }) {
           className="min-h-12"
         />
         <p id="signup-username-hint" className="text-xs leading-6 text-quiet">
-          半角英数字・_・-で3〜24文字。ログインに使います。
+          半角英数字・_・-で3〜24文字。他の人と同じIDは使えません。公開プロフィールのURLと、@を付けたログインに使います。
         </p>
       </div>
       <AuthPasswordInput id="signup-password" />
@@ -98,7 +116,7 @@ export function UsernameRegistrationForm({ returnTo }: { returnTo: string }) {
         {busy ? '登録しています…' : '無料で登録する'}
       </Button>
       <p className="text-center text-xs leading-6 text-quiet">
-        メール・本名は不要。公開する名前は、あとから設定できます。
+        メール・本名は不要。写真やプロフィールの公開は、あとから設定できます。
       </p>
     </form>
   );

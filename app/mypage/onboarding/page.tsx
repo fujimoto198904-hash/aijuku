@@ -1,5 +1,6 @@
 import { requireChatGPTUser } from '@/app/chatgpt-auth';
 import { getMember } from '@/db/membership';
+import { ownSocialProfile } from '@/db/social';
 import { CommunityConsent } from '@/components/community-consent';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
@@ -28,13 +29,18 @@ async function Content({ searchParams }: Parameters<typeof PaidOnboarding>[0]) {
     '/mypage/onboarding?return_to=' + encodeURIComponent(returnTo),
   );
   const member = await getMember(user.userId);
+  const profile = await ownSocialProfile(user.userId);
   return (
     <>
       <SiteHeader />
       <main id="main-content" className="mx-auto max-w-2xl px-5 py-12">
         <h1 className="text-3xl font-bold">AIstockへようこそ。</h1>
         {member && member.status === 'active' && !user.isDemo ? (
-          <CommunityConsent name={member.displayName} returnTo={returnTo} />
+          <CommunityConsent
+            name={profile?.name ?? member.displayName}
+            hasProfile={!!profile}
+            returnTo={returnTo}
+          />
         ) : (
           <p className="mt-6 leading-8">
             このアカウントでは手続きを進められません。

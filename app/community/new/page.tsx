@@ -12,6 +12,7 @@ import { getLearningNote } from '@/db/learning-notes';
 import { withSiteBasePath } from '@/lib/site-paths';
 import { isVercelRuntime, canonicalMemberUrl } from '@/lib/site-runtime';
 import { ownSocialProfile } from '@/db/social';
+import { profileUserId } from '@/lib/public-profile';
 export const dynamic = 'force-dynamic';
 export const metadata = {
   title: '投稿する｜AIstock',
@@ -83,7 +84,7 @@ async function NewPostContent({
           <CommunityForm
             publicProfile={
               profile?.isPublic
-                ? { name: profile.name, handle: profile.handle }
+                ? { name: profile.name, handle: profileUserId(profile) }
                 : null
             }
             initialKind={kind}

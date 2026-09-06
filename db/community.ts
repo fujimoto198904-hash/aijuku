@@ -26,10 +26,10 @@ export type CommunityReply = {
   authorRole: string;
   createdAt: number;
 };
-const columns = `p.id, p.kind, p.title, p.body, p.task_id AS taskId,p.media_id AS mediaId, p.author_name AS authorName,
-  (SELECT handle FROM social_profiles WHERE handle=p.profile_handle AND ${visibleIdentity}) AS profileHandle,
+const columns = `p.id, p.kind, p.title, p.body, p.task_id AS taskId,p.media_id AS mediaId, COALESCE((SELECT name FROM social_profiles WHERE handle=p.profile_handle AND ${visibleIdentity}),p.author_name) AS authorName,
+  (SELECT COALESCE(public_id,handle) FROM social_profiles WHERE handle=p.profile_handle AND ${visibleIdentity}) AS profileHandle,
   (SELECT kind FROM social_profiles WHERE handle=p.profile_handle) AS profileKind,
-  (SELECT avatar FROM social_profiles WHERE handle=p.profile_handle AND ${visibleIdentity}) AS avatar,
+  (SELECT COALESCE('media:'||avatar_media_id,avatar) FROM social_profiles WHERE handle=p.profile_handle AND ${visibleIdentity}) AS avatar,
   p.example_date AS exampleDate,
   p.author_role AS authorRole, p.created_at AS createdAt,
   (SELECT count(*) FROM community_replies r WHERE r.post_id=p.id AND r.deleted_at IS NULL) AS replyCount`;

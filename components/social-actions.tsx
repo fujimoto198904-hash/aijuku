@@ -1,4 +1,6 @@
 'use client';
+import { PostImageInput } from '@/components/post-image-input';
+import { avatarMediaId } from '@/lib/public-profile';
 import { useRef, useState, type SubmitEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, Send, MessageCircle } from 'lucide-react';
@@ -16,6 +18,7 @@ export async function socialRequest(data: Record<string, unknown>) {
     count: number;
     liked: boolean;
     next: string;
+    profile?: SocialProfile;
   };
   if (!response.ok) throw new Error(result.error || '保存できませんでした。');
   return result;
@@ -218,29 +221,46 @@ export function ProfileActions({
 }
 export function SocialProfileSettings({
   profile,
+  displayName = '',
   readOnly = false,
 }: {
   profile: SocialProfile | null;
+  displayName?: string;
   readOnly?: boolean;
 }) {
   const router = useRouter(),
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState(''),
-    [error, setError] = useState(false);
+    [error, setError] = useState(false),
+    [uploading, setUploading] = useState(false),
+    [photo, setPhoto] = useState(avatarMediaId(profile?.avatar)),
+    [publicId, setPublicId] = useState(profile?.publicId ?? ''),
+    [revision, setRevision] = useState(profile?.revision ?? 0);
   async function save(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (readOnly || busy || uploading) return;
     setBusy(true);
     setMessage('');
     const f = new FormData(e.currentTarget);
     try {
-      await socialRequest({
+      const result = await socialRequest({
         action: 'profile',
         name: f.get('name'),
         bio: f.get('bio'),
         isPublic: f.get('public') === 'on',
         dmEnabled: f.get('dm') === 'on',
         publicConsent: f.get('consent') === 'on',
+        publicId,
+        avatarMediaId: photo,
+        expectedRevision: revision,
       });
+      if (!result.profile)
+        throw new Error(
+          '保存結果を確認できませんでした。ページを開き直してください。',
+        );
+      const saved = result.profile;
+      setRevision(saved.revision ?? revision + 1);
+      setPublicId(saved.publicId ?? publicId);
       setMessage('プロフィールを保存しました。');
       setError(false);
       router.refresh();
@@ -252,23 +272,48 @@ export function SocialProfileSettings({
     }
   }
   return (
-    <section className="as-panel">
-      <h2>みんなに見せるプロフィール</h2>
-      <p>
-        会員情報とは別の名前で参加できます。公開を選ぶと、これからの投稿がこのページに並びます。過去の投稿は自動でまとめません。
-      </p>
+    <section className="as-panel" id="profile">
+      <h2>プロフィールを編集</h2>
+      <p>名前・写真・ユーザーIDを、ここでまとめて変更できます。</p>
       <form className="as-social-form" onSubmit={save}>
-        <fieldset disabled={readOnly || busy}>
+        <fieldset disabled={readOnly || busy || uploading}>
+          <PostImageInput
+            purpose="avatar"
+            value={photo}
+            onChange={setPhoto}
+            onBusy={setUploading}
+          />
           <label>
-            公開する名前
+            表示名
             <input
               name="name"
               required
               maxLength={30}
-              defaultValue={profile?.name ?? ''}
+              defaultValue={profile?.name ?? displayName}
               placeholder="ニックネーム"
             />
           </label>
+          <label>
+            ユーザーID（@）
+            <input
+              name="publicId"
+              value={publicId}
+              onChange={(e) => setPublicId(e.target.value.toLowerCase())}
+              required
+              minLength={3}
+              maxLength={24}
+              pattern="[a-z0-9][a-z0-9_\-]{2,23}"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="例：ai_sora"
+              aria-describedby="profile-id-hint"
+            />
+          </label>
+          <small id="profile-id-hint">
+            半角英数字・_・-で3〜24文字。ログインには @
+            {publicId || 'ユーザーID'}{' '}
+            を使えます。IDを変えても投稿やつながりは残ります。
+          </small>
           <label>
             自己紹介
             <textarea
@@ -297,15 +342,15 @@ export function SocialProfileSettings({
           </label>
           <label className="as-check">
             <input type="checkbox" name="consent" />
-            名前・自己紹介・今後の投稿の紐付け・フォロー関係が公開されることを確認しました
+            表示名・写真・ユーザーID・自己紹介・今後の投稿・フォロー関係を公開してよい
           </label>
           <small>
-            非公開にしても、すでに公開した投稿自体は残ります。DMは最初の1通を受け取り、承認してから会話を続けられます。
+            表示名は公開済みの共有ページにも反映されます。過去の別名投稿はまとめません。非公開にしても、公開済みの投稿自体は残ります。
           </small>
           <button className="as-primary" type="submit">
             {readOnly
               ? 'デモは閲覧専用です'
-              : busy
+              : busy || uploading
                 ? '保存中…'
                 : 'プロフィールを保存'}
           </button>

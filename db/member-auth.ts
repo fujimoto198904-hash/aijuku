@@ -548,7 +548,23 @@ export async function authenticatePassword(input: {
     };
   }
 
-  let account = loginId ? await getStoredAccountByLoginId(loginId) : null;
+  // @ explicitly selects the public-ID namespace; legacy private IDs and email
+  // retain their exact lookup and are never published or reassigned.
+  const publicIdentity = loginId.startsWith('@')
+    ? await getD1()
+        .prepare(
+          "SELECT member_id AS memberId FROM social_profiles WHERE public_id=? AND kind='member'",
+        )
+        .bind(loginId.slice(1))
+        .first<{ memberId: string }>()
+    : null;
+  let account = loginId.startsWith('@')
+    ? publicIdentity
+      ? await getStoredAccountByMemberId(publicIdentity.memberId)
+      : null
+    : loginId
+      ? await getStoredAccountByLoginId(loginId)
+      : null;
   const storedDigest = account?.passwordDigest ?? (await dummyDigest(pepper));
   const passwordMatches = await verifyPassword({
     password: input.password,

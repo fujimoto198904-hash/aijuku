@@ -139,13 +139,45 @@ const signupMarkup = renderToStaticMarkup(
 );
 assert.equal(
   (signupMarkup.match(/<input\b/g) ?? []).length,
-  3,
-  'signup asks for username, password and consent only',
+  4,
+  'signup asks for one display name, unique ID, password and consent',
 );
 assert(signupMarkup.includes('autoComplete="username"'));
 assert(signupMarkup.includes('autoComplete="new-password"'));
 assert(signupMarkup.includes('minLength="8"'));
 assert(!signupMarkup.includes('type="email"'));
+assert(signupMarkup.includes('表示名') && signupMarkup.includes('ユーザーID'));
+assert(
+  signupMarkup.includes('maxLength="30"') &&
+    signupMarkup.includes('maxLength="24"'),
+);
+const accountMarkup = readFileSync(
+  new URL('../components/member-profile-settings.tsx', import.meta.url),
+  'utf8',
+);
+assert(
+  !accountMarkup.includes('<input'),
+  'account panel must not contain a second name editor',
+);
+const photoMarkup = readFileSync(
+  new URL('../components/post-image-input.tsx', import.meta.url),
+  'utf8',
+);
+assert(
+  photoMarkup.includes('プロフィール写真を変更') &&
+    photoMarkup.includes('写真を削除'),
+);
+assert(
+  photoMarkup.includes('image/png,image/jpeg,image/webp') &&
+    photoMarkup.includes('rounded-full'),
+);
+const profileFormSource = readFileSync(
+  new URL('../components/social-actions.tsx', import.meta.url),
+  'utf8',
+);
+assert.match(profileFormSource, /purpose="avatar"/);
+assert.match(profileFormSource, /expectedRevision: revision/);
+assert.match(profileFormSource, /id="profile"/);
 assert(
   !signupMarkup.includes('復旧コード'),
   'optional recovery must not interrupt signup',

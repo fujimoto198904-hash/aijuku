@@ -349,7 +349,7 @@ export function MemberOnboardingForm({
                 autoComplete="name"
                 className="soft-control min-h-14 border border-rule bg-white px-4 text-base font-normal outline-none transition focus:border-sapphire"
                 id="display-name"
-                maxLength={80}
+                maxLength={30}
                 minLength={1}
                 onChange={(event) => setDisplayName(event.target.value)}
                 required

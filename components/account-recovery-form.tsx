@@ -73,7 +73,7 @@ export function AccountRecoveryForm({
             htmlFor="recover-username"
             className="grid gap-2 text-sm font-semibold"
           >
-            ユーザー名
+            ユーザーID（@）／以前のログイン名
             <Input
               id="recover-username"
               name="username"
@@ -82,7 +82,8 @@ export function AccountRecoveryForm({
               spellCheck={false}
               required
               minLength={3}
-              maxLength={24}
+              maxLength={25}
+              placeholder="@ai_sora"
               className="min-h-12"
             />
           </label>

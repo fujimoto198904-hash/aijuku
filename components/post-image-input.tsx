@@ -6,15 +6,18 @@ export function PostImageInput({
   value,
   onChange,
   onBusy,
+  purpose = 'post',
 }: {
   value: string | null;
   onChange: (id: string | null) => void;
   onBusy: (busy: boolean) => void;
+  purpose?: 'post' | 'avatar';
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   async function select(e: ChangeEvent<HTMLInputElement>) {
     const file = e.currentTarget.files?.[0];
+    e.currentTarget.value = '';
     if (!file) return;
     setError('');
     if (
@@ -32,11 +35,30 @@ export function PostImageInput({
       const bitmap = await createImageBitmap(file);
       const ratio = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height));
       const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(bitmap.width * ratio));
-      canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
+      canvas.width =
+        purpose === 'avatar'
+          ? 512
+          : Math.max(1, Math.round(bitmap.width * ratio));
+      canvas.height =
+        purpose === 'avatar'
+          ? 512
+          : Math.max(1, Math.round(bitmap.height * ratio));
       const context = canvas.getContext('2d');
       if (!context) throw Error('画像を読み取れませんでした。');
-      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      if (purpose === 'avatar') {
+        const side = Math.min(bitmap.width, bitmap.height);
+        context.drawImage(
+          bitmap,
+          (bitmap.width - side) / 2,
+          (bitmap.height - side) / 2,
+          side,
+          side,
+          0,
+          0,
+          512,
+          512,
+        );
+      } else context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
       bitmap.close();
       let blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, 'image/png'),
@@ -72,9 +94,15 @@ export function PostImageInput({
     }
   }
   return (
-    <div className="as-image-input">
+    <div
+      className={
+        'as-image-input' + (purpose === 'avatar' ? ' as-avatar-input' : '')
+      }
+    >
       <label className="grid gap-2 font-semibold">
-        画像・スクリーンショット（1枚・任意）
+        {purpose === 'avatar'
+          ? 'プロフィール写真を変更'
+          : '画像・スクリーンショット（1枚・任意）'}
         <input
           type="file"
           accept="image/png,image/jpeg,image/webp"
@@ -83,18 +111,28 @@ export function PostImageInput({
         />
       </label>
       <p className="mt-2 text-sm leading-6 text-quiet">
-        名前・メール・お客様の情報が写っていないか確認してください。位置情報などは取り除きます。
+        {purpose === 'avatar'
+          ? '写真の中央を丸く表示します。位置情報は取り除きます。変更は下の保存ボタンで確定します。'
+          : '名前・メール・お客様の情報が写っていないか確認してください。位置情報などは取り除きます。'}
       </p>
       {busy && <output>画像を準備しています…</output>}
       {value && (
         <div className="mt-3">
           <Image
             src={withSiteBasePath('/media/' + value)}
-            alt="公開前の添付画像"
+            alt={
+              purpose === 'avatar'
+                ? 'プロフィール写真のプレビュー'
+                : '公開前の添付画像'
+            }
             width={600}
             height={600}
             unoptimized
-            className="max-h-72 w-auto rounded-xl object-contain"
+            className={
+              purpose === 'avatar'
+                ? 'size-24 rounded-full object-cover'
+                : 'max-h-72 w-auto rounded-xl object-contain'
+            }
           />
           <button
             type="button"
@@ -102,7 +140,7 @@ export function PostImageInput({
             disabled={busy}
             onClick={() => onChange(null)}
           >
-            この画像を外す
+            {purpose === 'avatar' ? '写真を削除' : 'この画像を外す'}
           </button>
         </div>
       )}

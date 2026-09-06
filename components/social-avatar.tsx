@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import { avatarMediaId } from '@/lib/public-profile';
+import { withSiteBasePath } from '@/lib/site-paths';
 import madoka from '@/sozai/office-smile-woman.jpg';
 import sota from '@/sozai/headset-pc-man.jpg';
 import aya from '@/sozai/suit-woman-machi.jpg';
@@ -47,6 +49,15 @@ export function SocialAvatar({
         <span className="as-official-monogram">
           Ai<span>✦</span>
         </span>
+      ) : avatarMediaId(avatar) ? (
+        <Image
+          src={withSiteBasePath('/media/' + avatarMediaId(avatar))}
+          alt=""
+          width={160}
+          height={160}
+          sizes={large ? '144px' : '48px'}
+          unoptimized
+        />
       ) : photo ? (
         <Image
           src={photo}

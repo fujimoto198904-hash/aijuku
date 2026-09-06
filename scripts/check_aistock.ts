@@ -69,7 +69,8 @@ try {
  export * from './lib/post-image';
  export { POST as learningPost,GET as learningGet } from './app/api/learning/route';
  export { getChatGPTUser as realHeaderUser } from './app/chatgpt-auth';
- export { membershipTermsVersion,privacyPolicyVersion } from './db/membership';
+ export { membershipTermsVersion,privacyPolicyVersion,registerMember,updateMemberDisplayName } from './db/membership';
+ export { POST as communityConsent } from './app/api/community/consent/route';
  export { POST as communityPost } from './app/api/community/route';
  export { POST as register } from './app/api/auth/register/route';
  export { GET as googleCallback } from './app/api/auth/google/callback/route';
@@ -521,12 +522,14 @@ try {
     assert.equal(memberRow?.display_name, 'メンバー');
     assert.equal(memberRow?.terms_version, api.membershipTermsVersion);
     assert.equal(memberRow?.privacy_version, api.privacyPolicyVersion);
+    const signupProfile = await api.ownSocialProfile(user.memberId);
+    assert.equal(signupProfile.publicId, 'study_sora');
     assert.equal(
-      await DB.prepare('SELECT 1 FROM social_profiles WHERE member_id=?')
-        .bind(user.memberId)
-        .first(),
-      null,
+      signupProfile.isPublic,
+      0,
+      'signup reserves ID without publishing a profile',
     );
+    assert.equal(await api.publicSocialProfile('study_sora'), null);
     const stored = await DB.prepare(
       'SELECT * FROM member_auth_accounts WHERE member_id=?',
     )
@@ -1420,7 +1423,7 @@ try {
     dmEnabled: true,
   });
   const p3 = await api.saveSocialProfile('test-owner', {
-    name: '運営の個人ページ',
+    name: '講師の個人ページ',
     bio: '',
     isPublic: true,
     dmEnabled: false,
@@ -1790,6 +1793,347 @@ try {
     'Social checks passed: explicit public identity, real follows/likes, private DM/requests/block/report, official AI seeds and reviewed queue.',
   );
 
+  // Editable public IDs and photos: no mutation of immutable social IDs.
+  const identityPassword = 'Fixture-password-76543';
+  const identityOne = await api.registerUsername({
+    username: 'identity_start',
+    password: identityPassword,
+    displayName: 'そら',
+  });
+  const identityTwo = await api.registerUsername({
+    username: 'identity_other',
+    password: identityPassword,
+    displayName: 'はる',
+  });
+  const oneId = identityOne.session.user.memberId,
+    twoId = identityTwo.session.user.memberId;
+  let one = await api.ownSocialProfile(oneId),
+    two = await api.ownSocialProfile(twoId);
+  const edit = {
+    name: 'そら',
+    bio: '画像を勉強中',
+    isPublic: true,
+    dmEnabled: true,
+  };
+  const avatarOne = await api.storeCommunityMedia(oneId, clean),
+    avatarTwo = await api.storeCommunityMedia(twoId, clean);
+  assert.equal(await api.readCommunityMedia(avatarOne.id), null);
+  one = await api.saveSocialProfile(oneId, {
+    ...edit,
+    publicId: 'identity_start',
+    avatarMediaId: avatarOne.id,
+    expectedRevision: one.revision,
+  });
+  two = await api.saveSocialProfile(twoId, {
+    ...edit,
+    name: 'はる',
+    publicId: 'identity_other',
+    expectedRevision: two.revision,
+  });
+  assert(await api.readCommunityMedia(avatarOne.id));
+  await assert.rejects(
+    api.saveSocialProfile(twoId, { ...edit, avatarMediaId: avatarOne.id }),
+  );
+  assert(await api.setFollow(twoId, 'identity_start', true));
+  const dmRequest = {
+    target: 'identity_start',
+    body: '勉強仲間のメッセージ',
+    requestId: crypto.randomUUID(),
+  };
+  const dm = await api.sendDirectMessage(twoId, dmRequest);
+  assert(dm);
+  assert(await api.acceptThread(oneId, dm));
+  const linkedPost = await api.writeCommunityPost({
+    authorId: oneId,
+    profileHandle: one.handle,
+    authorName: 'そら',
+    authorRole: 'member',
+    requestId: crypto.randomUUID(),
+    kind: 'learning',
+    title: 'できたこと',
+    body: '画像を作った',
+    taskId: null,
+    mediaId: null,
+  });
+  const beforeHandle = one.handle;
+  one = await api.saveSocialProfile(oneId, {
+    ...edit,
+    name: 'そらの学習室',
+    publicId: 'identity_new',
+    expectedRevision: one.revision,
+  });
+  assert.equal(one.handle, beforeHandle);
+  assert.equal(
+    (await api.publicSocialProfile('identity_start')).handle,
+    beforeHandle,
+    'retired URL resolves to original identity',
+  );
+  assert.equal(
+    (await api.publicSocialProfile('identity_new')).handle,
+    beforeHandle,
+  );
+  assert.equal(
+    (await api.getCommunityPost(linkedPost.id)).profileHandle,
+    'identity_new',
+  );
+  assert.equal(
+    (await api.getCommunityPost(linkedPost.id)).authorName,
+    'そらの学習室',
+  );
+  assert.equal(
+    (
+      await DB.prepare('SELECT display_name FROM members WHERE id=?')
+        .bind(oneId)
+        .first()
+    )?.display_name,
+    one.name,
+  );
+  assert.equal((await api.relationship(twoId, 'identity_new')).following, true);
+  assert.equal((await api.socialCounts(beforeHandle)).followers, 1);
+  assert.equal((await api.memberThread(oneId, dm)).me.handle, beforeHandle);
+  assert.equal(
+    await api.sendDirectMessage(twoId, {
+      ...dmRequest,
+      target: 'identity_new',
+    }),
+    dm,
+    'retry after rename stays in same DM',
+  );
+  const publicLogin = await api.authenticatePassword({
+    loginId: '@IDENTITY_NEW',
+    password: identityPassword,
+    clientAddress: 'profile-new',
+  });
+  assert(publicLogin.ok && publicLogin.session.user.memberId === oneId);
+  assert(
+    (
+      await api.authenticatePassword({
+        loginId: 'identity_start',
+        password: identityPassword,
+        clientAddress: 'profile-legacy',
+      })
+    ).ok,
+  );
+  assert.equal(
+    (
+      await api.authenticatePassword({
+        loginId: '@identity_start',
+        password: identityPassword,
+        clientAddress: 'profile-old-public',
+      })
+    ).ok,
+    false,
+  );
+  assert.equal(await api.publicIdAvailable('identity_start', twoId), false);
+  await assert.rejects(
+    api.saveSocialProfile(twoId, { ...edit, publicId: 'identity_start' }),
+  );
+  await assert.rejects(
+    api.saveSocialProfile(twoId, { ...edit, publicId: 'madoka' }),
+  );
+  await assert.rejects(
+    api.registerUsername({
+      username: 'identity_start',
+      password: identityPassword,
+    }),
+  );
+  const concurrent = await Promise.allSettled([
+    api.saveSocialProfile(oneId, {
+      ...edit,
+      publicId: 'identity_claim',
+      expectedRevision: one.revision,
+    }),
+    api.saveSocialProfile(twoId, {
+      ...edit,
+      publicId: 'identity_claim',
+      expectedRevision: two.revision,
+    }),
+  ]);
+  assert.equal(
+    concurrent.filter((r) => r.status === 'fulfilled').length,
+    1,
+    'only one account claims an ID',
+  );
+  one = await api.ownSocialProfile(oneId);
+  const renameRace = await Promise.allSettled([
+    api.saveSocialProfile(oneId, {
+      ...edit,
+      publicId: 'identity_race_a',
+      expectedRevision: one.revision,
+    }),
+    api.saveSocialProfile(oneId, {
+      ...edit,
+      publicId: 'identity_race_b',
+      expectedRevision: one.revision,
+    }),
+  ]);
+  assert.equal(renameRace.filter((r) => r.status === 'fulfilled').length, 1);
+  one = await api.ownSocialProfile(oneId);
+  const unusedId =
+    one.publicId === 'identity_race_a' ? 'identity_race_b' : 'identity_race_a';
+  assert(
+    await api.publicIdAvailable(unusedId),
+    'stale change leaves no orphan reservation',
+  );
+  // Another tab saves immediately after A's transaction, before A gets its result.
+  testGlobal.aistockTestEnv.DB = new Proxy(DB, {
+    get(target, property) {
+      if (property === 'batch')
+        return async (statements: Parameters<typeof DB.batch>[0]) => {
+          const result = await DB.batch(statements);
+          testGlobal.aistockTestEnv.DB = DB;
+          await api.saveSocialProfile(oneId, {
+            ...edit,
+            name: '別のタブの名前',
+          });
+          return result;
+        };
+      const value = Reflect.get(target, property);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  const tabA = await api.saveSocialProfile(oneId, {
+    ...edit,
+    name: '先のタブの名前',
+    expectedRevision: one.revision,
+  });
+  assert.equal(
+    tabA.name,
+    '先のタブの名前',
+    'response is exactly the saved transaction snapshot',
+  );
+  assert.equal(tabA.revision, one.revision + 1);
+  assert.equal((await api.ownSocialProfile(oneId)).name, '別のタブの名前');
+  await assert.rejects(
+    api.saveSocialProfile(oneId, { ...edit, expectedRevision: tabA.revision }),
+    /別の画面/,
+  );
+  one = await api.ownSocialProfile(oneId);
+  await api.setBlock(twoId, one.publicId, true);
+  assert((await api.relationship(oneId, two.handle)).blocked);
+  one = await api.saveSocialProfile(oneId, {
+    ...edit,
+    publicId: 'identity_final',
+    expectedRevision: one.revision,
+  });
+  assert((await api.relationship(twoId, 'identity_final')).blockedByMe);
+  assert.equal(
+    await api.sendDirectMessage(twoId, {
+      target: 'identity_final',
+      body: 'blocked',
+      requestId: crypto.randomUUID(),
+    }),
+    null,
+  );
+  await DB.prepare('UPDATE community_media SET created_at=0 WHERE id IN (?,?)')
+    .bind(avatarOne.id, avatarTwo.id)
+    .run();
+  await api.cleanUnusedCommunityMedia();
+  assert(
+    await api.readCommunityMedia(avatarOne.id),
+    'referenced avatar survives cleanup',
+  );
+  assert.equal(
+    await api.readCommunityMedia(avatarTwo.id, twoId),
+    null,
+    'unreferenced upload is cleaned',
+  );
+  const replacement = await api.storeCommunityMedia(oneId, clean);
+  one = await api.saveSocialProfile(oneId, {
+    ...edit,
+    publicId: one.publicId,
+    avatarMediaId: replacement.id,
+    expectedRevision: one.revision,
+  });
+  assert.equal(
+    await api.readCommunityMedia(avatarOne.id),
+    null,
+    'replaced avatar no longer public',
+  );
+  assert(await api.readCommunityMedia(replacement.id));
+  one = await api.saveSocialProfile(oneId, {
+    ...edit,
+    publicId: one.publicId,
+    isPublic: false,
+    avatarMediaId: null,
+    expectedRevision: one.revision,
+  });
+  assert.equal(await api.readCommunityMedia(replacement.id), null);
+  assert.equal(
+    await api.publicSocialProfile('identity_start'),
+    null,
+    'retired URL cannot reveal hidden profile',
+  );
+  assert.equal(await api.publicSocialProfile(one.publicId), null);
+  assert.equal(
+    (await api.resolvePasswordSession(publicLogin.session.token)).memberId,
+    oneId,
+    'existing session survives profile edits',
+  );
+  const recovery = await api.rotateUsernameRecovery({
+    memberId: oneId,
+    username: 'identity_start',
+    password: identityPassword,
+  });
+  await api.recoverUsernamePassword({
+    username: '@' + one.publicId,
+    code: recovery.recoveryCode,
+    password: 'Another-fixture-password-4321',
+  });
+  assert(
+    (
+      await api.authenticatePassword({
+        loginId: '@' + one.publicId,
+        password: 'Another-fixture-password-4321',
+        clientAddress: 'profile-recovered',
+      })
+    ).ok,
+  );
+  console.log(
+    'Profile checks passed: unique IDs, concurrent claims/renames, legacy reservations, @ login/recovery, unchanged follow/DM/block ownership, unified names and private avatar lifecycle.',
+  );
+  asUser(oneId);
+  const profileBeforeConsent = await api.ownSocialProfile(oneId);
+  const consentResponse = await api.communityConsent(
+    new Request('https://member.local/api/community/consent', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://member.local',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nickname: '古いタブの名前', accepted: true }),
+    }),
+  );
+  assert.equal(consentResponse.status, 200);
+  assert.equal(
+    (await api.ownSocialProfile(oneId)).name,
+    profileBeforeConsent.name,
+    'consent screen cannot rename an existing profile',
+  );
+  await api.registerMember({
+    user: testGlobal.aistockTestUser,
+    displayName: '参加情報の名前',
+  });
+  const updatedMemberProfile = await api.ownSocialProfile(oneId);
+  assert.equal(updatedMemberProfile.name, '参加情報の名前');
+  assert.equal(
+    updatedMemberProfile.revision,
+    profileBeforeConsent.revision + 1,
+  );
+  assert.equal(
+    updatedMemberProfile.isPublic,
+    0,
+    'name synchronization does not publish profile',
+  );
+  assert.equal(
+    (
+      await DB.prepare('SELECT display_name FROM members WHERE id=?')
+        .bind(oneId)
+        .first()
+    )?.display_name,
+    updatedMemberProfile.name,
+  );
+
   // No charge or booking request may reach Stripe, Calendar, or even the DB.
   testGlobal.aistockTestEnv.DB = undefined;
   globalThis.fetch = async () => {
@@ -1808,6 +2152,13 @@ try {
   console.log(
     'AIstock checks passed: isolated D1/R2; posts/replies and retry safety; private notes/edit/import/stocks; PNG metadata and image access; username signup/login/recovery and stale-credential races; verified tickets and Google JWT; disabled paid endpoints.',
   );
+} catch (error) {
+  if (error instanceof Error && error.stack)
+    error.stack = error.stack.replace(
+      /data:text\/javascript;base64,[A-Za-z0-9+/=]+/g,
+      'aistock-isolated-bundle',
+    );
+  throw error;
 } finally {
   globalThis.fetch = originalFetch;
   await mf.dispose();

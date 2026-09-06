@@ -11,6 +11,7 @@ import {
   updateMemberDisplayName,
 } from '@/db/membership';
 import { rejectDemoWrite } from '@/lib/demo-access';
+import { publicNickname } from '@/lib/community';
 import {
   parseInterestKeys,
   parseLearningGoal,
@@ -45,10 +46,10 @@ export async function POST(request: Request) {
 
   try {
     const body = (await request.json()) as Record<string, unknown>;
-    const displayName = cleanRequestText(body.displayName, 80);
-    if (displayName.length < 1 || displayName.length > 80) {
+    const displayName = publicNickname(body.displayName, false);
+    if (!displayName) {
       return Response.json(
-        { error: '表示名は1〜80文字で入力してください。' },
+        { error: '表示名は1〜30文字で入力してください。' },
         { status: 400 },
       );
     }
@@ -212,10 +213,10 @@ export async function PATCH(request: Request) {
       );
     }
     const body = (await request.json()) as Record<string, unknown>;
-    const displayName = cleanRequestText(body.displayName, 80);
-    if (displayName.length < 1) {
+    const displayName = publicNickname(body.displayName, false);
+    if (!displayName) {
       return Response.json(
-        { error: '表示名は1〜80文字で入力してください。' },
+        { error: '表示名は1〜30文字で入力してください。' },
         { status: 400 },
       );
     }

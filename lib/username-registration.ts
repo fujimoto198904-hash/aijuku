@@ -6,6 +6,13 @@ export function registrationUsername(value: unknown): string {
   return /^[a-z0-9][a-z0-9_-]{2,23}$/.test(name) ? name : '';
 }
 
+export function recoveryUsername(value: unknown): string {
+  const raw = normalizeLoginId(value);
+  if (!raw.startsWith('@')) return registrationUsername(raw);
+  const id = registrationUsername(raw.slice(1));
+  return id ? '@' + id : '';
+}
+
 export function reservedRegistrationUsername(name: string, ownerLoginId = '') {
   const compact = name.replace(/[-_]/g, '');
   return (

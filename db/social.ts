@@ -2,9 +2,18 @@ import { env } from 'cloudflare:workers';
 import { membershipTermsVersion, privacyPolicyVersion } from '@/db/membership';
 import { getCommunityPost } from '@/db/community';
 import { findOfficialPost } from '@/lib/official-posts';
+import {
+  avatarMediaId,
+  publicUserId,
+  ProfileInputError,
+} from '@/lib/public-profile';
+import { publicNickname } from '@/lib/community';
+import { ownedCommunityMedia } from '@/db/community-media';
 
 export type SocialProfile = {
   handle: string;
+  publicId?: string | null;
+  revision?: number;
   name: string;
   bio: string;
   kind: 'member' | 'official' | 'official_ai';
@@ -13,11 +22,29 @@ export type SocialProfile = {
   dmEnabled: number;
 };
 const profileColumns =
-  's.handle,s.name,s.bio,s.kind,s.avatar,s.is_public AS isPublic,s.dm_enabled AS dmEnabled';
+  "s.handle,s.public_id AS publicId,s.revision,s.name,s.bio,s.kind,COALESCE('media:'||s.avatar_media_id,s.avatar) AS avatar,s.is_public AS isPublic,s.dm_enabled AS dmEnabled";
 const visible = `s.is_public=1 AND (s.member_id IS NULL OR EXISTS(SELECT 1 FROM members m WHERE m.id=s.member_id AND m.status='active' AND m.terms_version=? AND m.privacy_version=?))`;
 const consent = [membershipTermsVersion, privacyPolicyVersion];
 export const socialHandleValid = (value: unknown): value is string =>
   typeof value === 'string' && /^[a-z0-9][a-z0-9_-]{2,48}$/.test(value);
+
+export async function resolveSocialHandle(id: string) {
+  if (!socialHandleValid(id)) return null;
+  const row = await env.DB.prepare(
+    'SELECT handle FROM social_profiles WHERE handle=? UNION ALL SELECT profile_handle AS handle FROM social_public_ids WHERE id=? LIMIT 1',
+  )
+    .bind(id, id)
+    .first<{ handle: string }>();
+  return row?.handle ?? null;
+}
+
+export async function publicIdAvailable(id: string, memberId?: string) {
+  if (!publicUserId(id)) return false;
+  return !(await env.DB.prepare(`SELECT 1 FROM social_profiles WHERE handle=? AND (member_id IS NULL OR member_id<>?)
+    UNION ALL SELECT 1 FROM social_public_ids i JOIN social_profiles s ON s.handle=i.profile_handle WHERE i.id=? AND (s.member_id IS NULL OR s.member_id<>?) LIMIT 1`)
+    .bind(id, memberId ?? '', id, memberId ?? '')
+    .first());
+}
 export async function ownSocialProfile(memberId: string) {
   return env.DB.prepare(
     `SELECT ${profileColumns} FROM social_profiles s WHERE member_id=?`,
@@ -27,39 +54,128 @@ export async function ownSocialProfile(memberId: string) {
 }
 export async function publicSocialProfile(handle: string) {
   if (!socialHandleValid(handle)) return null;
+  const resolved = await resolveSocialHandle(handle);
+  if (!resolved) return null;
   return env.DB.prepare(
     `SELECT ${profileColumns} FROM social_profiles s WHERE handle=? AND ${visible}`,
   )
-    .bind(handle, ...consent)
+    .bind(resolved, ...consent)
     .first<SocialProfile>();
 }
 export async function searchSocialProfiles(query = '', page = 1) {
   const { results } = await env.DB.prepare(
-    `SELECT ${profileColumns} FROM social_profiles s WHERE ${visible} AND (instr(lower(name),lower(?))>0 OR instr(lower(bio),lower(?))>0) ORDER BY kind,name,handle LIMIT 21 OFFSET ?`,
+    `SELECT ${profileColumns} FROM social_profiles s WHERE ${visible} AND (instr(lower(name),lower(?))>0 OR instr(lower(bio),lower(?))>0 OR instr(COALESCE(public_id,handle),lower(?))>0) ORDER BY kind,name,handle LIMIT 21 OFFSET ?`,
   )
-    .bind(...consent, query, query, (page - 1) * 20)
+    .bind(...consent, query, query, query.replace(/^@/, ''), (page - 1) * 20)
     .all<SocialProfile>();
   return { profiles: results.slice(0, 20), hasMore: results.length > 20 };
 }
 export async function saveSocialProfile(
   memberId: string,
-  input: { name: string; bio: string; isPublic: boolean; dmEnabled: boolean },
+  input: {
+    name: string;
+    bio: string;
+    isPublic: boolean;
+    dmEnabled: boolean;
+    publicId?: string;
+    expectedRevision?: number;
+    avatarMediaId?: string | null;
+  },
 ) {
-  const handle = 'm-' + crypto.randomUUID().replaceAll('-', '').slice(0, 20);
-  await env.DB.prepare(
-    `INSERT INTO social_profiles(handle,member_id,name,bio,is_public,dm_enabled,created_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(member_id) DO UPDATE SET name=excluded.name,bio=excluded.bio,is_public=excluded.is_public,dm_enabled=excluded.dm_enabled WHERE social_profiles.kind='member'`,
+  const current = await ownSocialProfile(memberId);
+  if (current && current.kind !== 'member')
+    throw new ProfileInputError('このプロフィールは変更できません。', 403);
+  const name = publicNickname(input.name, false);
+  if (!name || input.bio.length > 300)
+    throw new ProfileInputError(
+      '表示名は30文字、自己紹介は300文字までです。',
+      400,
+    );
+  const expected = input.expectedRevision ?? current?.revision ?? 0;
+  if (expected !== (current?.revision ?? 0))
+    throw new ProfileInputError(
+      '別の画面で変更されています。ページを開き直してください。',
+    );
+  const publicId =
+    input.publicId === undefined
+      ? (current?.publicId ?? null)
+      : publicUserId(input.publicId);
+  if (
+    input.publicId !== undefined &&
+    (!publicId || !(await publicIdAvailable(publicId, memberId)))
   )
-    .bind(
-      handle,
-      memberId,
-      input.name,
+    throw new ProfileInputError(
+      'このユーザーIDは使えません。別のIDをお試しください。',
+    );
+  const mediaId =
+    input.avatarMediaId === undefined
+      ? avatarMediaId(current?.avatar)
+      : input.avatarMediaId;
+  if (mediaId && !(await ownedCommunityMedia(mediaId, memberId)))
+    throw new ProfileInputError('自分で選んだ写真を指定してください。', 400);
+  const handle = current?.handle ?? 'profile-' + crypto.randomUUID();
+  const statements = [
+    env.DB.prepare(
+      'INSERT INTO social_profiles(handle,member_id,name,created_at) VALUES(?,?,?,?) ON CONFLICT(member_id) DO NOTHING',
+    ).bind(handle, memberId, name, Date.now()),
+  ];
+  if (publicId)
+    statements.push(
+      env.DB.prepare(`INSERT INTO social_public_ids(id,profile_handle,created_at)
+    SELECT ?,handle,? FROM social_profiles WHERE member_id=? AND revision=? AND kind='member'
+    ON CONFLICT(id) DO UPDATE SET profile_handle=CASE WHEN social_public_ids.profile_handle=excluded.profile_handle THEN excluded.profile_handle ELSE NULL END`).bind(
+        publicId,
+        Date.now(),
+        memberId,
+        expected,
+      ),
+    );
+  const updateIndex = statements.length;
+  statements.push(
+    env.DB.prepare(`UPDATE social_profiles SET name=?,bio=?,public_id=?,avatar_media_id=?,is_public=?,dm_enabled=?,revision=revision+1
+    WHERE member_id=? AND revision=? AND kind='member'`).bind(
+      name,
       input.bio,
+      publicId,
+      mediaId,
       +input.isPublic,
       +(input.isPublic && input.dmEnabled),
+      memberId,
+      expected,
+    ),
+  );
+  statements.push(
+    env.DB.prepare(`UPDATE members SET display_name=?,updated_at=? WHERE id=? AND status='active'
+    AND EXISTS(SELECT 1 FROM social_profiles WHERE member_id=? AND revision=? AND name=? AND public_id IS ?)`).bind(
+      name,
       Date.now(),
-    )
-    .run();
-  return ownSocialProfile(memberId);
+      memberId,
+      memberId,
+      expected + 1,
+      name,
+      publicId,
+    ),
+  );
+  // Return the same transaction's snapshot, never a newer revision from another tab.
+  statements.push(
+    env.DB.prepare(
+      `SELECT ${profileColumns} FROM social_profiles s WHERE s.member_id=?`,
+    ).bind(memberId),
+  );
+  try {
+    const results = await env.DB.batch(statements);
+    if (results[updateIndex].meta.changes !== 1)
+      throw new ProfileInputError(
+        '別の画面で変更されています。ページを開き直してください。',
+      );
+    return results[results.length - 1].results[0] as SocialProfile;
+  } catch (e) {
+    if (/UNIQUE|NOT NULL|reserved_public_id/.test(String(e)))
+      throw new ProfileInputError(
+        'このユーザーIDは使われています。別のIDをお試しください。',
+      );
+    throw e;
+  }
 }
 export async function socialCounts(handle: string) {
   const rows = await env.DB.batch<{ n: number }>([
@@ -104,6 +220,7 @@ export async function relationship(
   memberId: string | undefined,
   target: string,
 ) {
+  target = (await resolveSocialHandle(target)) ?? target;
   const me = memberId ? await ownSocialProfile(memberId) : null;
   if (!me)
     return {
@@ -144,6 +261,7 @@ export async function setFollow(
   target: string,
   follow: boolean,
 ) {
+  target = (await resolveSocialHandle(target)) ?? target;
   const me = await ownSocialProfile(memberId),
     other = await publicSocialProfile(target);
   if (
@@ -181,6 +299,7 @@ export async function setBlock(
   target: string,
   block: boolean,
 ) {
+  target = (await resolveSocialHandle(target)) ?? target;
   const me = await ownSocialProfile(memberId);
   if (
     !me ||
@@ -295,7 +414,7 @@ export async function listThreads(memberId: string) {
     `WITH public_people AS (SELECT ${profileColumns} FROM social_profiles s WHERE ${visible})
     SELECT t.id,t.person_a AS personA,t.person_b AS personB,t.initiator,t.accepted_at AS acceptedAt,t.created_at AS createdAt,
     CASE WHEN t.person_a=me.handle THEN t.person_b ELSE t.person_a END AS otherHandle,
-    COALESCE(p.name,'非公開のメンバー') AS otherName,p.avatar AS otherAvatar,COALESCE(p.isPublic,0) AS otherPublic
+    COALESCE(p.name,'非公開のメンバー') AS otherName,p.publicId AS otherPublicId,p.avatar AS otherAvatar,COALESCE(p.isPublic,0) AS otherPublic
     FROM social_profiles me JOIN social_threads t ON (t.person_a=me.handle OR t.person_b=me.handle)
     LEFT JOIN public_people p ON p.handle=CASE WHEN t.person_a=me.handle THEN t.person_b ELSE t.person_a END
     WHERE me.member_id=? ORDER BY (SELECT max(created_at) FROM social_messages WHERE thread_id=t.id) DESC,t.id DESC LIMIT 100`,
@@ -305,15 +424,24 @@ export async function listThreads(memberId: string) {
       DirectThread & {
         otherHandle: string;
         otherName: string;
+        otherPublicId: string | null;
         otherAvatar: string | null;
         otherPublic: number;
       }
     >();
   return results.map(
-    ({ otherHandle, otherName, otherAvatar, otherPublic, ...thread }) => ({
+    ({
+      otherHandle,
+      otherName,
+      otherPublicId,
+      otherAvatar,
+      otherPublic,
+      ...thread
+    }) => ({
       ...thread,
       other: {
         handle: otherHandle,
+        publicId: otherPublicId,
         name: otherName,
         avatar: otherAvatar,
         kind: 'member' as const,
@@ -362,7 +490,7 @@ export async function sendDirectMessage(
     .first<{ threadId: string; body: string }>();
   if (prior) {
     const context = await memberThread(memberId, prior.threadId);
-    return context?.other.handle === input.target && prior.body === input.body
+    return context?.other.handle === other.handle && prior.body === input.body
       ? prior.threadId
       : null;
   }
@@ -438,7 +566,10 @@ export async function reportSocial(
   }
   if (type === 'profile') {
     const p = await publicSocialProfile(id);
-    if (p) snapshot = p.name + '\n' + p.bio;
+    if (p) {
+      snapshot = p.name + '\n' + p.bio;
+      id = p.handle;
+    }
   }
   if (type === 'message') {
     const m = await env.DB.prepare(

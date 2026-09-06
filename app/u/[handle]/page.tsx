@@ -1,4 +1,6 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { profileUserId } from '@/lib/public-profile';
+import { withSiteBasePath } from '@/lib/site-paths';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
@@ -34,17 +36,31 @@ export default async function PublicProfile({
       ? query.tab
       : 'posts';
   const page = Math.max(1, Math.min(1000, Math.floor(Number(query.page) || 1)));
+  const publicId = profileUserId(profile);
+  // Resolve visibility before redirecting; private profiles reveal no new ID.
+  if (handle !== publicId)
+    redirect(
+      withSiteBasePath(
+        '/u/' +
+          publicId +
+          '?' +
+          new URLSearchParams({
+            tab,
+            ...(page > 1 ? { page: String(page) } : {}),
+          }),
+      ),
+    );
   const [counts, user, feed, people] = await Promise.all([
-    socialCounts(handle),
+    socialCounts(profile.handle),
     getChatGPTUser(),
     tab === 'posts'
       ? listCommunityPosts(undefined, page, undefined, '', {
-          profileHandle: handle,
+          profileHandle: profile.handle,
         })
       : null,
-    tab !== 'posts' ? followList(handle, tab, page) : null,
+    tab !== 'posts' ? followList(profile.handle, tab, page) : null,
   ]);
-  const relation = await relationship(user?.userId, handle);
+  const relation = await relationship(user?.userId, profile.handle);
   const hasMore = feed?.hasMore || people?.hasMore;
   return (
     <>

@@ -70,7 +70,7 @@ export function RegistrationForm({
             htmlFor="register-nickname"
             className="grid gap-2 font-semibold"
           >
-            ニックネーム
+            表示名
             <Input
               id="register-nickname"
               name="nickname"

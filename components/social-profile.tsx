@@ -6,6 +6,7 @@ import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
 import { officialAiDisclosure } from '@/lib/official-characters';
 import { communityLabels } from '@/lib/community';
 import { withSiteBasePath } from '@/lib/site-paths';
+import { profileUserId } from '@/lib/public-profile';
 export function ProfileIdentity({
   profile,
   counts,
@@ -27,7 +28,7 @@ export function ProfileIdentity({
         <p className="as-profile-handle">
           {profile.handle === 'your-profile'
             ? '自分のプロフィール'
-            : '@' + profile.handle}
+            : '@' + profileUserId(profile)}
         </p>
         <h1>
           {profile.name} <AccountBadge kind={profile.kind} />
@@ -37,7 +38,7 @@ export function ProfileIdentity({
             <strong>{counts.posts}</strong> 投稿
           </span>
           {profile.isPublic ? (
-            <Link href={'/u/' + profile.handle + '?tab=followers'}>
+            <Link href={'/u/' + profileUserId(profile) + '?tab=followers'}>
               <strong>{counts.followers}</strong> フォロワー
             </Link>
           ) : (
@@ -46,7 +47,7 @@ export function ProfileIdentity({
             </span>
           )}
           {profile.isPublic ? (
-            <Link href={'/u/' + profile.handle + '?tab=following'}>
+            <Link href={'/u/' + profileUserId(profile) + '?tab=following'}>
               <strong>{counts.following}</strong> フォロー中
             </Link>
           ) : (
@@ -119,7 +120,7 @@ export function MemberDirectory({ profiles }: { profiles: SocialProfile[] }) {
     <div className="as-member-directory">
       {profiles.map((p) => (
         <Link
-          href={'/u/' + p.handle}
+          href={'/u/' + profileUserId(p)}
           key={p.handle}
           className="as-directory-person"
         >

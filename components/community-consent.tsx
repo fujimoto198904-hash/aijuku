@@ -6,9 +6,11 @@ import { withSiteBasePath } from '@/lib/site-paths';
 import Link from '@/components/site-link';
 export function CommunityConsent({
   name,
+  hasProfile = false,
   returnTo = '/mypage',
 }: {
   name: string;
+  hasProfile?: boolean;
   returnTo?: string;
 }) {
   const [error, setError] = useState(''),
@@ -36,18 +38,28 @@ export function CommunityConsent({
   }
   return (
     <form onSubmit={submit} className="mt-6 grid gap-5">
-      <label htmlFor="consent-nickname" className="grid gap-2 font-semibold">
-        ニックネーム
-        <Input
-          id="consent-nickname"
-          name="nickname"
-          defaultValue={name.includes('@') ? '' : name}
-          maxLength={30}
-          required
-        />
-      </label>
+      {hasProfile ? (
+        <div className="grid gap-2">
+          <input type="hidden" name="nickname" value={name} />
+          <p>表示名：{name}</p>
+          <Link href="/mypage#account" className="text-sm underline">
+            名前や写真はプロフィールで編集
+          </Link>
+        </div>
+      ) : (
+        <label htmlFor="consent-nickname" className="grid gap-2 font-semibold">
+          表示名
+          <Input
+            id="consent-nickname"
+            name="nickname"
+            defaultValue={name.includes('@') ? '' : name}
+            maxLength={30}
+            required
+          />
+        </label>
+      )}
       <p className="leading-8 text-quiet">
-        AIstockは、教科書で学び、質問や使い方を共有する無料コミュニティです。投稿は誰でも読めます。投稿時には公開用の名前を選べます。
+        投稿は誰でも読めます。プロフィールを公開すると、表示名・写真・ユーザーIDも公開されます。
       </p>
       <label className="flex items-start gap-3 text-sm leading-7">
         <input name="accepted" type="checkbox" required className="mt-2" />

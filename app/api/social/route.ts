@@ -5,6 +5,7 @@ import { readBoundedJson } from '@/lib/limited-json';
 import { isSameOriginRequest } from '@/lib/request-security';
 import { noStoreJson } from '@/lib/auth-request';
 import { publicNickname } from '@/lib/community';
+import { ProfileInputError } from '@/lib/public-profile';
 import {
   acceptThread,
   postLikeStates,
@@ -52,6 +53,13 @@ export async function POST(request: Request) {
         bio.length > 300 ||
         typeof d.isPublic !== 'boolean' ||
         typeof d.dmEnabled !== 'boolean' ||
+        (d.publicId !== undefined && typeof d.publicId !== 'string') ||
+        (d.expectedRevision !== undefined &&
+          (!Number.isSafeInteger(d.expectedRevision) ||
+            Number(d.expectedRevision) < 0)) ||
+        (d.avatarMediaId !== undefined &&
+          d.avatarMediaId !== null &&
+          typeof d.avatarMediaId !== 'string') ||
         (d.isPublic && d.publicConsent !== true)
       )
         return fail(
@@ -62,6 +70,15 @@ export async function POST(request: Request) {
         bio,
         isPublic: d.isPublic,
         dmEnabled: d.dmEnabled,
+        publicId: typeof d.publicId === 'string' ? d.publicId : undefined,
+        expectedRevision:
+          typeof d.expectedRevision === 'number'
+            ? d.expectedRevision
+            : undefined,
+        avatarMediaId:
+          d.avatarMediaId === null || typeof d.avatarMediaId === 'string'
+            ? d.avatarMediaId
+            : undefined,
       });
       return noStoreJson({ ok: true, profile });
     }
@@ -142,7 +159,9 @@ export async function POST(request: Request) {
         : fail('通報できる対象がありません。', 404);
     }
     return fail('入力を確認してください。');
-  } catch {
+  } catch (error) {
+    if (error instanceof ProfileInputError)
+      return fail(error.message, error.status);
     return fail('保存できませんでした。少し待ってからお試しください。', 503);
   }
 }

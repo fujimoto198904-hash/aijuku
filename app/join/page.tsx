@@ -53,7 +53,7 @@ async function JoinContent({ searchParams }: JoinProps) {
             AIstockに参加する
           </h1>
           <p className="mt-4 leading-7 text-quiet">
-            ユーザー名とパスワードだけで、無料で始められます。
+            表示名・ユーザーID・パスワードで、すぐに始められます。本名やメールは不要です。
           </p>
           <ul className="mt-6 hidden gap-3 text-sm lg:grid">
             <li>✓ 気になる投稿や教材を保存</li>
@@ -93,7 +93,7 @@ async function JoinContent({ searchParams }: JoinProps) {
                 <UsernameRegistrationForm returnTo={returnTo} />
               ) : (
                 <p className="rounded-2xl bg-paper p-5 text-sm leading-7 text-quiet">
-                  ユーザー名での登録は準備中です。教科書は登録なしで読めます。
+                  ユーザーIDでの登録は準備中です。教科書は登録なしで読めます。
                 </p>
               )}
               {(availability.google || availability.email) && (
