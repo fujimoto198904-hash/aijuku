@@ -44,5 +44,10 @@ export function communityTextLength(value: string): number {
   return Array.from(value).length;
 }
 export function communityFeedPreview(body: string): string {
-  return Array.from(body).slice(0, communityFeedPreviewLength).join('');
+  const preview = Array.from(body)
+    .slice(0, communityFeedPreviewLength)
+    .join('');
+  // A short post with many line breaks must not occupy the entire feed.
+  const breaks = [...preview.matchAll(/\r\n|\r|\n/g)];
+  return breaks.length >= 4 ? preview.slice(0, breaks[3].index) : preview;
 }

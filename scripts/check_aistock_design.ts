@@ -12,6 +12,8 @@ import {
 import { CommunityBody } from '../components/community-body';
 import { FeedPostBody } from '../components/feed-post-body';
 import { checkInlineComments } from './check_inline_comments';
+import { checkPostActions } from './check_post_actions';
+import { postActionLoginPath } from '../lib/post-navigation';
 import { preparePostImage } from '../lib/prepare-post-image';
 import { communityMediaLimits } from '../lib/community-media-limits';
 import nextConfig from '../next.config';
@@ -206,6 +208,16 @@ const shortFeedBody = renderToStaticMarkup(
 );
 assert(shortFeedBody.includes('短い投稿'));
 assert(!shortFeedBody.includes('続きを読む'));
+for (const newline of ['\n', '\r\n', '\r']) {
+  const fourLines = ['一行目', '', '三行目', '四行目'].join(newline);
+  assert.equal(communityFeedPreview(fourLines), fourLines);
+  assert.equal(communityFeedPreview(fourLines + newline + '続き'), fourLines);
+}
+const multilineMarkup = renderToStaticMarkup(
+  createElement(FeedPostBody, { body: '😀\n'.repeat(60) }),
+);
+assert(multilineMarkup.includes('続きを読む'));
+assert(!multilineMarkup.includes('😀\n'.repeat(5)));
 const longFeedBody = renderToStaticMarkup(
   createElement(FeedPostBody, { body: '😀'.repeat(140) + 'まだ見せない続き' }),
 );
@@ -565,6 +577,18 @@ const accountBadgeSource = readFileSync(
   'utf8',
 );
 await checkInlineComments();
+await checkPostActions();
+const localReturn = new URL(
+  postActionLoginPath(
+    { pathname: '/discover', search: '?q=Web&page=2', hash: '' },
+    'post-official-web',
+  ),
+  'http://localhost:3101',
+);
+assert.equal(
+  localReturn.searchParams.get('return_to'),
+  '/discover?q=Web&page=2#post-official-web',
+);
 assert.match(
   accountBadgeSource,
   /className="as-account-badge is-ai">公式AI<\/span>/,
@@ -681,7 +705,11 @@ for (const saved of [false, true]) {
       compact: true,
     }),
   );
-  assert(markup.includes('aria-label="この投稿を保存"'));
+  assert(
+    markup.includes(
+      `aria-label="${saved ? 'この投稿の保存を解除' : 'この投稿を保存'}"`,
+    ),
+  );
   assert(markup.includes(`aria-pressed="${saved}"`));
   assert(
     !markup.includes('data-feedback="saved"'),

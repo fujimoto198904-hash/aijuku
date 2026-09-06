@@ -41,6 +41,8 @@ import {
   PostCommentButton,
 } from '@/components/post-discussion';
 import { communityPostTitle } from '@/lib/community-composer';
+import { postCardAnchor } from '@/lib/post-navigation';
+import { PostReturnNotice } from '@/components/post-return-notice';
 import cafePhoto from '@/sozai/cafe-shokuba-3nin.jpg';
 import travelPhoto from '@/sozai/kazoku-sougen.jpg';
 export function OfficialVisual({ post }: { post: OfficialPost }) {
@@ -198,6 +200,7 @@ function PostCardActions({
     <div className="as-social-actions">
       <PostReactions
         postRef={postRef}
+        returnAnchor={postCardAnchor(postRef)}
         path={detailHref}
         canInteract={canSave}
         commentControl={<PostCommentButton />}
@@ -228,6 +231,7 @@ function PostCardActions({
       )}
       <PostStock
         postRef={postRef}
+        returnAnchor={postCardAnchor(postRef)}
         canSave={canSave}
         initialSaved={initialSaved}
         compact
@@ -242,7 +246,7 @@ export function OfficialCard({
   likeState,
 }: { post: OfficialPost } & CardStockProps) {
   return (
-    <article className="as-post as-official-post">
+    <article id={postCardAnchor(post.id)} className="as-post as-official-post">
       <header className="as-post-author">
         <Link href="/u/aitock" aria-label="Aitock公式のプロフィール">
           <SocialAvatar name="Aitock公式" kind="official" />
@@ -348,7 +352,7 @@ export function MemberPostCard({
     />
   );
   return (
-    <article className="as-post">
+    <article id={postCardAnchor(post.id)} className="as-post">
       <header className="as-post-author">
         {post.profileHandle ? (
           <Link
@@ -489,6 +493,12 @@ export async function CommunityFeed({
     <main id="main-content" className="as-feed-layout as-social-feed">
       <div className="as-feed-main">
         <h1 className="sr-only">みんなの投稿</h1>
+        <PostReturnNotice
+          visibleRefs={[
+            ...feed.posts.map((p) => p.id),
+            ...official.map((p) => p.id),
+          ]}
+        />
         <div className="as-feed-list">{items}</div>
         {!items.length &&
           (view === 'following' ? (

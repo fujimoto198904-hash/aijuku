@@ -130,6 +130,24 @@ export async function checkInlineComments() {
     assert.equal(navigations.length, 0);
 
     reset();
+    const multiline = '一行目\r\n\r\n三行目\r\n四行目\r\n五行目も残す';
+    tree = render(components.FeedPostBody, { body: multiline });
+    find(tree, (n) => n.type === 'button').props.onClick();
+    tree = render(components.FeedPostBody, { body: multiline });
+    assert.equal(
+      find(tree, (n) => n.type?.name === 'CommunityBody').props.body,
+      multiline,
+    );
+    find(tree, (n) => n.type === 'button').props.onClick();
+    assert.equal(
+      find(
+        render(components.FeedPostBody, { body: multiline }),
+        (n) => n.type === 'button',
+      ).props['aria-expanded'],
+      false,
+    );
+
+    reset();
     const reads: string[] = [];
     let failLatest = true;
     const thread = (latest = false) => ({

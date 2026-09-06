@@ -1,12 +1,19 @@
 'use client';
 import { PostImageInput } from '@/components/post-image-input';
 import { avatarMediaId } from '@/lib/public-profile';
-import { useRef, useState, type SubmitEvent, type ReactNode } from 'react';
+import {
+  useId,
+  useRef,
+  useState,
+  type SubmitEvent,
+  type ReactNode,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, Send, MessageCircle } from 'lucide-react';
 import Link from '@/components/site-link';
 import { withSiteBasePath, canonicalPublicPath } from '@/lib/site-paths';
 import type { SocialProfile } from '@/db/social';
+import { postActionLoginPath } from '@/lib/post-navigation';
 export async function socialRequest(data: Record<string, unknown>) {
   const response = await fetch(withSiteBasePath('/api/social'), {
     method: 'POST',
@@ -25,10 +32,18 @@ export async function socialRequest(data: Record<string, unknown>) {
 }
 export function ShareButton({ path, title }: { path: string; title?: string }) {
   const [message, setMessage] = useState(''),
+    [fallbackUrl, setFallbackUrl] = useState(''),
     [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const inputId = useId();
+  const subject = path.startsWith('/u/') ? 'プロフィール' : '投稿';
   async function share() {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
     setMessage('');
+    setFallbackUrl('');
     const url = ['localhost', '127.0.0.1'].includes(window.location.hostname)
       ? new URL(withSiteBasePath(path), window.location.origin).href
       : canonicalPublicPath(path);
@@ -39,15 +54,19 @@ export function ShareButton({ path, title }: { path: string; title?: string }) {
         setMessage('リンクをコピーしました。');
       }
     } catch (e) {
-      if (!(e instanceof Error && e.name === 'AbortError'))
-        setMessage('共有できませんでした。ページのURLをコピーしてください。');
+      if (!(e instanceof Error && e.name === 'AbortError')) {
+        setMessage(`この${subject}のリンクを選んでコピーできます。`);
+        setFallbackUrl(url);
+      }
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }
   return (
-    <span className="as-inline-control">
+    <>
       <button
+        ref={trigger}
         className="as-icon-button"
         type="button"
         aria-label="リンクをシェア"
@@ -56,10 +75,36 @@ export function ShareButton({ path, title }: { path: string; title?: string }) {
       >
         <Send size={23} />
       </button>
-      <output className="sr-only" aria-live="polite">
+      <output
+        className={message ? 'as-share-notice' : 'sr-only'}
+        aria-live="polite"
+      >
         {message}
       </output>
-    </span>
+      {fallbackUrl && (
+        <span className="as-share-fallback">
+          <label htmlFor={inputId}>この{subject}のリンク</label>
+          <input
+            id={inputId}
+            type="text"
+            value={fallbackUrl}
+            readOnly
+            onFocus={(event) => event.currentTarget.select()}
+            onClick={(event) => event.currentTarget.select()}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setFallbackUrl('');
+              setMessage('');
+              trigger.current?.focus();
+            }}
+          >
+            閉じる
+          </button>
+        </span>
+      )}
+    </>
   );
 }
 export function PostReactions({
@@ -69,6 +114,7 @@ export function PostReactions({
   count = 0,
   liked = false,
   commentControl,
+  returnAnchor,
 }: {
   postRef: string;
   path: string;
@@ -76,18 +122,21 @@ export function PostReactions({
   count?: number;
   liked?: boolean;
   commentControl?: ReactNode;
+  returnAnchor?: string;
 }) {
+  const inFlight = useRef(false);
   const [state, setState] = useState({ count, liked }),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
   async function like() {
     if (!canInteract) {
       window.location.assign(
-        withSiteBasePath('/login?return_to=' + encodeURIComponent(path)),
+        postActionLoginPath(window.location, returnAnchor),
       );
       return;
     }
-    if (busy) return;
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
     setError('');
     try {
@@ -100,6 +149,7 @@ export function PostReactions({
     } catch (e) {
       setError(e instanceof Error ? e.message : '保存できませんでした。');
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }
@@ -109,8 +159,15 @@ export function PostReactions({
         <button
           className="as-icon-button"
           type="button"
-          aria-label={canInteract ? 'いいね' : 'ログインしていいね'}
+          aria-label={
+            canInteract
+              ? state.liked
+                ? 'いいねを取り消す'
+                : 'いいね'
+              : 'ログインしていいね'
+          }
           aria-pressed={canInteract ? state.liked : undefined}
+          aria-busy={busy}
           disabled={busy}
           onClick={like}
         >

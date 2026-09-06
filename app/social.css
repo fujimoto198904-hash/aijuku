@@ -605,6 +605,82 @@
   line-height: 1.7;
   margin: 0;
 }
+.as-post[id] {
+  scroll-margin-top: 80px;
+}
+.as-post-return {
+  margin-bottom: 12px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: var(--as-controls);
+  font-size: 0.875rem;
+  color: var(--as-green);
+}
+.as-post-return > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.as-post[id]:target {
+  content-visibility: visible;
+  outline: 2px solid var(--as-green);
+  outline-offset: -2px;
+}
+.as-share-notice,
+.as-share-fallback {
+  flex-basis: 100%;
+  grid-column: 1 / -1;
+  order: 10;
+  min-width: 0;
+  width: 100%;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--as-green);
+}
+.as-share-notice {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--as-tint);
+  margin-top: 4px;
+}
+.as-share-fallback {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+}
+.as-share-fallback > label {
+  grid-column: 1 / -1;
+}
+.as-share-fallback > input {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid var(--as-line);
+  border-radius: 10px;
+  background: var(--as-surface);
+  color: var(--as-ink);
+}
+.as-share-fallback > button {
+  min-height: 44px;
+  padding-inline: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.as-discovery-lesson > p {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--as-muted);
+  margin: 8px 0 12px;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
 .as-feed-read-more,
 .as-comment-trigger {
   display: inline-flex;

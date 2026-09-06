@@ -11,6 +11,7 @@ import { postLikeStates, searchSocialProfiles } from '@/db/social';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { MemberDirectory } from '@/components/social-profile';
 import { discoveryPage, discoveryPath } from '@/lib/discovery';
+import { PostReturnNotice } from '@/components/post-return-notice';
 
 // 投稿タブだけが、保存状態・いいね・投稿一覧を必要とする。
 async function loadPostResults(q: string, page: number) {
@@ -54,7 +55,7 @@ export default async function Discover({
   const match = (text: string) =>
     text.toLocaleLowerCase().includes(q.toLocaleLowerCase());
   const tasks =
-    view === 'textbook' && q
+    view === 'textbook'
       ? textbookCatalog.tasks.filter((t) =>
           match(t.title + t.outcome + t.tags.join(' ')),
         )
@@ -156,14 +157,14 @@ export default async function Discover({
           <p className="as-private-note">
             {q
               ? '気になる課題から、始められます。'
-              : 'キーワードを選ぶか、教科書の一覧から探せます。'}{' '}
+              : '最初の一歩から並んでいます。気になるものから始めてもOK。'}{' '}
             <Link href="/textbook/explore">教科書の一覧 →</Link>
           </p>
         )}
-        {view === 'textbook' && q && (
+        {view === 'textbook' && (
           <section className="as-section">
             <div className="as-result-heading">
-              <h2>「{q}」の教科書</h2>
+              <h2>{q ? `「${q}」の教科書` : 'ひとつ、やってみよう。'}</h2>
               <span>
                 {taskPage.total
                   ? `${taskPage.total}件中 ${taskPage.from}–${taskPage.to}件`
@@ -184,12 +185,13 @@ export default async function Discover({
                 <Link
                   href={'/textbook/lesson/' + encodeURIComponent(t.id)}
                   key={t.id}
-                  className="as-panel"
+                  className="as-panel as-discovery-lesson"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <span className="as-eyebrow">{t.trackLabel}</span>
                   <h3>{t.title}</h3>
+                  <p>{t.outcome}</p>
                   <span>
                     教科書を開く ↗
                     <span className="sr-only">（新しいタブ）</span>
@@ -221,6 +223,12 @@ export default async function Discover({
         )}
         {view === 'posts' && postResults && (
           <section className="as-section">
+            <PostReturnNotice
+              visibleRefs={[
+                ...postResults.feed.posts.map((p) => p.id),
+                ...postResults.posts.map((p) => p.id),
+              ]}
+            />
             <h2>{q ? '「' + q + '」の投稿' : 'こんな使い方から、どうぞ。'}</h2>
             <div className="as-discover-posts">
               {postResults.feed.posts.map((p) => (

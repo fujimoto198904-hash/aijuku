@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Bookmark, LoaderCircle } from 'lucide-react';
 import { withSiteBasePath } from '@/lib/site-paths';
 import Link from '@/components/site-link';
+import { postActionLoginPath } from '@/lib/post-navigation';
 
 export function PostStockNotice({
   notice,
@@ -27,30 +28,28 @@ export function PostStock({
   initialSaved = false,
   canSave = false,
   compact = false,
+  returnAnchor,
 }: {
   postRef: string;
   initialSaved?: boolean;
   canSave?: boolean;
   compact?: boolean;
+  returnAnchor?: string;
 }) {
+  const inFlight = useRef(false);
   const [saved, setSaved] = useState(initialSaved),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState('');
   async function toggle() {
-    if (busy) return;
+    if (inFlight.current) return;
     if (!canSave) {
       window.location.assign(
-        withSiteBasePath(
-          '/login?return_to=' +
-            encodeURIComponent(
-              (postRef.startsWith('official-') ? '/posts/' : '/community/') +
-                postRef,
-            ),
-        ),
+        postActionLoginPath(window.location, returnAnchor),
       );
       return;
     }
+    inFlight.current = true;
     setBusy(true);
     setError('');
     setNotice('');
@@ -67,6 +66,7 @@ export function PostStock({
     } catch (e) {
       setError(e instanceof Error ? e.message : '保存できませんでした。');
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }
@@ -78,7 +78,13 @@ export function PostStock({
         aria-pressed={canSave ? saved : undefined}
         aria-busy={busy}
         data-feedback={notice && saved ? 'saved' : undefined}
-        aria-label={canSave ? 'この投稿を保存' : 'ログインしてこの投稿を保存'}
+        aria-label={
+          canSave
+            ? saved
+              ? 'この投稿の保存を解除'
+              : 'この投稿を保存'
+            : 'ログインしてこの投稿を保存'
+        }
         title={!canSave ? 'ログインして保存' : saved ? '保存済み' : '保存'}
         onClick={toggle}
         className={

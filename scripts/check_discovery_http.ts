@@ -29,6 +29,23 @@ const lessonLinks = (html: string) => [
   ),
 ];
 const q = '画像';
+const allFirst = await page(discoveryPath('textbook'));
+const allSecond = await page(discoveryPath('textbook', '', 2));
+const allLast = await page(discoveryPath('textbook', '', 1000));
+const allSpaces = await page(discoveryPath('textbook', '   '));
+assert.equal(lessonLinks(allFirst).length, 12);
+assert.equal(lessonLinks(allSecond).length, 12);
+assert(
+  lessonLinks(allSecond).every((href) => !lessonLinks(allFirst).includes(href)),
+);
+assert.equal(
+  lessonLinks(allLast).length,
+  textbookCatalog.tasks.length % 12 || 12,
+);
+assert.deepEqual(lessonLinks(allSpaces), lessonLinks(allFirst));
+assert(allFirst.includes('ひとつ、やってみよう。'));
+assert(allFirst.includes('as-discovery-lesson'));
+assert(allFirst.includes(textbookCatalog.tasks[0].outcome));
 const tasks = textbookCatalog.tasks.filter((t) =>
   (t.title + t.outcome + t.tags.join(' ')).includes(q),
 );
