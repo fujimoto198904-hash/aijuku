@@ -380,7 +380,10 @@ export function MemberPostCard({
         )}
         <div>
           {post.profileHandle ? (
-            <Link href={'/u/' + post.profileHandle}>
+            <Link
+              href={'/u/' + post.profileHandle}
+              className="as-post-identity"
+            >
               <strong>{post.authorName}</strong>{' '}
               <AccountBadge kind={post.profileKind} />
             </Link>

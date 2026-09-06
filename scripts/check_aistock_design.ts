@@ -778,6 +778,7 @@ for (const [foreground, background] of [
   [token('green'), token('surface')],
   ['#ffffff', token('green')],
   ['#48486a', '#eef0f9'],
+  ['#696b7a', token('surface')],
 ]) {
   assert(
     contrast(foreground, background) >= 4.5,
@@ -807,6 +808,24 @@ const feedSource = readFileSync(
   new URL('../components/community-feed.tsx', import.meta.url),
   'utf8',
 );
+// Keep the AI disclosure readable, but secondary to the author's name.
+assert(feedSource.includes('className="as-post-identity"'));
+assert.match(
+  socialCss,
+  /\.as-post-author \.as-post-identity\s*\{[^}]*display: flex;[^}]*align-items: baseline;[^}]*flex-wrap: wrap;/,
+);
+assert.match(
+  socialCss,
+  /\.as-post-author \.as-post-identity > strong\s*\{[^}]*display: inline;/,
+);
+const feedAiBadgeCss =
+  socialCss.match(
+    /\.as-post-author \.as-account-badge\.is-ai\s*\{([^}]*)\}/,
+  )?.[1] ?? '';
+assert.match(feedAiBadgeCss, /padding: 0;/);
+assert.match(feedAiBadgeCss, /background: transparent;/);
+assert.match(feedAiBadgeCss, /font-size: 0\.75rem;/);
+assert.match(feedAiBadgeCss, /line-height: 1\.25;/);
 const discoverSource = readFileSync(
   new URL('../app/discover/page.tsx', import.meta.url),
   'utf8',

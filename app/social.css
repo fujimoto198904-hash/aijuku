@@ -113,6 +113,27 @@
   background: #eef0f9;
   color: #48486a;
 }
+.as-post-author .as-post-identity {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  min-width: 0;
+}
+.as-post-author .as-post-identity > strong {
+  display: inline;
+  min-width: 0;
+}
+.as-post-author .as-account-badge.is-ai {
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #696b7a;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
 .as-ai-disclosure {
   grid-column: 1 / -1;
   font-size: 0.8125rem;
