@@ -35,3 +35,14 @@ export function communityPostBody(body: string, link: string): string {
     );
   return [text, url].filter(Boolean).join('\n\n');
 }
+export const communityPostMaxLength = 1000;
+export const communityReplyMaxLength = 5000;
+export const communityFeedPreviewLength = 140;
+
+/** 絵文字のサロゲートペアを途中で切らない。URLも本文の文字数に含める。 */
+export function communityTextLength(value: string): number {
+  return Array.from(value).length;
+}
+export function communityFeedPreview(body: string): string {
+  return Array.from(body).slice(0, communityFeedPreviewLength).join('');
+}

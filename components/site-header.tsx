@@ -32,7 +32,7 @@ export function AistockLogo() {
     </span>
   );
 }
-export function SiteHeader() {
+export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
   const pathname = withoutSiteBasePath(usePathname() || '/');
   return (
     <>
@@ -51,8 +51,8 @@ export function SiteHeader() {
         >
           <MessageCircle size={23} />
         </Link>
-        <Link href="/join" className="as-join">
-          無料で参加 <ArrowUpRight size={16} />
+        <Link href={signedIn ? '/mypage' : '/join'} className="as-join">
+          {signedIn ? 'マイページ' : '無料で参加'} <ArrowUpRight size={16} />
         </Link>
       </header>
       <nav className="as-navigation" aria-label="メインナビゲーション">
@@ -87,12 +87,14 @@ export function SiteHeader() {
             <br />
             自分の力に。
           </p>
-          <Link href="/join" className="as-primary">
-            無料会員登録
+          <Link href={signedIn ? '/mypage' : '/join'} className="as-primary">
+            {signedIn ? 'マイページ' : '無料会員登録'}
           </Link>
-          <Link href="/login" className="as-login">
-            ログイン
-          </Link>
+          {!signedIn && (
+            <Link href="/login" className="as-login">
+              ログイン
+            </Link>
+          )}
           <small>運営：MON-ai</small>
         </div>
       </nav>

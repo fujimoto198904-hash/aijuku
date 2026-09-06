@@ -1,5 +1,24 @@
 import type { CommunityKind } from './community';
 
+/** 同じ人が連続しすぎないよう、取得済みの1ページ内だけを並べ替える。 */
+export function spreadFeedAuthors<
+  T extends { profileHandle: string | null; authorName: string },
+>(posts: T[]): T[] {
+  const remaining = [...posts];
+  const result: T[] = [];
+  const author = (post: T) => post.profileHandle ?? post.authorName;
+  while (remaining.length) {
+    const last = result.at(-1),
+      previous = result.at(-2);
+    const other =
+      last && previous && author(last) === author(previous)
+        ? remaining.findIndex((post) => author(post) !== author(last))
+        : 0;
+    result.push(remaining.splice(Math.max(0, other), 1)[0]);
+  }
+  return result;
+}
+
 export function communityFeedPath(
   view: string,
   kind?: CommunityKind,

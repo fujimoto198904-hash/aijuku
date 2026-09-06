@@ -5,8 +5,13 @@ import {
   communityPostBody,
   communityPostTitle,
   communityHttpUrl,
+  communityTextLength,
+  communityFeedPreview,
+  communityPostMaxLength,
 } from '../lib/community-composer';
 import { CommunityBody } from '../components/community-body';
+import { FeedPostBody } from '../components/feed-post-body';
+import { checkInlineComments } from './check_inline_comments';
 import { preparePostImage } from '../lib/prepare-post-image';
 import { communityMediaLimits } from '../lib/community-media-limits';
 import nextConfig from '../next.config';
@@ -18,6 +23,7 @@ import {
   mixLearningFeed,
   communityFeedPath,
   followingEmptyState,
+  spreadFeedAuthors,
 } from '../lib/social-feed';
 import { discoveryPage, discoveryPath } from '../lib/discovery';
 import { UsernameRegistrationForm } from '../components/username-registration-form';
@@ -140,7 +146,7 @@ const replyMarkup = renderToStaticMarkup(
   createElement(CommunityForm, { postId: 'fixture-post' }),
 );
 assert(
-  replyMarkup.includes('返信する') &&
+  replyMarkup.includes('コメントする') &&
     !replyMarkup.includes('何に困っていますか？'),
 );
 const composerSource = readFileSync(
@@ -183,6 +189,41 @@ assert.equal(communityPostTitle('🎉'.repeat(100)).length, 100);
 assert.equal(communityHttpUrl('javascript:alert(1)'), null);
 assert.equal(communityHttpUrl('https://user:secret@example.test'), null);
 assert.throws(() => communityPostBody('本文', 'not-a-url'));
+assert.equal(communityPostMaxLength, 1000);
+assert.equal(communityTextLength('あ😀'), 2);
+for (const character of ['あ', 'a', '😀']) {
+  assert.equal(
+    communityFeedPreview(character.repeat(140)),
+    character.repeat(140),
+  );
+  assert.equal(
+    communityFeedPreview(character.repeat(141)),
+    character.repeat(140),
+  );
+}
+const shortFeedBody = renderToStaticMarkup(
+  createElement(FeedPostBody, { body: '短い投稿' }),
+);
+assert(shortFeedBody.includes('短い投稿'));
+assert(!shortFeedBody.includes('続きを読む'));
+const longFeedBody = renderToStaticMarkup(
+  createElement(FeedPostBody, { body: '😀'.repeat(140) + 'まだ見せない続き' }),
+);
+assert(
+  longFeedBody.includes('続きを読む') &&
+    longFeedBody.includes('aria-expanded="false"'),
+);
+assert(!longFeedBody.includes('まだ見せない続き'));
+assert(longFeedBody.includes('😀'.repeat(140) + '…'));
+const longComposeMarkup = renderToStaticMarkup(
+  createElement(CommunityForm, { initialBody: 'あ'.repeat(1001) }),
+);
+assert(longComposeMarkup.includes('1,001 / 1,000文字'));
+assert(longComposeMarkup.includes('data-over="true"'));
+assert(
+  longComposeMarkup.includes('あ'.repeat(1001)),
+  'An imported note is never silently truncated',
+);
 const linkMarkup = renderToStaticMarkup(
   createElement(CommunityBody, {
     body: '便利 https://example.test/try\n<script>alert(1)</script> javascript:alert(1)',
@@ -256,7 +297,7 @@ try {
 }
 assert.match(
   composerSource,
-  /defaultValue=\{initialBody\}/,
+  /useState\(initialBody\)/,
   'changing kind must not overwrite a note or typed text',
 );
 const questionPageSource = readFileSync(
@@ -272,7 +313,7 @@ assert.match(
 );
 assert.match(
   questionPageSource,
-  /'\/mypage\/onboarding\?return_to=' \+ encodeURIComponent\(returnTo\)/,
+  /'\/mypage\/onboarding\?return_to='\s*\+\s*encodeURIComponent\(returnTo\)/,
 );
 const onboardingSource = readFileSync(
   new URL('../app/mypage/onboarding/page.tsx', import.meta.url),
@@ -284,7 +325,7 @@ assert.match(
 );
 assert.match(
   onboardingSource,
-  /'\/mypage\/onboarding\?return_to=' \+ encodeURIComponent\(returnTo\)/,
+  /'\/mypage\/onboarding\?return_to='\s*\+\s*encodeURIComponent\(returnTo\)/,
 );
 const questionReaderSource = readFileSync(
   new URL('../components/textbook/lesson-reader.tsx', import.meta.url),
@@ -523,6 +564,7 @@ const accountBadgeSource = readFileSync(
   new URL('../components/social-avatar.tsx', import.meta.url),
   'utf8',
 );
+await checkInlineComments();
 assert.match(
   accountBadgeSource,
   /className="as-account-badge is-ai">公式AI<\/span>/,
@@ -830,12 +872,33 @@ const discoverSource = readFileSync(
   new URL('../app/discover/page.tsx', import.meta.url),
   'utf8',
 );
-assert(feedSource.includes('className="as-feed-controls"'));
-assert.match(
-  feedSource,
-  /className="as-feed-options" open=\{Boolean\(kind\)\}/,
+assert(!feedSource.includes('className="as-feed-controls"'));
+assert(!feedSource.includes('className="as-feed-options"'));
+assert(!feedSource.includes('投稿を絞り込む'));
+assert(feedSource.includes('<h1 className="sr-only">みんなの投稿</h1>'));
+const crowded = ['a', 'a', 'a', 'a', 'b', 'c'].map((author, id) => ({
+  id,
+  profileHandle: author,
+  authorName: author,
+}));
+const spread = spreadFeedAuthors(crowded);
+assert.deepEqual(
+  spread.map((post) => post.profileHandle),
+  ['a', 'a', 'b', 'a', 'a', 'c'],
 );
-assert(feedSource.includes('className="as-feed-learn"'));
+assert.equal(new Set(spread.map((post) => post.id)).size, crowded.length);
+const messagesSource = readFileSync(
+  new URL('../app/messages/page.tsx', import.meta.url),
+  'utf8',
+);
+assert(!messagesSource.includes('<p className="as-panel">'));
+assert(messagesSource.includes('className="as-message-start"'));
+assert(messagesSource.includes('!!me?.isPublic && !threads.length && !target'));
+assert(messagesSource.includes('requireSocialMember(returnTo)'));
+assert(messagesSource.includes('<SiteHeader signedIn />'));
+assert.match(socialCss, /\.as-message-start\s*\{[^}]*padding: 24px/);
+assert.match(css, /content-visibility: auto/);
+assert(feedSource.includes('prioritizeFollowing:'));
 const headerSource = readFileSync(
   new URL('../components/site-header.tsx', import.meta.url),
   'utf8',
@@ -851,7 +914,7 @@ assert.match(
 assert.match(css, /\.as-social-feed \.as-post-photo\s*\{\s*aspect-ratio: 4\/3/);
 assert.match(
   css,
-  /\.as-social-feed \.as-post > a\.as-post-photo img\s*\{\s*object-fit: contain/,
+  /\.as-social-feed \.as-post > \.as-post-photo img\s*\{\s*object-fit: contain/,
 );
 assert.match(
   css,

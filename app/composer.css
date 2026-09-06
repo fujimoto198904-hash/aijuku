@@ -165,6 +165,15 @@
   font-size: 0.75rem;
   color: var(--as-muted);
 }
+.as-composer-count {
+  justify-self: end;
+  color: var(--as-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.as-composer-count[data-over] {
+  color: #9e283b;
+}
 .as-body-link {
   color: var(--as-green);
   text-decoration: underline;

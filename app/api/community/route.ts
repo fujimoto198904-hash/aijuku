@@ -6,6 +6,7 @@ import {
   writeCommunityReply,
   removeCommunityItem,
   getCommunityPost,
+  getCommunityReplies,
   communityRetry,
 } from '@/db/community';
 import { isCommunityKind, publicNickname } from '@/lib/community';
@@ -16,8 +17,90 @@ import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 import { findTextbookTask } from '@/lib/textbook-catalog';
 import { ownedCommunityMedia } from '@/db/community-media';
 import { ownSocialProfile, canInteractWithPost } from '@/db/social';
-import { communityPostTitle } from '@/lib/community-composer';
+import {
+  communityPostTitle,
+  communityPostMaxLength,
+  communityReplyMaxLength,
+  communityTextLength,
+} from '@/lib/community-composer';
+import type { CommunityThread } from '@/lib/community-thread';
 export const dynamic = 'force-dynamic';
+export async function GET(request: Request) {
+  const query = new URL(request.url).searchParams;
+  const postId = query.get('postId') ?? '';
+  const requestedPage = query.get('page') ?? '1';
+  if (
+    !/^[a-zA-Z0-9_-]{1,100}$/.test(postId) ||
+    (requestedPage !== 'last' && !/^[1-9]\d{0,8}$/.test(requestedPage))
+  )
+    return noStoreJson({ error: '投稿を確認してください。' }, { status: 400 });
+  try {
+    const [post, user] = await Promise.all([
+      getCommunityPost(postId),
+      getChatGPTUser(),
+    ]);
+    if (!post)
+      return noStoreJson({ error: '投稿が見つかりません。' }, { status: 404 });
+    const realUser =
+      user && !user.isDemo && !user.userId.startsWith('aistock-system-')
+        ? user
+        : null;
+    const member = realUser ? await getMember(realUser.userId) : null;
+    const active =
+      !!member &&
+      member.status === 'active' &&
+      hasCurrentMembershipConsent(member);
+    const canReply =
+      !!realUser &&
+      active &&
+      (await canInteractWithPost(realUser.userId, postId));
+    const isStaff =
+      !!realUser &&
+      active &&
+      getAuthenticatedStaffPermissions(realUser).isOwner;
+    const profile = canReply ? await ownSocialProfile(realUser!.userId) : null;
+    const pages = Math.max(1, Math.ceil(post.replyCount / 50));
+    const page =
+      requestedPage === 'last' ? pages : Math.min(pages, Number(requestedPage));
+    const result: CommunityThread = {
+      replies: await getCommunityReplies(
+        postId,
+        page,
+        active ? realUser!.userId : null,
+        isStaff,
+      ),
+      replyCount: post.replyCount,
+      page,
+      pages,
+      canReply,
+      isStaff,
+      publicProfile: profile?.isPublic
+        ? { name: profile.name, handle: profile.handle }
+        : null,
+      defaultNickname: canReply
+        ? (publicNickname(profile?.name ?? realUser?.displayName) ?? '')
+        : '',
+      needsLogin: !realUser,
+      needsConsent:
+        !!realUser &&
+        (!member ||
+          (member.status === 'active' && !hasCurrentMembershipConsent(member))),
+      notice: canReply
+        ? ''
+        : !realUser
+          ? 'ログインするとコメントできます。'
+          : !active
+            ? '会員情報と利用規約をご確認ください。'
+            : 'この投稿にはコメントできません。',
+    };
+    return noStoreJson(result);
+  } catch {
+    return noStoreJson(
+      { error: 'コメントを読み込めませんでした。もう一度お試しください。' },
+      { status: 503 },
+    );
+  }
+}
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request))
     return noStoreJson({ error: '送信元を確認できません。' }, { status: 403 });
@@ -110,9 +193,19 @@ export async function POST(request: Request) {
       authorRole = isOwner ? 'staff' : 'member';
     const body = typeof data.body === 'string' ? data.body.trim() : '';
     const requestId = typeof data.requestId === 'string' ? data.requestId : '';
-    if (!body || body.length > 5000 || !/^[a-zA-Z0-9-]{16,64}$/.test(requestId))
+    const maxLength =
+      data.action === 'reply'
+        ? communityReplyMaxLength
+        : communityPostMaxLength;
+    if (
+      !body ||
+      communityTextLength(body) > maxLength ||
+      !/^[a-zA-Z0-9-]{16,64}$/.test(requestId)
+    )
       return noStoreJson(
-        { error: '本文は1〜5,000文字で入力してください。' },
+        {
+          error: `本文は1〜${maxLength.toLocaleString('ja-JP')}文字で入力してください。`,
+        },
         { status: 400 },
       );
     if (data.action === 'reply') {

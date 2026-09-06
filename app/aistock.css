@@ -293,7 +293,7 @@
 .as-social-feed .as-post-photo {
   aspect-ratio: 4/3;
 }
-.as-social-feed .as-post > a.as-post-photo img {
+.as-social-feed .as-post > .as-post-photo img {
   object-fit: contain;
   background: #eef1ec;
 }
@@ -1771,5 +1771,37 @@
   .as-stock-button[aria-pressed='true'] {
     outline: 2px solid Highlight;
     outline-offset: -3px;
+  }
+}
+.as-social-feed .as-feed-main {
+  padding-top: 8px;
+}
+/* Offscreen cards keep their last measured size; visible content stays immediate. */
+@supports (content-visibility: auto) {
+  .as-feed-list > .as-post:nth-child(n + 5) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 620px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .as-feed-read-more,
+  .as-comment-trigger,
+  .as-comments-pages button {
+    transition:
+      color 120ms ease,
+      background-color 120ms ease,
+      transform 120ms ease;
+  }
+  .as-feed-read-more:active,
+  .as-comment-trigger:active {
+    transform: scale(0.98);
+  }
+  .as-feed-body > p {
+    animation: as-panel-enter 140ms ease-out;
+  }
+}
+@media (max-width: 739px) {
+  .as-social-feed .as-feed-main {
+    padding-top: 0;
   }
 }

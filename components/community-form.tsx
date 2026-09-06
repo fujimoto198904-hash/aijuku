@@ -14,7 +14,12 @@ import { withSiteBasePath } from '@/lib/site-paths';
 import Link from '@/components/site-link';
 import { textbookLessonPath } from '@/lib/textbook-routes';
 import { Link2, X } from 'lucide-react';
-import { communityPostBody } from '@/lib/community-composer';
+import {
+  communityPostBody,
+  communityPostMaxLength,
+  communityReplyMaxLength,
+  communityTextLength,
+} from '@/lib/community-composer';
 import { uploadPostImage } from '@/lib/prepare-post-image';
 export function CommunityForm({
   postId,
@@ -25,6 +30,7 @@ export function CommunityForm({
   initialBody = '',
   publicProfile,
   defaultNickname = '',
+  onReplySaved,
 }: {
   postId?: string;
   initialKind?: CommunityKind;
@@ -34,6 +40,7 @@ export function CommunityForm({
   initialBody?: string;
   publicProfile?: { name: string; handle: string } | null;
   defaultNickname?: string;
+  onReplySaved?: () => void;
 }) {
   const formId = useId();
   const router = useRouter(),
@@ -46,6 +53,17 @@ export function CommunityForm({
   const [selectedKind, setSelectedKind] = useState(initialKind);
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
   const [linkOpen, setLinkOpen] = useState(false);
+  const [bodyValue, setBodyValue] = useState(initialBody);
+  const [linkValue, setLinkValue] = useState('');
+  const maxLength = postId ? communityReplyMaxLength : communityPostMaxLength;
+  let characterCount = communityTextLength(bodyValue.trim());
+  try {
+    characterCount = communityTextLength(
+      communityPostBody(bodyValue, linkOpen ? linkValue : ''),
+    );
+  } catch {
+    characterCount += communityTextLength(linkOpen ? linkValue : '');
+  }
   const submitting = useRef(false);
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,9 +81,9 @@ export function CommunityForm({
         typeof rawBody === 'string' ? rawBody : '',
         typeof rawLink === 'string' ? rawLink : '',
       );
-      if (!body || body.length > 5000)
+      if (!body || communityTextLength(body) > maxLength)
         throw new Error(
-          '本文とリンクを合わせて1〜5,000文字で入力してください。',
+          `本文とリンクを合わせて1〜${maxLength.toLocaleString('ja-JP')}文字で入力してください。`,
         );
       let uploadedMediaId = mediaId;
       if (imageBlob && !uploadedMediaId) {
@@ -104,7 +122,9 @@ export function CommunityForm({
       if (postId) {
         id.current = null;
         form.reset();
-        router.refresh();
+        setBodyValue('');
+        if (onReplySaved) onReplySaved();
+        else router.refresh();
       } else
         window.location.assign(withSiteBasePath(result.next ?? '/community'));
     } catch (e) {
@@ -165,15 +185,16 @@ export function CommunityForm({
             className="min-w-0 w-full text-base"
             id={formId + '-body'}
             name="body"
-            defaultValue={initialBody}
+            value={bodyValue}
+            onChange={(event) => setBodyValue(event.target.value)}
             placeholder={
               postId
-                ? 'わかることや、試してみたことを書いてください。'
+                ? 'コメントを追加…'
                 : selectedKind === 'question'
                   ? 'どこで困った？試したことを気軽に書いてみよう。'
                   : 'AIでやってみたこと、見つけたもの。ひとことから。'
             }
-            maxLength={5000}
+            aria-describedby={formId + '-count'}
             required
           />
         </label>
@@ -233,10 +254,15 @@ export function CommunityForm({
                   inputMode="url"
                   placeholder="https://…"
                   maxLength={2000}
+                  value={linkValue}
+                  onChange={(event) => setLinkValue(event.target.value)}
                 />
                 <button
                   type="button"
-                  onClick={() => setLinkOpen(false)}
+                  onClick={() => {
+                    setLinkOpen(false);
+                    setLinkValue('');
+                  }}
                   aria-label="リンクを外す"
                 >
                   <X size={18} />
@@ -246,6 +272,14 @@ export function CommunityForm({
           </>
         )}
         <p className="as-composer-visibility">投稿は誰でも読めます。</p>
+        <span
+          id={formId + '-count'}
+          className="as-composer-count"
+          data-over={characterCount > maxLength || undefined}
+        >
+          {characterCount.toLocaleString('ja-JP')} /{' '}
+          {maxLength.toLocaleString('ja-JP')}文字
+        </span>
         {error && (
           <p role="alert" className="text-red-700">
             {error}
@@ -275,13 +309,13 @@ export function CommunityForm({
         )}
         <Button
           type="submit"
-          disabled={busy || imageBusy}
+          disabled={busy || imageBusy || characterCount > maxLength}
           className="min-h-12 bg-sapphire text-white"
         >
           {busy
             ? '投稿しています…'
             : postId
-              ? '返信する'
+              ? 'コメントする'
               : selectedKind === 'question'
                 ? '質問を投稿する'
                 : '投稿する'}
@@ -294,10 +328,12 @@ export function CommunityDelete({
   id,
   target,
   postId,
+  onRemoved,
 }: {
   id: string;
   target: 'post' | 'reply';
   postId?: string;
+  onRemoved?: () => void;
 }) {
   const router = useRouter();
   const [confirm, setConfirm] = useState(false),
@@ -316,7 +352,8 @@ export function CommunityDelete({
         window.location.assign(withSiteBasePath('/community'));
       else {
         setConfirm(false);
-        router.refresh();
+        if (onRemoved) onRemoved();
+        else router.refresh();
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : '削除できませんでした。');

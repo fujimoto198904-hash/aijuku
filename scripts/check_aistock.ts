@@ -72,7 +72,7 @@ try {
  export { getChatGPTUser as realHeaderUser } from './app/chatgpt-auth';
  export { membershipTermsVersion,privacyPolicyVersion,registerMember,updateMemberDisplayName } from './db/membership';
  export { POST as communityConsent } from './app/api/community/consent/route';
- export { POST as communityPost } from './app/api/community/route';
+ export { POST as communityPost, GET as communityGet } from './app/api/community/route';
  export { POST as mediaPost } from './app/api/community/media/route';
  export { POST as register } from './app/api/auth/register/route';
  export { GET as googleCallback } from './app/api/auth/google/callback/route';
@@ -267,6 +267,122 @@ try {
   assert.equal((await api.communityPost(request(replyInput))).status, 200);
   assert.equal((await api.communityPost(request(replyInput))).status, 200);
   assert.equal((await api.getCommunityReplies(id)).length, 1);
+  const readThread = (postId: string, page = '1') =>
+    api.communityGet(
+      new Request(
+        'https://school.test/api/community?' +
+          new URLSearchParams({ postId, page }),
+      ),
+    );
+  {
+    const threadResponse = await readThread(id);
+    assert.match(
+      threadResponse.headers.get('cache-control'),
+      /private.*no-store/,
+    );
+    let thread = await threadResponse.json();
+    assert.equal(thread.replyCount, 1);
+    assert.equal(thread.replies[0].canDelete, true);
+    assert.equal(thread.canReply, true);
+    assert.equal(thread.publicProfile, null);
+    assert.equal(thread.replies[0].body, replyInput.body);
+    for (const field of [
+      'authorId',
+      'author_id',
+      'memberId',
+      'email',
+      'requestId',
+    ]) {
+      assert.equal(field in thread.replies[0], false);
+      assert.equal(field in thread, false);
+    }
+    testGlobal.aistockTestUser = null;
+    thread = await (await readThread(id)).json();
+    assert.equal(thread.replies.length, 1);
+    assert.equal(thread.canReply, false);
+    assert.equal(thread.needsLogin, true);
+    assert.equal(thread.replies[0].canDelete, false);
+    asUser('test-old');
+    thread = await (await readThread(id)).json();
+    assert.equal(thread.canReply, false);
+    assert.equal(thread.needsConsent, true);
+    asUser('test-one', true);
+    assert.equal((await (await readThread(id)).json()).canReply, false);
+    for (const page of [
+      '0',
+      '-1',
+      'NaN',
+      'Infinity',
+      '1.5',
+      '100000000000000000',
+    ])
+      assert.equal((await readThread(id, page)).status, 400);
+    assert.equal((await (await readThread(id, '999')).json()).page, 1);
+    assert.equal((await readThread('missing-post')).status, 404);
+    assert.equal((await readThread('../bad')).status, 400);
+    assert.equal((await readThread('')).status, 400);
+  }
+  asUser('test-two');
+  await DB.batch(
+    Array.from({ length: 51 }, (_, index) =>
+      DB.prepare(
+        'INSERT INTO community_replies(id,post_id,author_id,request_id,body,author_name,author_role,created_at) VALUES(?,?,?,?,?,?,?,?)',
+      ).bind(
+        'inline-page-' + index,
+        id,
+        'test-two',
+        'inline-page-request-' + index,
+        'コメント ' + index,
+        '学ぶひと',
+        'member',
+        Date.now() + index,
+      ),
+    ),
+  );
+  assert.equal((await (await readThread(id)).json()).replies.length, 50);
+  const lastThreadPage = await (await readThread(id, 'last')).json();
+  assert.equal(lastThreadPage.page, 2);
+  assert.equal(lastThreadPage.replyCount, 52);
+  assert.equal(lastThreadPage.replies.length, 2);
+  assert.equal(lastThreadPage.replies[1].body, 'コメント 50');
+  await api.communityPost(
+    request({
+      action: 'delete',
+      target: 'reply',
+      id: lastThreadPage.replies[1].id,
+    }),
+  );
+  const afterReplyDelete = await (await readThread(id, 'last')).json();
+  assert.equal(afterReplyDelete.replyCount, 51);
+  assert.equal(afterReplyDelete.replies.length, 1);
+  await clearLimit();
+  for (const character of ['あ', '😀']) {
+    const thousand = post({ body: character.repeat(1000), title: undefined });
+    const accepted = await api.communityPost(request(thousand));
+    assert.equal(accepted.status, 200);
+    const createdId = (await accepted.json()).next.split('/').at(-1);
+    assert.equal(
+      (await api.getCommunityPost(createdId)).body,
+      character.repeat(1000),
+    );
+    assert.equal(
+      (await api.communityPost(request(post({ body: character.repeat(1001) }))))
+        .status,
+      400,
+    );
+  }
+  const oldLongPost = await api.writeCommunityPost({
+    authorId: 'test-two',
+    authorName: '学ぶひと',
+    authorRole: 'member',
+    requestId: crypto.randomUUID(),
+    kind: 'learning',
+    title: '前の長い投稿',
+    body: '昔'.repeat(3000),
+    taskId: null,
+  });
+  assert.equal((await api.getCommunityPost(oldLongPost.id)).body.length, 3000);
+  await clearLimit();
   asUser('test-owner');
   const staffResponse = await api.communityPost(
     request(post({ kind: 'tip', nickname: 'MON-ai 運営' })),
@@ -280,6 +396,12 @@ try {
     200,
   );
   assert.equal(await api.getCommunityPost(id), null);
+  assert.equal((await readThread(id)).status, 404);
+  assert.equal(
+    (await api.getCommunityReplies(id)).length,
+    0,
+    'Hidden parent cannot expose replies',
+  );
   assert.equal(
     await api.writeCommunityReply({
       postId: id,
@@ -1629,6 +1751,115 @@ try {
     p1.handle,
   );
   assert.equal(await api.setFollow('test-one', p1.handle, true), false);
+  const rankingTime = Date.now();
+  const rankFixtureIds: string[] = [];
+  for (let index = 0; index < 44; index++) {
+    const followed = index === 0 || index === 3;
+    const record = await api.writeCommunityPost({
+      authorId: followed ? 'test-two' : 'test-one',
+      authorName: followed ? p2.name : p1.name,
+      authorRole: 'member',
+      requestId: crypto.randomUUID(),
+      kind: 'learning',
+      title: 'ranking-fixture-' + index,
+      body: 'ranking-fixture',
+      taskId: null,
+      profileHandle: followed ? p2.handle : p1.handle,
+    });
+    rankFixtureIds.push(record.id);
+    const createdAt =
+      index === 0
+        ? rankingTime - 3600000
+        : index < 3
+          ? rankingTime
+          : index === 3
+            ? rankingTime - 172800000
+            : rankingTime - 604800000 - index;
+    await DB.prepare('UPDATE community_posts SET created_at=? WHERE id=?')
+      .bind(createdAt, record.id)
+      .run();
+  }
+  const ranked = await api.listCommunityPosts(
+    undefined,
+    1,
+    undefined,
+    'ranking-fixture',
+    { prioritizeFollowing: p1.handle },
+  );
+  assert.equal(
+    ranked.posts[0].id,
+    rankFixtureIds[0],
+    'Recent followed author gets priority',
+  );
+  assert(
+    rankFixtureIds.slice(1, 3).includes(ranked.posts[1].id),
+    'Fresh discovery is above old followed posts',
+  );
+  const rankedAgain = await api.listCommunityPosts(
+    undefined,
+    1,
+    undefined,
+    'ranking-fixture',
+    { prioritizeFollowing: p1.handle },
+  );
+  assert.deepEqual(
+    rankedAgain.posts.map((p: { id: string }) => p.id),
+    ranked.posts.map((p: { id: string }) => p.id),
+  );
+  const ranked2 = await api.listCommunityPosts(
+    undefined,
+    2,
+    undefined,
+    'ranking-fixture',
+    { prioritizeFollowing: p1.handle },
+  );
+  const ranked3 = await api.listCommunityPosts(
+    undefined,
+    3,
+    undefined,
+    'ranking-fixture',
+    { prioritizeFollowing: p1.handle },
+  );
+  assert.equal(
+    new Set(
+      [...ranked.posts, ...ranked2.posts, ...ranked3.posts].map((p) => p.id),
+    ).size,
+    44,
+  );
+  const recentOnly = await api.listCommunityPosts(
+    undefined,
+    1,
+    undefined,
+    'ranking-fixture',
+  );
+  assert(
+    rankFixtureIds.slice(1, 3).includes(recentOnly.posts[0].id),
+    'Without personalization keep chronological order',
+  );
+  await DB.prepare('UPDATE social_profiles SET is_public=0 WHERE handle=?')
+    .bind(p2.handle)
+    .run();
+  const privateRank = await api.listCommunityPosts(
+    undefined,
+    1,
+    undefined,
+    'ranking-fixture',
+    { prioritizeFollowing: p1.handle },
+  );
+  assert(rankFixtureIds.slice(1, 3).includes(privateRank.posts[0].id));
+  assert.equal(
+    privateRank.posts.find((p: { id: string }) => p.id === rankFixtureIds[0])
+      .profileHandle,
+    null,
+  );
+  await DB.prepare('UPDATE social_profiles SET is_public=1 WHERE handle=?')
+    .bind(p2.handle)
+    .run();
+  await DB.batch(
+    rankFixtureIds.map((id) =>
+      DB.prepare('DELETE FROM community_posts WHERE id=?').bind(id),
+    ),
+  );
   const accountsBefore = await DB.prepare(
     'SELECT count(*) AS n FROM member_auth_accounts',
   ).first<{ n: number }>();
@@ -1845,6 +2076,13 @@ try {
     'AI characters cannot receive DMs',
   );
   assert(await api.setBlock('test-two', p1.handle, true));
+  asUser('test-two');
+  const blockedThread = await (await readThread(profilePostId)).json();
+  assert.equal(blockedThread.canReply, false);
+  assert(
+    Array.isArray(blockedThread.replies),
+    'Blocking does not hide public comments',
+  );
   assert.equal((await api.socialCounts(p2.handle)).followers, 0);
   assert.equal(await api.setFollow('test-one', p2.handle, true), false);
   assert.equal(

@@ -1,7 +1,7 @@
 'use client';
 import { PostImageInput } from '@/components/post-image-input';
 import { avatarMediaId } from '@/lib/public-profile';
-import { useRef, useState, type SubmitEvent } from 'react';
+import { useRef, useState, type SubmitEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, Send, MessageCircle } from 'lucide-react';
 import Link from '@/components/site-link';
@@ -68,12 +68,14 @@ export function PostReactions({
   canInteract = false,
   count = 0,
   liked = false,
+  commentControl,
 }: {
   postRef: string;
   path: string;
   canInteract?: boolean;
   count?: number;
   liked?: boolean;
+  commentControl?: ReactNode;
 }) {
   const [state, setState] = useState({ count, liked }),
     [error, setError] = useState(''),
@@ -116,13 +118,15 @@ export function PostReactions({
         </button>
         <span aria-live="polite">{state.count > 0 ? state.count : null}</span>
       </span>
-      <Link
-        className="as-icon-button"
-        href={path + '#replies'}
-        aria-label="コメントを見る"
-      >
-        <MessageCircle size={24} />
-      </Link>
+      {commentControl ?? (
+        <Link
+          className="as-icon-button"
+          href={path + '#replies'}
+          aria-label="コメントを見る"
+        >
+          <MessageCircle size={24} />
+        </Link>
+      )}
       <ShareButton path={path} />
       {error && (
         <span className="as-inline-error" role="alert">
@@ -223,10 +227,12 @@ export function SocialProfileSettings({
   profile,
   displayName = '',
   readOnly = false,
+  returnTo,
 }: {
   profile: SocialProfile | null;
   displayName?: string;
   readOnly?: boolean;
+  returnTo?: string;
 }) {
   const router = useRouter(),
     [busy, setBusy] = useState(false),
@@ -263,6 +269,10 @@ export function SocialProfileSettings({
       setPublicId(saved.publicId ?? publicId);
       setMessage('プロフィールを保存しました。');
       setError(false);
+      if (returnTo && saved.isPublic) {
+        window.location.assign(withSiteBasePath(returnTo));
+        return;
+      }
       router.refresh();
     } catch (e) {
       setError(true);

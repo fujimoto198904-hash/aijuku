@@ -4,8 +4,6 @@ import {
   ArrowUpRight,
   Bookmark,
   BookOpen,
-  MessageCircle,
-  Plus,
   Sparkles,
   ArrowRight,
   Mail,
@@ -13,8 +11,6 @@ import {
   ListChecks,
   Table2,
   PanelsTopLeft,
-  SlidersHorizontal,
-  ChevronDown,
 } from 'lucide-react';
 import {
   officialPosts,
@@ -32,13 +28,18 @@ import {
   mixLearningFeed,
   communityFeedPath,
   followingEmptyState,
+  spreadFeedAuthors,
 } from '@/lib/social-feed';
 import { findTextbookTask } from '@/lib/textbook-catalog';
 import { textbookLessonPath } from '@/lib/textbook-routes';
 import { listCommunityPosts, type CommunityPost } from '@/db/community';
 import { communityLabels, type CommunityKind } from '@/lib/community';
 import { withSiteBasePath } from '@/lib/site-paths';
-import { CommunityBody } from '@/components/community-body';
+import { FeedPostBody } from '@/components/feed-post-body';
+import {
+  PostDiscussion,
+  PostCommentButton,
+} from '@/components/post-discussion';
 import { communityPostTitle } from '@/lib/community-composer';
 import cafePhoto from '@/sozai/cafe-shokuba-3nin.jpg';
 import travelPhoto from '@/sozai/kazoku-sougen.jpg';
@@ -182,7 +183,6 @@ type CardStockProps = {
 function PostCardActions({
   postRef,
   detailHref,
-  questionHref,
   official = false,
   lessonHref,
   canSave,
@@ -191,7 +191,6 @@ function PostCardActions({
 }: CardStockProps & {
   postRef: string;
   detailHref: string;
-  questionHref: string;
   official?: boolean;
   lessonHref?: string;
 }) {
@@ -201,38 +200,32 @@ function PostCardActions({
         postRef={postRef}
         path={detailHref}
         canInteract={canSave}
+        commentControl={<PostCommentButton />}
         {...likeState}
       />
-      <Link
-        href={lessonHref ?? detailHref}
-        target={lessonHref ? '_blank' : undefined}
-        rel={lessonHref ? 'noopener noreferrer' : undefined}
-        className="as-social-try"
-        aria-label={
-          lessonHref
-            ? '教材を試す（新しいタブ）'
-            : official
-              ? 'この教材の作り方と準備を見る'
-              : '投稿の続きを見る'
-        }
-        title={lessonHref ? '教材を試す（新しいタブ）' : undefined}
-      >
-        {official || lessonHref ? (
-          <BookOpen size={24} strokeWidth={1.7} aria-hidden="true" />
-        ) : (
-          <ArrowUpRight size={24} strokeWidth={1.7} aria-hidden="true" />
-        )}
-        <span>{lessonHref ? '試す ↗' : official ? '準備' : '読む'}</span>
-      </Link>
-      <Link
-        href={questionHref}
-        className="as-social-question as-legacy-question"
-        aria-label={
-          official ? 'この課題について質問する' : 'この投稿の返信を見る'
-        }
-      >
-        <MessageCircle size={24} strokeWidth={1.7} aria-hidden="true" />
-      </Link>
+      {(official || lessonHref) && (
+        <Link
+          href={lessonHref ?? detailHref}
+          target={lessonHref ? '_blank' : undefined}
+          rel={lessonHref ? 'noopener noreferrer' : undefined}
+          className="as-social-try"
+          aria-label={
+            lessonHref
+              ? '教材を試す（新しいタブ）'
+              : official
+                ? 'この教材の作り方と準備を見る'
+                : '投稿の続きを見る'
+          }
+          title={lessonHref ? '教材を試す（新しいタブ）' : undefined}
+        >
+          {official || lessonHref ? (
+            <BookOpen size={24} strokeWidth={1.7} aria-hidden="true" />
+          ) : (
+            <ArrowUpRight size={24} strokeWidth={1.7} aria-hidden="true" />
+          )}
+          <span>{lessonHref ? '試す ↗' : official ? '準備' : '読む'}</span>
+        </Link>
+      )}
       <PostStock
         postRef={postRef}
         canSave={canSave}
@@ -264,30 +257,24 @@ export function OfficialCard({
         </div>
         <span className="as-level">{post.level}</span>
       </header>
-      <Link
-        href={'/posts/' + post.id}
-        aria-label={post.title}
-        className="as-post-media-link"
-      >
-        <OfficialVisual post={post} />
-      </Link>
-      <PostCardActions
-        postRef={post.id}
-        detailHref={'/posts/' + post.id}
-        questionHref={
-          '/community/new?kind=question&task=' + encodeURIComponent(post.taskId)
-        }
-        official
-        canSave={canSave}
-        initialSaved={initialSaved}
-        likeState={likeState}
-      />
-      <div className="as-post-copy">
-        <h2>
-          <Link href={'/posts/' + post.id}>{post.title}</Link>
-        </h2>
-        <p className="as-user-excerpt">{post.body}</p>
-      </div>
+      <PostDiscussion postId={post.id}>
+        <div className="as-post-media-link">
+          <OfficialVisual post={post} />
+        </div>
+        <PostCardActions
+          postRef={post.id}
+          detailHref={'/posts/' + post.id}
+          official
+          canSave={canSave}
+          initialSaved={initialSaved}
+          likeState={likeState}
+        />
+        <div className="as-post-copy">
+          <h2>{post.title}</h2>
+          <FeedPostBody body={post.body} />
+          <PostCommentButton caption />
+        </div>
+      </PostDiscussion>
     </article>
   );
 }
@@ -350,7 +337,6 @@ export function MemberPostCard({
     <PostCardActions
       postRef={post.id}
       detailHref={'/community/' + post.id}
-      questionHref={'/community/' + post.id + '#replies'}
       lessonHref={
         post.taskId && findTextbookTask(post.taskId)
           ? textbookLessonPath(post.taskId)
@@ -400,44 +386,35 @@ export function MemberPostCard({
           </span>
         </div>
       </header>
-      {post.mediaId && (
-        <Link href={'/community/' + post.id} className="as-post-photo">
-          <Image
-            src={withSiteBasePath('/media/' + post.mediaId)}
-            alt="投稿者が添付した画像"
-            width={1000}
-            height={1000}
-            sizes="(min-width: 1050px) 560px, 100vw"
-            unoptimized
-          />
-        </Link>
-      )}
-      {post.mediaId ? actions : null}
-      <div className="as-post-copy">
-        <h2
-          className={
-            post.title === communityPostTitle(post.body) ? 'sr-only' : undefined
-          }
-        >
-          {post.title === communityPostTitle(post.body) ? (
-            post.title
-          ) : (
-            <Link href={'/community/' + post.id}>{post.title}</Link>
-          )}
-        </h2>
-        <p className="as-user-excerpt">
-          <CommunityBody body={post.body} />
-        </p>
-        <Link
-          href={'/community/' + post.id + '#replies'}
-          className="as-caption-link"
-        >
-          {post.replyCount
-            ? `返信${post.replyCount}件を見る`
-            : '最初の返信を書く'}
-        </Link>
-      </div>
-      {!post.mediaId ? actions : null}
+      <PostDiscussion postId={post.id} initialCount={post.replyCount}>
+        {post.mediaId && (
+          <div className="as-post-photo">
+            <Image
+              src={withSiteBasePath('/media/' + post.mediaId)}
+              alt="投稿者が添付した画像"
+              width={1000}
+              height={1000}
+              sizes="(min-width: 1050px) 560px, 100vw"
+              unoptimized
+            />
+          </div>
+        )}
+        {post.mediaId ? actions : null}
+        <div className="as-post-copy">
+          <h2
+            className={
+              post.title === communityPostTitle(post.body)
+                ? 'sr-only'
+                : undefined
+            }
+          >
+            {post.title}
+          </h2>
+          <FeedPostBody body={post.body} />
+          <PostCommentButton caption />
+        </div>
+        {!post.mediaId ? actions : null}
+      </PostDiscussion>
     </article>
   );
 }
@@ -450,13 +427,16 @@ export async function CommunityFeed({
   const kind = view === 'textbook' ? undefined : requestedKind;
   const user = await getChatGPTUser();
   const me =
-    view === 'following' && user ? await ownSocialProfile(user.userId) : null;
+    (view === 'following' || view === 'all') && user && !user.isDemo
+      ? await ownSocialProfile(user.userId)
+      : null;
   const [feed, viewer] = await Promise.all([
     view === 'textbook' || (view === 'following' && !me)
       ? Promise.resolve({ posts: [], hasMore: false })
       : listCommunityPosts(kind, page, undefined, '', {
           source: view,
           following: view === 'following' ? me?.handle : undefined,
+          prioritizeFollowing: view === 'all' ? me?.handle : undefined,
         }),
     getPostStockViewer(),
   ]);
@@ -474,7 +454,10 @@ export async function CommunityFeed({
     [...feed.posts.map((p) => p.id), ...official.map((p) => p.id)],
     user?.isDemo ? undefined : user?.userId,
   );
-  const items = mixLearningFeed(feed.posts, official).map((item) =>
+  const items = mixLearningFeed(
+    view === 'all' ? spreadFeedAuthors(feed.posts) : feed.posts,
+    official,
+  ).map((item) =>
     item.type === 'member' && !findOfficialPost(item.value.id) ? (
       <MemberPostCard
         key={item.value.id}
@@ -505,77 +488,7 @@ export async function CommunityFeed({
   return (
     <main id="main-content" className="as-feed-layout as-social-feed">
       <div className="as-feed-main">
-        <div className="as-feed-controls">
-          <header className="as-feed-heading">
-            <h1>みんなの発見</h1>
-            <Link href="/learn" className="as-feed-learn">
-              はじめてのAI <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-            <Link
-              href={composeHref}
-              className="as-compose"
-              aria-label="投稿を書く"
-            >
-              <Plus size={22} />
-            </Link>
-          </header>
-          <nav aria-label="フィードの選択" className="as-feed-tabs">
-            {[
-              ['all', 'おすすめ'],
-              ['following', 'フォロー中'],
-              ['members', 'みんな'],
-              ['textbook', '教材'],
-              ['ai', '公式AI'],
-            ].map(([key, label]) => (
-              <Link
-                key={key}
-                aria-current={view === key ? 'page' : undefined}
-                href={communityFeedPath(key, kind)}
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
-          {view !== 'textbook' && (
-            <details className="as-feed-options" open={Boolean(kind)}>
-              <summary>
-                <SlidersHorizontal size={16} aria-hidden="true" />
-                投稿を絞り込む
-                {kind && (
-                  <span className="as-filter-selection">
-                    {communityLabels[kind]}
-                  </span>
-                )}
-                <ChevronDown
-                  size={16}
-                  className="as-disclosure-chevron"
-                  aria-hidden="true"
-                />
-              </summary>
-              <nav
-                aria-label="投稿の種類"
-                className="as-feed-tabs as-feed-subtabs"
-              >
-                {(
-                  [
-                    [undefined, 'すべて'],
-                    ['tip', '便利な使い方'],
-                    ['learning', 'できたこと'],
-                    ['question', '質問'],
-                  ] as const
-                ).map(([k, label]) => (
-                  <Link
-                    key={k ?? 'all'}
-                    href={communityFeedPath(view, k)}
-                    aria-current={k === kind ? 'page' : undefined}
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </nav>
-            </details>
-          )}
-        </div>
+        <h1 className="sr-only">みんなの投稿</h1>
         <div className="as-feed-list">{items}</div>
         {!items.length &&
           (view === 'following' ? (

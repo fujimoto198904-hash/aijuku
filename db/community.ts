@@ -38,7 +38,12 @@ export async function listCommunityPosts(
   page = 1,
   memberId?: string,
   query = '',
-  options: { profileHandle?: string; source?: string; following?: string } = {},
+  options: {
+    profileHandle?: string;
+    source?: string;
+    following?: string;
+    prioritizeFollowing?: string;
+  } = {},
 ) {
   const filters = ['p.deleted_at IS NULL'];
   if (!options.profileHandle && !options.following)
@@ -76,10 +81,18 @@ export async function listCommunityPosts(
     );
     binds.push(query, query);
   }
+  const priority = options.prioritizeFollowing;
+  const ordering = priority
+    ? `(p.created_at + CASE WHEN EXISTS(
+        SELECT 1 FROM social_follows f JOIN social_profiles s ON s.handle=f.following
+        WHERE f.follower=? AND f.following=p.profile_handle AND s.is_public=1
+        AND (s.member_id IS NULL OR EXISTS(SELECT 1 FROM members m WHERE m.id=s.member_id AND m.status='active' AND m.terms_version='${membershipTermsVersion}' AND m.privacy_version='${privacyPolicyVersion}'))
+      ) THEN 86400000 ELSE 0 END) DESC, p.created_at DESC, p.id DESC`
+    : 'p.created_at DESC, p.id DESC';
   const { results } =
     await env.DB.prepare(`SELECT ${columns} FROM community_posts p WHERE ${filters.join(' AND ')}
-    ORDER BY p.created_at DESC, p.id DESC LIMIT 21 OFFSET ?`)
-      .bind(...binds, (page - 1) * 20)
+    ORDER BY ${ordering} LIMIT 21 OFFSET ?`)
+      .bind(...binds, ...(priority ? [priority] : []), (page - 1) * 20)
       .all<CommunityPost>();
   return { posts: results.slice(0, 20), hasMore: results.length > 20 };
 }
@@ -90,13 +103,21 @@ export async function getCommunityPost(id: string) {
     .bind(id)
     .first<CommunityPost>();
 }
-export async function getCommunityReplies(id: string, page = 1) {
+export async function getCommunityReplies(
+  id: string,
+  page = 1,
+  viewerId: string | null = null,
+  isOwner = false,
+) {
   const { results } =
-    await env.DB.prepare(`SELECT id, body, author_name AS authorName, author_role AS authorRole,
-    created_at AS createdAt FROM community_replies WHERE post_id=? AND deleted_at IS NULL ORDER BY created_at, id LIMIT 50 OFFSET ?`)
-      .bind(id, (page - 1) * 50)
-      .all<CommunityReply>();
-  return results;
+    await env.DB.prepare(`SELECT r.id, r.body, r.author_name AS authorName, r.author_role AS authorRole,
+    r.created_at AS createdAt, (r.author_id=? OR ?=1) AS canDelete
+    FROM community_replies r JOIN community_posts p ON p.id=r.post_id
+    WHERE r.post_id=? AND r.deleted_at IS NULL AND p.deleted_at IS NULL
+    ORDER BY r.created_at, r.id LIMIT 50 OFFSET ?`)
+      .bind(viewerId, isOwner ? 1 : 0, id, (page - 1) * 50)
+      .all<CommunityReply & { canDelete: number | null }>();
+  return results.map((reply) => ({ ...reply, canDelete: !!reply.canDelete }));
 }
 export async function communityWriteAllowance(memberId: string) {
   const now = Date.now(),

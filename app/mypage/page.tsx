@@ -157,8 +157,28 @@ async function MemberContent({
   );
   return (
     <>
-      <SiteHeader />
+      <SiteHeader signedIn />
       <main id="main-content" className="as-profile-page">
+        {!postCount &&
+          !progress.length &&
+          !stocks.length &&
+          !social?.isPublic && (
+            <section className="as-message-start as-welcome-start">
+              <span className="as-step-label">ようこそ、AIstockへ</span>
+              <h2>まずは、気になる投稿をひとつ。</h2>
+              <p>
+                保存したり、コメントしたり。プロフィールはあとからで大丈夫です。
+              </p>
+              <div className="as-action-row">
+                <Link className="as-primary" href="/">
+                  フィードを見る
+                </Link>
+                <Link className="as-secondary" href="/learn">
+                  AIをはじめから学ぶ
+                </Link>
+              </div>
+            </section>
+          )}
         <p className="as-private-note">
           マイページ · 保存・学習記録・自分用ノートは、あなた専用です。
         </p>
