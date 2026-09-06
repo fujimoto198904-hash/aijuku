@@ -16,6 +16,7 @@ import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 import { findTextbookTask } from '@/lib/textbook-catalog';
 import { ownedCommunityMedia } from '@/db/community-media';
 import { ownSocialProfile, canInteractWithPost } from '@/db/social';
+import { communityPostTitle } from '@/lib/community-composer';
 export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request))
@@ -46,6 +47,13 @@ export async function POST(request: Request) {
   }
   const permissions = getAuthenticatedStaffPermissions(user);
   const isOwner = permissions.isOwner;
+  // 本文だけの投稿と旧タイトル付き投稿の両方を受け付ける。再送比較より先に揃える。
+  if (
+    data.action === 'post' &&
+    (data.title === undefined || data.title === '') &&
+    typeof data.body === 'string'
+  )
+    data.title = communityPostTitle(data.body);
   const socialProfile = await ownSocialProfile(user.userId);
   if (socialProfile?.isPublic) data.nickname = socialProfile.name;
   if (data.publicConsent === true && publicNickname(data.nickname, isOwner)) {
@@ -153,7 +161,11 @@ export async function POST(request: Request) {
       typeof data.mediaId === 'string' && data.mediaId ? data.mediaId : null;
     if (mediaId && !(await ownedCommunityMedia(mediaId, user.userId)))
       return noStoreJson(
-        { error: '自分で追加した画像を選んでください。' },
+        {
+          error:
+            '画像を利用できません。写真を付けたまま、もう一度投稿してください。',
+          code: 'media_unavailable',
+        },
         { status: 400 },
       );
     const post = await writeCommunityPost({

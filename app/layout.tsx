@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { canonicalSiteUrl, withSiteBasePath } from '@/lib/site-paths';
 
 import './globals.css';
+import './composer.css';
 import './aistock.css';
 import './social.css';
 

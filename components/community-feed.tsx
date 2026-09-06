@@ -38,6 +38,8 @@ import { textbookLessonPath } from '@/lib/textbook-routes';
 import { listCommunityPosts, type CommunityPost } from '@/db/community';
 import { communityLabels, type CommunityKind } from '@/lib/community';
 import { withSiteBasePath } from '@/lib/site-paths';
+import { CommunityBody } from '@/components/community-body';
+import { communityPostTitle } from '@/lib/community-composer';
 import cafePhoto from '@/sozai/cafe-shokuba-3nin.jpg';
 import travelPhoto from '@/sozai/kazoku-sougen.jpg';
 export function OfficialVisual({ post }: { post: OfficialPost }) {
@@ -409,10 +411,20 @@ export function MemberPostCard({
       )}
       {post.mediaId ? actions : null}
       <div className="as-post-copy">
-        <h2>
-          <Link href={'/community/' + post.id}>{post.title}</Link>
+        <h2
+          className={
+            post.title === communityPostTitle(post.body) ? 'sr-only' : undefined
+          }
+        >
+          {post.title === communityPostTitle(post.body) ? (
+            post.title
+          ) : (
+            <Link href={'/community/' + post.id}>{post.title}</Link>
+          )}
         </h2>
-        <p className="as-user-excerpt">{post.body}</p>
+        <p className="as-user-excerpt">
+          <CommunityBody body={post.body} />
+        </p>
         <Link
           href={'/community/' + post.id + '#replies'}
           className="as-caption-link"

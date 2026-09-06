@@ -1,3 +1,4 @@
+import { communityMediaLimits as limits } from '@/lib/community-media-limits';
 const signature = [137, 80, 78, 71, 13, 10, 26, 10];
 function crc32(bytes: Uint8Array) {
   let c = 0xffffffff;
@@ -8,7 +9,10 @@ function crc32(bytes: Uint8Array) {
   return (c ^ 0xffffffff) >>> 0;
 }
 export async function cleanPostPng(bytes: Uint8Array) {
-  if (bytes.length > 1500000 || !signature.every((v, i) => bytes[i] === v))
+  if (
+    bytes.length > limits.maxBytes ||
+    !signature.every((v, i) => bytes[i] === v)
+  )
     throw Error('PNG画像を選んでください。');
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let pos = 8,
@@ -21,7 +25,7 @@ export async function cleanPostPng(bytes: Uint8Array) {
     compressed: Uint8Array[] = [];
   while (pos + 12 <= bytes.length) {
     const length = view.getUint32(pos);
-    if (length > 1500000 || pos + 12 + length > bytes.length)
+    if (length > limits.maxBytes || pos + 12 + length > bytes.length)
       throw Error('画像を読み取れません。');
     const type = String.fromCharCode(...bytes.slice(pos + 4, pos + 8));
     const chunk = bytes.slice(pos, pos + 12 + length);
@@ -38,8 +42,8 @@ export async function cleanPostPng(bytes: Uint8Array) {
       if (
         width < 1 ||
         height < 1 ||
-        width > 1600 ||
-        height > 1600 ||
+        width > limits.maxEdge ||
+        height > limits.maxEdge ||
         bytes[pos + 16] !== 8 ||
         ![2, 6].includes(bytes[pos + 17]) ||
         bytes[pos + 18] !== 0 ||

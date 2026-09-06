@@ -4,10 +4,12 @@ import { communityWriteAllowance } from '@/db/community';
 import {
   cleanUnusedCommunityMedia,
   storeCommunityMedia,
+  CommunityMediaLimitError,
 } from '@/db/community-media';
 import { cleanPostPng } from '@/lib/post-image';
 import { noStoreJson } from '@/lib/auth-request';
 import { isSameOriginRequest } from '@/lib/request-security';
+import { communityMediaLimits as limits } from '@/lib/community-media-limits';
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request))
     return noStoreJson({ error: '送信元を確認できません。' }, { status: 403 });
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
       const { done, value } = await reader.read();
       if (done) break;
       length += value.length;
-      if (length > 1500000) {
+      if (length > limits.maxBytes) {
         await reader.cancel();
         return noStoreJson({ error: '画像が大きすぎます。' }, { status: 413 });
       }
@@ -63,7 +65,9 @@ export async function POST(request: Request) {
     await cleanUnusedCommunityMedia();
     const media = await storeCommunityMedia(user.userId, image);
     return noStoreJson({ ok: true, ...media });
-  } catch {
+  } catch (error) {
+    if (error instanceof CommunityMediaLimitError)
+      return noStoreJson({ error: error.message }, { status: 429 });
     return noStoreJson(
       { error: '画像を保存できませんでした。しばらくしてからお試しください。' },
       { status: 503 },

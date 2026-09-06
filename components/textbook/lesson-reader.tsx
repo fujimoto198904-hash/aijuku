@@ -950,7 +950,7 @@ export function LessonReader({
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
                 <p className="mt-3 text-sm leading-6 text-white/75">
-                  無料会員向け。内容を確認して投稿するまでは公開されません。
+                  無料会員向け。質問は「みんなの投稿」に公開されます。
                 </p>
               </div>
             </div>

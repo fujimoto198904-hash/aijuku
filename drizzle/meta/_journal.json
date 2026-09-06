@@ -141,6 +141,13 @@
       "when": 1788701462804,
       "tag": "0019_editable_public_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1788705533190,
+      "tag": "0020_rare_diamondback",
+      "breakpoints": true
     }
   ]
 }

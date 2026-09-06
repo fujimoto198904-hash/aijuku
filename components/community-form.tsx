@@ -13,14 +13,18 @@ import { PostImageInput } from '@/components/post-image-input';
 import { withSiteBasePath } from '@/lib/site-paths';
 import Link from '@/components/site-link';
 import { textbookLessonPath } from '@/lib/textbook-routes';
+import { Link2, X } from 'lucide-react';
+import { communityPostBody } from '@/lib/community-composer';
+import { uploadPostImage } from '@/lib/prepare-post-image';
 export function CommunityForm({
   postId,
-  initialKind = 'question',
+  initialKind = 'learning',
   taskId = '',
   taskTitle,
   isStaff = false,
   initialBody = '',
   publicProfile,
+  defaultNickname = '',
 }: {
   postId?: string;
   initialKind?: CommunityKind;
@@ -29,6 +33,7 @@ export function CommunityForm({
   isStaff?: boolean;
   initialBody?: string;
   publicProfile?: { name: string; handle: string } | null;
+  defaultNickname?: string;
 }) {
   const formId = useId();
   const router = useRouter(),
@@ -39,38 +44,59 @@ export function CommunityForm({
     [imageBusy, setImageBusy] = useState(false);
   const [existingNext, setExistingNext] = useState<string | null>(null);
   const [selectedKind, setSelectedKind] = useState(initialKind);
+  const [imageBlob, setImageBlob] = useState<Blob | null>(null);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const submitting = useRef(false);
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy || imageBusy) return;
+    if (submitting.current || imageBusy) return;
+    submitting.current = true;
     setBusy(true);
     setError('');
     id.current ??= crypto.randomUUID();
     const form = event.currentTarget;
     const data = new FormData(form);
     try {
+      const rawBody = data.get('body'),
+        rawLink = data.get('link');
+      const body = communityPostBody(
+        typeof rawBody === 'string' ? rawBody : '',
+        typeof rawLink === 'string' ? rawLink : '',
+      );
+      if (!body || body.length > 5000)
+        throw new Error(
+          '本文とリンクを合わせて1〜5,000文字で入力してください。',
+        );
+      let uploadedMediaId = mediaId;
+      if (imageBlob && !uploadedMediaId) {
+        uploadedMediaId = await uploadPostImage(imageBlob);
+        setMediaId(uploadedMediaId);
+      }
       const response = await fetch(withSiteBasePath('/api/community'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: postId ? 'reply' : 'post',
           postId,
-          kind: data.get('kind'),
-          title: data.get('title'),
-          body: data.get('body'),
+          kind: selectedKind,
+          body,
           nickname: isStaff
             ? 'Aitock公式'
             : (publicProfile?.name ?? data.get('nickname')),
           taskId,
-          mediaId,
-          publicConsent: data.get('publicConsent') === 'on',
+          mediaId: uploadedMediaId,
+          // 「投稿する」の明示操作が公開操作。毎回の確認チェックは設けない。
+          publicConsent: true,
           requestId: id.current,
         }),
       });
       const result = (await response.json()) as {
         error?: string;
+        code?: string;
         next?: string;
         existingNext?: string;
       };
+      if (result.code === 'media_unavailable') setMediaId(null);
       if (response.status === 409)
         setExistingNext(result.existingNext ?? '/mypage');
       if (!response.ok)
@@ -84,45 +110,23 @@ export function CommunityForm({
     } catch (e) {
       setError(e instanceof Error ? e.message : '投稿できませんでした。');
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
   return (
     <form
       onSubmit={submit}
-      className="soft-panel grid gap-5 border border-rule bg-white p-6 sm:p-8"
+      className={'as-composer' + (postId ? ' as-composer-reply' : '')}
     >
       <fieldset disabled={busy} className="contents">
-        {!postId && (
-          <fieldset>
-            <legend className="mb-3 font-semibold">何を投稿しますか？</legend>
-            <div className="flex flex-wrap gap-4">
-              {communityKinds.map((kind) => (
-                <label key={kind} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="kind"
-                    value={kind}
-                    checked={kind === selectedKind}
-                    onChange={() => setSelectedKind(kind)}
-                    required
-                  />
-                  {communityLabels[kind]}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        )}
         {!postId && taskId && (
-          <div className="rounded-xl border border-sapphire/20 bg-sapphire-soft p-4">
-            <p className="text-xs font-semibold text-sapphire">
-              質問・投稿に付く教科書
-            </p>
+          <div className="as-composer-task">
             <Link
               href={textbookLessonPath(taskId)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-block text-base font-semibold text-sapphire underline underline-offset-4"
+              className="text-sm text-sapphire"
             >
               {taskId}
               {taskTitle ? ` ${taskTitle}` : ''} ↗
@@ -130,68 +134,35 @@ export function CommunityForm({
           </div>
         )}
         {isStaff ? (
-          <p className="font-semibold text-sapphire">
-            Aitock公式として投稿します
-          </p>
+          <p className="font-semibold text-sapphire">Aitock公式</p>
         ) : publicProfile ? (
-          <p className="as-private-note">
-            <strong>{publicProfile.name}</strong>として公開します。
-            {!postId && (
-              <>
-                投稿は
-                <Link href={'/u/' + publicProfile.handle}>
-                  自分の公開プロフィール
-                </Link>
-                にも並びます。
-              </>
-            )}
+          <p className="as-composer-author">
+            <strong>{publicProfile.name}</strong>
           </p>
         ) : (
-          <label
-            htmlFor={formId + '-nickname'}
-            className="grid gap-2 font-semibold"
-          >
-            みんなに表示する名前
+          <label htmlFor={formId + '-nickname'} className="as-composer-name">
+            <span className="sr-only">投稿に表示する名前</span>
             <Input
               id={formId + '-nickname'}
               name="nickname"
+              defaultValue={defaultNickname}
               placeholder="ニックネーム"
               minLength={1}
               maxLength={30}
               required
             />
-            <span className="text-sm font-normal text-quiet">
-              本名でなくて大丈夫です。ここに入力した名前が公開されます。
-            </span>
           </label>
         )}
-        {!postId && (
-          <label
-            htmlFor={formId + '-title'}
-            className="grid gap-2 font-semibold"
-          >
-            {selectedKind === 'question' ? '何に困っていますか？' : 'タイトル'}
-            <Input
-              id={formId + '-title'}
-              name="title"
-              placeholder={
-                selectedKind === 'question'
-                  ? '例：AIの返事に、元のメモにない日付が入ります'
-                  : 'どんなことを話したいですか？'
-              }
-              maxLength={100}
-              required
-            />
-          </label>
-        )}
-        <label htmlFor={formId + '-body'} className="grid gap-2 font-semibold">
-          {postId
-            ? '返信'
-            : selectedKind === 'question'
-              ? '試したこと・分からないところ'
-              : '本文'}
+        <label htmlFor={formId + '-body'} className="as-composer-body">
+          <span className="sr-only">
+            {postId
+              ? '返信'
+              : selectedKind === 'question'
+                ? '試したこと・分からないところ'
+                : '本文'}
+          </span>
           <Textarea
-            className="min-h-48 text-base"
+            className="min-w-0 w-full text-base"
             id={formId + '-body'}
             name="body"
             defaultValue={initialBody}
@@ -199,29 +170,82 @@ export function CommunityForm({
               postId
                 ? 'わかることや、試してみたことを書いてください。'
                 : selectedKind === 'question'
-                  ? '例：ChatGPTにメモを貼って、返信文を作ってもらいました。日付を指定していないのに「金曜日」と出ます。どう頼めば防げますか？'
-                  : '何を試して、どうなりましたか？気づきや困ったところを書いてください。'
+                  ? 'どこで困った？試したことを気軽に書いてみよう。'
+                  : 'AIでやってみたこと、見つけたもの。ひとことから。'
             }
             maxLength={5000}
             required
           />
         </label>
         {!postId && (
-          <PostImageInput
-            value={mediaId}
-            onChange={setMediaId}
-            onBusy={setImageBusy}
-          />
+          <>
+            <div className="as-composer-tools">
+              <PostImageInput
+                value={mediaId}
+                onChange={setMediaId}
+                onBusy={setImageBusy}
+                disabled={busy}
+                onPrepared={(blob) => {
+                  setImageBlob(blob);
+                  setMediaId(null);
+                }}
+              />
+              <button
+                type="button"
+                className="as-composer-tool"
+                aria-expanded={linkOpen}
+                aria-controls={formId + '-link-row'}
+                onClick={() => setLinkOpen(true)}
+              >
+                <Link2 size={20} aria-hidden="true" />
+                リンク
+              </button>
+              <label className="as-composer-kind">
+                <span className="sr-only">投稿の種類</span>
+                <select
+                  name="kind"
+                  value={selectedKind}
+                  onChange={(e) =>
+                    setSelectedKind(e.target.value as CommunityKind)
+                  }
+                >
+                  {communityKinds.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {kind === 'learning'
+                        ? '投稿'
+                        : kind === 'tip'
+                          ? '使い方'
+                          : communityLabels[kind]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {linkOpen && (
+              <div className="as-composer-link" id={formId + '-link-row'}>
+                <label className="sr-only" htmlFor={formId + '-link'}>
+                  追加するURL
+                </label>
+                <Input
+                  id={formId + '-link'}
+                  name="link"
+                  type="url"
+                  inputMode="url"
+                  placeholder="https://…"
+                  maxLength={2000}
+                />
+                <button
+                  type="button"
+                  onClick={() => setLinkOpen(false)}
+                  aria-label="リンクを外す"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
+          </>
         )}
-        <label className="flex items-start gap-3 text-sm leading-6">
-          <input
-            type="checkbox"
-            name="publicConsent"
-            className="mt-1.5"
-            required
-          />
-          誰でも読める投稿です。個人情報や仕事の秘密を含めず公開することを確認しました。
-        </label>
+        <p className="as-composer-visibility">投稿は誰でも読めます。</p>
         {error && (
           <p role="alert" className="text-red-700">
             {error}

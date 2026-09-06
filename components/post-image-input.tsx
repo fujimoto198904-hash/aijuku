@@ -1,91 +1,47 @@
 'use client';
-import { useState, type ChangeEvent } from 'react';
+import { useState, useEffect, type ChangeEvent } from 'react';
 import Image from 'next/image';
+import { ImagePlus, X } from 'lucide-react';
 import { withSiteBasePath } from '@/lib/site-paths';
+import { preparePostImage, uploadPostImage } from '@/lib/prepare-post-image';
+
 export function PostImageInput({
   value,
   onChange,
   onBusy,
   purpose = 'post',
+  onPrepared,
+  disabled = false,
 }: {
   value: string | null;
   onChange: (id: string | null) => void;
   onBusy: (busy: boolean) => void;
   purpose?: 'post' | 'avatar';
+  onPrepared?: (blob: Blob | null) => void;
+  disabled?: boolean;
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
-  async function select(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.currentTarget.files?.[0];
-    e.currentTarget.value = '';
-    if (!file) return;
+  const [preview, setPreview] = useState<string | null>(null);
+  useEffect(
+    () => () => {
+      if (preview) URL.revokeObjectURL(preview);
+    },
+    [preview],
+  );
+  async function select(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file || busy || disabled) return;
     setError('');
-    if (
-      file.size > 12000000 ||
-      !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
-    ) {
-      setError(
-        '12MB以下の写真・スクリーンショット（PNG・JPEG・WebP）を選んでください。',
-      );
-      return;
-    }
     setBusy(true);
     onBusy(true);
     try {
-      const bitmap = await createImageBitmap(file);
-      const ratio = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height));
-      const canvas = document.createElement('canvas');
-      canvas.width =
-        purpose === 'avatar'
-          ? 512
-          : Math.max(1, Math.round(bitmap.width * ratio));
-      canvas.height =
-        purpose === 'avatar'
-          ? 512
-          : Math.max(1, Math.round(bitmap.height * ratio));
-      const context = canvas.getContext('2d');
-      if (!context) throw Error('画像を読み取れませんでした。');
-      if (purpose === 'avatar') {
-        const side = Math.min(bitmap.width, bitmap.height);
-        context.drawImage(
-          bitmap,
-          (bitmap.width - side) / 2,
-          (bitmap.height - side) / 2,
-          side,
-          side,
-          0,
-          0,
-          512,
-          512,
-        );
-      } else context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      bitmap.close();
-      let blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, 'image/png'),
-      );
-      if (blob && blob.size > 1400000) {
-        const small = document.createElement('canvas');
-        const scale = Math.min(0.75, Math.sqrt(1000000 / blob.size));
-        small.width = Math.max(1, Math.round(canvas.width * scale));
-        small.height = Math.max(1, Math.round(canvas.height * scale));
-        small
-          .getContext('2d')!
-          .drawImage(canvas, 0, 0, small.width, small.height);
-        blob = await new Promise<Blob | null>((resolve) =>
-          small.toBlob(resolve, 'image/png'),
-        );
-      }
-      if (!blob || blob.size > 1500000)
-        throw Error('画像が大きすぎます。小さな画像でお試しください。');
-      const r = await fetch(withSiteBasePath('/api/community/media'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'image/png' },
-        body: blob,
-      });
-      const data = (await r.json()) as { id?: string; error?: string };
-      if (!r.ok || !data.id)
-        throw Error(data.error || '画像を追加できませんでした。');
-      onChange(data.id);
+      const blob = await preparePostImage(file, purpose);
+      if (onPrepared) {
+        setPreview(URL.createObjectURL(blob));
+        onPrepared(blob);
+      } else onChange(await uploadPostImage(blob));
     } catch (e) {
       setError(e instanceof Error ? e.message : '画像を追加できませんでした。');
     } finally {
@@ -93,37 +49,56 @@ export function PostImageInput({
       onBusy(false);
     }
   }
+  const source =
+    preview ?? (value ? withSiteBasePath('/media/' + value) : null);
   return (
     <div
       className={
-        'as-image-input' + (purpose === 'avatar' ? ' as-avatar-input' : '')
+        'as-image-input' +
+        (purpose === 'avatar' ? ' as-avatar-input' : ' as-post-image-input')
       }
     >
-      <label className="grid gap-2 font-semibold">
-        {purpose === 'avatar'
-          ? 'プロフィール写真を変更'
-          : '画像・スクリーンショット（1枚・任意）'}
+      <label
+        className={
+          purpose === 'avatar'
+            ? 'grid min-w-0 gap-2 font-semibold'
+            : 'as-composer-tool as-photo-picker'
+        }
+      >
+        {purpose === 'avatar' ? (
+          'プロフィール写真を変更'
+        ) : (
+          <>
+            <ImagePlus size={20} aria-hidden="true" />
+            写真
+          </>
+        )}
         <input
           type="file"
           accept="image/png,image/jpeg,image/webp"
-          disabled={busy}
+          disabled={busy || disabled}
           onChange={select}
+          className={purpose === 'post' ? 'sr-only' : 'max-w-full min-w-0'}
         />
       </label>
-      <p className="mt-2 text-sm leading-6 text-quiet">
-        {purpose === 'avatar'
-          ? '写真の中央を丸く表示します。位置情報は取り除きます。変更は下の保存ボタンで確定します。'
-          : '名前・メール・お客様の情報が写っていないか確認してください。位置情報などは取り除きます。'}
-      </p>
-      {busy && <output>画像を準備しています…</output>}
-      {value && (
-        <div className="mt-3">
+      {purpose === 'avatar' && (
+        <p className="mt-2 text-sm leading-6 text-quiet">
+          写真の中央を丸く表示します。変更は下の保存ボタンで確定します。
+        </p>
+      )}
+      {busy && <output className="text-sm">画像を準備中…</output>}
+      {source && (
+        <div
+          className={
+            purpose === 'avatar' ? 'mt-3' : 'as-composer-image-preview'
+          }
+        >
           <Image
-            src={withSiteBasePath('/media/' + value)}
+            src={source}
             alt={
               purpose === 'avatar'
                 ? 'プロフィール写真のプレビュー'
-                : '公開前の添付画像'
+                : '投稿する写真'
             }
             width={600}
             height={600}
@@ -131,17 +106,25 @@ export function PostImageInput({
             className={
               purpose === 'avatar'
                 ? 'size-24 rounded-full object-cover'
-                : 'max-h-72 w-auto rounded-xl object-contain'
+                : 'max-h-72 w-full rounded-xl object-contain'
             }
           />
           <button
             type="button"
             className="as-text-button"
-            disabled={busy}
-            onClick={() => onChange(null)}
+            disabled={busy || disabled}
+            onClick={() => {
+              setPreview(null);
+              onPrepared?.(null);
+              onChange(null);
+            }}
           >
-            {purpose === 'avatar' ? '写真を削除' : 'この画像を外す'}
+            <X size={16} aria-hidden="true" />
+            {purpose === 'avatar' ? '写真を削除' : '写真を外す'}
           </button>
+          {purpose === 'post' && (
+            <p className="text-xs text-quiet">1枚・500KB以下に自動調整</p>
+          )}
         </div>
       )}
       {error && (

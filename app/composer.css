@@ -1,0 +1,191 @@
+/* 本文が主役。fieldset/file inputの最小幅でスマホを押し広げない。 */
+.as-compose-page {
+  width: 100%;
+  max-width: 640px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+.as-compose-page-heading {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+  margin-bottom: 16px;
+}
+.as-compose-page-heading a {
+  font-size: 0.875rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.as-compose-page-heading h1 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+.as-composer {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--as-line);
+  border-radius: 20px;
+  background: var(--as-surface);
+  padding: 20px;
+}
+.as-composer > *,
+.as-composer fieldset,
+.as-composer fieldset > *,
+.as-composer label,
+.as-image-input {
+  min-width: 0;
+  max-width: 100%;
+}
+.as-composer-name input {
+  max-width: 220px;
+  width: 100%;
+  font-size: 1rem;
+}
+.as-composer-author {
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+.as-composer-body textarea {
+  field-sizing: fixed;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 180px;
+  padding: 6px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 1rem;
+  line-height: 1.7;
+  resize: vertical;
+  overflow-wrap: anywhere;
+}
+.as-composer-reply .as-composer-body textarea {
+  min-height: 96px;
+}
+.as-composer-task {
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--as-tint);
+  overflow-wrap: anywhere;
+}
+.as-composer-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  border-top: 1px solid var(--as-line);
+  padding-top: 8px;
+}
+.as-composer-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  color: var(--as-green);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.as-composer-tool:hover {
+  background: var(--as-tint);
+}
+.as-photo-picker:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.as-post-image-input {
+  display: contents;
+}
+.as-post-image-input output,
+.as-post-image-input > [role='alert'],
+.as-composer-image-preview {
+  flex-basis: 100%;
+  width: 100%;
+  order: 5;
+}
+.as-composer-image-preview {
+  display: grid;
+  gap: 8px;
+}
+.as-composer-image-preview img {
+  height: auto;
+  max-height: 320px;
+  background: var(--as-tint);
+}
+.as-composer-image-preview button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  min-height: 44px;
+  font-size: 0.875rem;
+}
+.as-composer-kind {
+  margin-left: auto;
+  max-width: 108px;
+}
+.as-composer-kind select {
+  min-height: 44px;
+  width: 100%;
+  max-width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 6px;
+  font-size: 0.875rem;
+  background: var(--as-tint);
+  color: var(--as-green);
+}
+.as-composer-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 4px;
+  align-items: center;
+}
+.as-composer-link input {
+  min-width: 0;
+  width: 100%;
+  font-size: 1rem;
+}
+.as-composer-link button {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+}
+.as-composer-visibility {
+  font-size: 0.75rem;
+  color: var(--as-muted);
+}
+.as-body-link {
+  color: var(--as-green);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+@media (max-width: 739px) {
+  .as-compose-page {
+    padding: 12px 10px 28px;
+  }
+  .as-compose-page-heading {
+    margin-bottom: 8px;
+    padding: 0 6px;
+  }
+  .as-composer {
+    padding: 16px;
+    border-radius: 16px;
+    gap: 12px;
+  }
+  .as-composer-tool {
+    padding-inline: 6px;
+  }
+}

@@ -20,6 +20,9 @@ import { textbookLessonPath } from '@/lib/textbook-routes';
 import { postLikeStates, ownSocialProfile } from '@/db/social';
 import { PostReactions, ReportButton } from '@/components/social-actions';
 import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
+import { CommunityBody } from '@/components/community-body';
+import { communityPostTitle } from '@/lib/community-composer';
+import { publicNickname } from '@/lib/community';
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({
   params,
@@ -79,7 +82,13 @@ export default async function CommunityDetail({
           <p className="text-sm font-semibold text-sapphire">
             {communityLabels[post.kind]}
           </p>
-          <h1 className="mt-4 break-words text-3xl font-bold leading-relaxed">
+          <h1
+            className={
+              post.title === communityPostTitle(post.body)
+                ? 'sr-only'
+                : 'mt-4 break-words text-3xl font-bold leading-relaxed'
+            }
+          >
             {post.title}
           </h1>
           <p className="mt-4 text-sm text-quiet">
@@ -130,7 +139,7 @@ export default async function CommunityDetail({
             />
           )}
           <p className="mt-7 whitespace-pre-wrap break-words leading-8">
-            {post.body}
+            <CommunityBody body={post.body} />
           </p>
           {post.taskId && (
             <Link
@@ -173,7 +182,7 @@ export default async function CommunityDetail({
                   />
                 </p>
                 <p className="mt-4 whitespace-pre-wrap break-words leading-8">
-                  {reply.body}
+                  <CommunityBody body={reply.body} />
                 </p>
                 {(staff || owned.replies.includes(reply.id)) && (
                   <CommunityDelete id={reply.id} target="reply" postId={id} />
@@ -198,6 +207,9 @@ export default async function CommunityDetail({
           {user && !user.isDemo ? (
             <CommunityForm
               postId={id}
+              defaultNickname={
+                publicNickname(profile?.name ?? user.displayName) ?? ''
+              }
               isStaff={staff}
               publicProfile={
                 profile?.isPublic

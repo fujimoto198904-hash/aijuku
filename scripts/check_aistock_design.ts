@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { build } from 'esbuild';
+import {
+  communityPostBody,
+  communityPostTitle,
+  communityHttpUrl,
+} from '../lib/community-composer';
+import { CommunityBody } from '../components/community-body';
+import { preparePostImage } from '../lib/prepare-post-image';
+import { communityMediaLimits } from '../lib/community-media-limits';
 import nextConfig from '../next.config';
 import { isAistockNavActive } from '../lib/aistock-navigation';
 import { createElement } from 'react';
@@ -103,8 +111,13 @@ assert(
     questionMarkup.includes('target="_blank"'),
 );
 assert(
-  !/<input[^>]*name="publicConsent"[^>]*checked/.test(questionMarkup),
-  'public consent must be unchecked',
+  !/name="(?:publicConsent|title)"/.test(questionMarkup),
+  'single explicit post action replaces repeated title entry and consent checkbox',
+);
+assert(questionMarkup.includes('投稿は誰でも読めます。'));
+assert(
+  questionMarkup.includes('as-photo-picker') &&
+    questionMarkup.includes('as-composer-kind'),
 );
 assert.match(
   questionMarkup,
@@ -134,8 +147,113 @@ const composerSource = readFileSync(
   new URL('../components/community-form.tsx', import.meta.url),
   'utf8',
 );
-assert.match(composerSource, /checked=\{kind === selectedKind\}/);
-assert.match(composerSource, /onChange=\{\(\) => setSelectedKind\(kind\)\}/);
+assert.match(composerSource, /value=\{selectedKind\}/);
+assert.match(
+  composerSource,
+  /setSelectedKind\(e.target.value as CommunityKind\)/,
+);
+assert.match(composerSource, /publicConsent: true/);
+assert.match(
+  composerSource,
+  /if \(imageBlob && !uploadedMediaId\)/,
+  'retry reuses uploaded media',
+);
+assert.match(
+  composerSource,
+  /onPrepared=/,
+  'composer selection only prepares local image',
+);
+const composerCss = readFileSync(
+  new URL('../app/composer.css', import.meta.url),
+  'utf8',
+);
+assert.match(composerCss, /\.as-composer fieldset/);
+assert.match(composerCss, /min-width: 0/);
+assert.match(composerCss, /grid-template-columns: minmax\(0, 1fr\) 44px/);
+assert.match(composerCss, /overflow-wrap: anywhere/);
+assert.equal(
+  communityPostBody('ひとこと', 'https://example.test/try'),
+  'ひとこと\n\nhttps://example.test/try',
+);
+assert.equal(
+  communityPostTitle('ひとこと\n\nhttps://example.test/try'),
+  'ひとこと',
+);
+assert.equal(communityPostTitle('🎉'.repeat(100)).length, 100);
+assert.equal(communityHttpUrl('javascript:alert(1)'), null);
+assert.equal(communityHttpUrl('https://user:secret@example.test'), null);
+assert.throws(() => communityPostBody('本文', 'not-a-url'));
+const linkMarkup = renderToStaticMarkup(
+  createElement(CommunityBody, {
+    body: '便利 https://example.test/try\n<script>alert(1)</script> javascript:alert(1)',
+  }),
+);
+assert(
+  linkMarkup.includes('href="https://example.test/try"') &&
+    linkMarkup.includes('noopener noreferrer nofollow ugc'),
+);
+assert(
+  !linkMarkup.includes('<script>') && !linkMarkup.includes('href="javascript:'),
+);
+
+const sentenceLinkMarkup = renderToStaticMarkup(
+  createElement(CommunityBody, {
+    body: '参考 https://example.com。次も試した (https://example.test/path).',
+  }),
+);
+assert(sentenceLinkMarkup.includes('href="https://example.com/"'));
+assert(sentenceLinkMarkup.includes('href="https://example.test/path"'));
+assert(!sentenceLinkMarkup.includes('xn--'));
+assert.match(composerSource, /onClick=\{\(\) => setLinkOpen\(true\)\}/);
+assert.match(
+  composerSource,
+  /if \(result.code === 'media_unavailable'\) setMediaId\(null\)/,
+);
+
+// Canvas adapter test: repeat downsizing until bounded, no upload during selection.
+const originalDocument = globalThis.document,
+  originalBitmap = globalThis.createImageBitmap;
+let bitmapClosed = false,
+  encodes = 0;
+try {
+  globalThis.createImageBitmap = (async () => ({
+    width: 4000,
+    height: 3000,
+    close() {
+      bitmapClosed = true;
+    },
+  })) as unknown as typeof createImageBitmap;
+  globalThis.document = {
+    createElement() {
+      return {
+        width: 0,
+        height: 0,
+        getContext() {
+          return { drawImage() {} };
+        },
+        toBlob(callback: (blob: Blob) => void) {
+          encodes++;
+          callback(
+            new Blob(
+              [new Uint8Array(Math.max(1, this.width * this.height * 3))],
+              { type: 'image/png' },
+            ),
+          );
+        },
+      };
+    },
+  } as unknown as Document;
+  const blob = await preparePostImage(
+    new File(['test'], 'test.png', { type: 'image/png' }),
+    'post',
+  );
+  assert(
+    blob.size <= communityMediaLimits.maxBytes && encodes > 1 && bitmapClosed,
+  );
+} finally {
+  globalThis.document = originalDocument;
+  globalThis.createImageBitmap = originalBitmap;
+}
 assert.match(
   composerSource,
   /defaultValue=\{initialBody\}/,

@@ -2,7 +2,7 @@ import { requireChatGPTUser } from '@/app/chatgpt-auth';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { CommunityForm } from '@/components/community-form';
-import { isCommunityKind } from '@/lib/community';
+import { isCommunityKind, publicNickname } from '@/lib/community';
 import { findTextbookTask } from '@/lib/textbook-catalog';
 import { getAuthenticatedStaffPermissions } from '@/lib/staff-permissions';
 import Link from '@/components/site-link';
@@ -29,7 +29,7 @@ export default async function NewPost({
       ? params.note
       : undefined;
   const task = params.task ? findTextbookTask(params.task) : undefined;
-  const kind = isCommunityKind(params.kind) ? params.kind : 'question';
+  const kind = isCommunityKind(params.kind) ? params.kind : 'learning';
   const returnTo =
     '/community/new?' +
     new URLSearchParams({
@@ -79,16 +79,13 @@ async function NewPostContent({
   return (
     <>
       <SiteHeader />
-      <main id="main-content" className="mx-auto max-w-3xl px-5 py-12">
-        <Link href="/community" className="text-sapphire">
-          ← みんなの投稿
-        </Link>
-        <h1 className="mb-3 mt-7 text-3xl font-bold">
-          みんなに投稿する
-        </h1>
-        <p className="mb-6 text-sm leading-6 text-quiet">
-          内容を確認して、最後に投稿ボタンを押してください。
-        </p>
+      <main id="main-content" className="as-compose-page">
+        <header className="as-compose-page-heading">
+          <Link href="/community" className="text-sapphire">
+            ← 戻る
+          </Link>
+          <h1>新しい投稿</h1>
+        </header>
         {user.isDemo ? (
           <p>
             デモは閲覧専用です。投稿するにはご自身のアカウントでログインしてください。
@@ -102,6 +99,9 @@ async function NewPostContent({
           </p>
         ) : (
           <CommunityForm
+            defaultNickname={
+              publicNickname(profile?.name ?? user.displayName) ?? ''
+            }
             publicProfile={
               profile?.isPublic
                 ? { name: profile.name, handle: profileUserId(profile) }

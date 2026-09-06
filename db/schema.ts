@@ -958,7 +958,21 @@ export const communityMedia = sqliteTable(
     byteSize: integer('byte_size').notNull(),
     createdAt: integer('created_at').notNull(),
   },
-  (t) => [index('community_media_created_idx').on(t.createdAt)],
+  (t) => [
+    index('community_media_created_idx').on(t.createdAt),
+    index('community_media_member_created_idx').on(t.memberId, t.createdAt),
+  ],
+);
+export const communityMediaDeletionQueue = sqliteTable(
+  'community_media_deletion_queue',
+  {
+    id: text('id').primaryKey(),
+    memberId: text('member_id').notNull(),
+    objectKey: text('object_key').notNull(),
+    byteSize: integer('byte_size').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (t) => [index('community_media_deletion_member_idx').on(t.memberId)],
 );
 export const communityPosts = sqliteTable(
   'community_posts',

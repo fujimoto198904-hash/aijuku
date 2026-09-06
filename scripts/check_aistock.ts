@@ -67,11 +67,13 @@ try {
  export * from './lib/learning-notes';
  export * from './db/community-media';
  export * from './lib/post-image';
+ export { communityMediaLimits as mediaLimits } from './lib/community-media-limits';
  export { POST as learningPost,GET as learningGet } from './app/api/learning/route';
  export { getChatGPTUser as realHeaderUser } from './app/chatgpt-auth';
  export { membershipTermsVersion,privacyPolicyVersion,registerMember,updateMemberDisplayName } from './db/membership';
  export { POST as communityConsent } from './app/api/community/consent/route';
  export { POST as communityPost } from './app/api/community/route';
+ export { POST as mediaPost } from './app/api/community/media/route';
  export { POST as register } from './app/api/auth/register/route';
  export { GET as googleCallback } from './app/api/auth/google/callback/route';
  export { POST as checkout } from './app/api/billing/checkout/route';
@@ -229,7 +231,7 @@ try {
   );
   const input = post({
     taskId: 'Lv.05',
-    title: '元のメモにない日付が返事に入ります',
+    title: undefined,
     body: 'ChatGPTにメモを貼って返信文を頼みました。日付を足さずに書いてもらうには、どう頼めばいいですか？',
   });
   const response = await api.communityPost(request(input));
@@ -249,7 +251,10 @@ try {
   assert.equal(feed.posts[0].kind, 'question');
   assert.equal(feed.posts[0].taskId, 'Lv.05');
   assert.equal(feed.posts[0].body, input.body);
-  assert.equal((await api.getCommunityPost(id)).title, input.title);
+  assert.equal(
+    (await api.getCommunityPost(id)).title,
+    input.body.slice(0, 100),
+  );
   for (const field of ['authorId', 'email', 'requestId'])
     assert.equal(field in feed.posts[0], false);
   asUser('test-two');
@@ -1327,6 +1332,173 @@ try {
   await assert.rejects(api.cleanPostPng(Buffer.from('<svg/>')));
   const media = await api.storeCommunityMedia('test-one', clean);
   assert.ok(await api.readCommunityMedia(media.id, 'test-one'));
+
+  // Upload endpoint and storage budgets use only this disposable database/bucket.
+  const mediaRequest = (
+    bytes: Uint8Array = png,
+    origin = 'https://mon-ai.jp',
+  ) =>
+    new Request('https://mon-ai.jp/aistock/api/community/media', {
+      method: 'POST',
+      headers: {
+        origin,
+        'sec-fetch-site': 'same-origin',
+        'content-type': 'image/png',
+      },
+      body: new Uint8Array(bytes).buffer,
+    });
+  testGlobal.aistockTestUser = null;
+  assert.equal((await api.mediaPost(mediaRequest())).status, 401);
+  asUser('test-one', true);
+  assert.equal((await api.mediaPost(mediaRequest())).status, 403);
+  asUser('test-one');
+  assert.equal(
+    (await api.mediaPost(mediaRequest(png, 'https://attacker.test'))).status,
+    403,
+  );
+  await clearLimit();
+  assert.equal(
+    (await api.mediaPost(mediaRequest(new Uint8Array(500001)))).status,
+    413,
+  );
+  const imageResponse = await api.mediaPost(mediaRequest());
+  assert.equal(imageResponse.status, 200);
+  const uploaded = await imageResponse.json();
+  assert.ok(await api.readCommunityMedia(uploaded.id, 'test-one'));
+  const missingImage = await api.communityPost(
+    request(post({ mediaId: 'missing-image' })),
+  );
+  assert.equal((await missingImage.json()).code, 'media_unavailable');
+
+  for (const name of ['media-budget', 'media-pending', 'media-failure'])
+    await DB.prepare(
+      'INSERT INTO members(id,email,display_name,status,terms_version,terms_accepted_at,privacy_version,privacy_accepted_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)',
+    )
+      .bind(
+        name,
+        '',
+        name,
+        'active',
+        api.membershipTermsVersion,
+        now,
+        api.privacyPolicyVersion,
+        now,
+        now,
+        now,
+      )
+      .run();
+  const bucket = testGlobal.aistockTestEnv.MEDIA as {
+    put: (...args: unknown[]) => Promise<unknown>;
+    delete: (...args: unknown[]) => Promise<unknown>;
+  };
+  let puts = 0,
+    failedObjectKey = '';
+  const trackedBucket = {
+    put: async (...args: unknown[]) => {
+      puts++;
+      return bucket.put(...args);
+    },
+    delete: (...args: unknown[]) => bucket.delete(...args),
+  };
+  const budgetRow = (id: string, size: number) =>
+    DB.prepare(
+      'INSERT INTO community_media(id,member_id,object_key,width,height,byte_size,created_at) VALUES(?,?,?,?,?,?,?)',
+    )
+      .bind(id, 'media-budget', 'test-only/' + id, 1, 1, size, now)
+      .run();
+  try {
+    testGlobal.aistockTestEnv.MEDIA = trackedBucket;
+    await budgetRow(
+      'budget-member',
+      api.mediaLimits.memberMaxBytes - clean.bytes.length,
+    );
+    const concurrent = await Promise.allSettled([
+      api.storeCommunityMedia('media-budget', clean),
+      api.storeCommunityMedia('media-budget', clean),
+    ]);
+    assert.equal(concurrent.filter((r) => r.status === 'fulfilled').length, 1);
+    assert.equal(puts, 1, 'budget rejection never writes to R2');
+    await DB.prepare(
+      "DELETE FROM community_media WHERE member_id='media-budget'",
+    ).run();
+    const total = await DB.prepare(
+      'SELECT COALESCE(SUM(byte_size),0) AS n FROM community_media',
+    ).first<{ n: number }>();
+    await budgetRow('budget-site', api.mediaLimits.siteMaxBytes - total!.n);
+    const beforeSite = puts;
+    await assert.rejects(
+      api.storeCommunityMedia('media-failure', clean),
+      /保存上限/,
+    );
+    assert.equal(puts, beforeSite);
+    await DB.prepare(
+      "DELETE FROM community_media WHERE id='budget-site'",
+    ).run();
+    const pending = await Promise.allSettled(
+      Array.from({ length: 6 }, () =>
+        api.storeCommunityMedia('media-pending', clean),
+      ),
+    );
+    assert.equal(
+      pending.filter((r) => r.status === 'fulfilled').length,
+      5,
+      'pending limit is atomic',
+    );
+
+    // A put may save the object then fail. Keep its deletion record even if delete fails.
+    testGlobal.aistockTestEnv.MEDIA = {
+      put: async (...args: unknown[]) => {
+        failedObjectKey = String(args[0]);
+        await bucket.put(...args);
+        throw Error('simulated-put-timeout');
+      },
+      delete: async () => {
+        throw Error('simulated-delete-outage');
+      },
+    };
+    await assert.rejects(
+      api.storeCommunityMedia('media-failure', clean),
+      /simulated-put-timeout/,
+    );
+    assert.equal(
+      (await DB.prepare(
+        "SELECT COUNT(*) AS n FROM community_media WHERE member_id='media-failure'",
+      ).first<{ n: number }>())!.n,
+      0,
+    );
+    assert.equal(
+      (await DB.prepare(
+        "SELECT COUNT(*) AS n FROM community_media_deletion_queue WHERE member_id='media-failure'",
+      ).first<{ n: number }>())!.n,
+      1,
+    );
+    await api.cleanUnusedCommunityMedia();
+    assert.equal(
+      (await DB.prepare(
+        "SELECT COUNT(*) AS n FROM community_media_deletion_queue WHERE member_id='media-failure'",
+      ).first<{ n: number }>())!.n,
+      1,
+      'failed deletion remains tracked and counted',
+    );
+    testGlobal.aistockTestEnv.MEDIA = bucket;
+    await api.cleanUnusedCommunityMedia();
+    assert.equal(
+      (await DB.prepare(
+        "SELECT COUNT(*) AS n FROM community_media_deletion_queue WHERE member_id='media-failure'",
+      ).first<{ n: number }>())!.n,
+      0,
+    );
+    assert.equal(
+      await (await mf.getR2Bucket('MEDIA')).get(failedObjectKey),
+      null,
+    );
+    assert.ok(
+      await api.storeCommunityMedia('media-failure', clean),
+      'storage recovers without waiting a day',
+    );
+  } finally {
+    testGlobal.aistockTestEnv.MEDIA = bucket;
+  }
   assert.equal(await api.readCommunityMedia(media.id, 'test-two'), null);
   assert.equal(await api.readCommunityMedia(media.id), null);
   assert.equal(
