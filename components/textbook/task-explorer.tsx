@@ -27,7 +27,7 @@ import { trackDescriptions } from '@/lib/textbook-catalog';
 import { chapterKeyForTaskId } from '@/lib/textbook-lessons/registry';
 import lessonMetaJson from '@/lib/textbook-lesson-meta.generated.json';
 import { normalizeSearch } from '@/components/textbook/lesson-shared';
-import { textbookLessonPath } from '@/lib/textbook-routes';
+import { textbookLessonPath, textbookRecordPath } from '@/lib/textbook-routes';
 
 type LessonMaterial = 'paste' | 'attach' | 'mixed' | 'none';
 type LessonMode = 'chat' | 'work';
@@ -639,14 +639,14 @@ export function TaskExplorer({
                       <div className="border-t border-rule px-5 py-3">
                         <Link
                           className="soft-control inline-flex min-h-11 w-full items-center justify-center gap-2 border border-sapphire/35 bg-white px-4 text-xs font-semibold text-sapphire hover:bg-sapphire-soft"
-                          href={`/mypage?task=${encodeURIComponent(task.id)}`}
-                          aria-label={`${task.id} ${task.title}を、無料会員のあとでやるへ保存する画面を開く`}
+                          href={textbookRecordPath(task.id)}
+                          aria-label={`${task.id} ${task.title}の学習を記録する画面を開く`}
                         >
                           <BookmarkCheck
                             className="size-4"
                             aria-hidden="true"
                           />
-                          マイページで保存を選ぶ
+                          マイページで記録する
                         </Link>
                       </div>
                     </li>

@@ -16,7 +16,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { MemberLessonProgress } from '@/db/lesson-progress';
 import { withSiteBasePath } from '@/lib/site-paths';
-import { textbookLessonPath } from '@/lib/textbook-routes';
+import {
+  textbookLessonPath,
+  textbookWorkRecordPath,
+} from '@/lib/textbook-routes';
 
 export type MemberLearningTask = {
   id: string;
@@ -96,10 +99,15 @@ export function MemberLearningProgress({
   const completed = knownProgress.filter((item) => item.completed);
 
   useEffect(() => {
-    if (!initialTask) return;
-    window.requestAnimationFrame(() => {
+    if (
+      !initialTask ||
+      (window.location.hash && window.location.hash !== '#learning')
+    )
+      return;
+    const frame = window.requestAnimationFrame(() => {
       document.getElementById('learning')?.scrollIntoView({ block: 'start' });
     });
+    return () => window.cancelAnimationFrame(frame);
   }, [initialTask]);
 
   async function saveProgress(
@@ -141,6 +149,16 @@ export function MemberLearningProgress({
       savingRef.current = false;
       setIsSaving(false);
     }
+  }
+
+  function selectTaskForRecord(task: MemberLearningTask) {
+    setSelectedTaskId(task.id);
+    setQuery(task.id);
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById('member-learning-task')
+        ?.scrollIntoView({ block: 'start' });
+    });
   }
 
   function renderTaskCard(item: MemberLessonProgress, kind: 'later' | 'done') {
@@ -225,6 +243,16 @@ export function MemberLearningProgress({
               未完了へ戻す
             </Button>
           ) : null}
+          {!readOnly && (
+            <Button
+              onClick={() => selectTaskForRecord(task)}
+              type="button"
+              variant="outline"
+              className="min-h-11 px-4 text-sm font-semibold text-sapphire"
+            >
+              メモ・作品を残す
+            </Button>
+          )}
         </div>
       </article>
     );
@@ -241,10 +269,10 @@ export function MemberLearningProgress({
             MY LEARNING
           </p>
           <h2 className="mt-3 font-mincho text-4xl sm:text-5xl">
-            次にやることも、できたことも。
+            教科書の学習記録
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-quiet">
-            気になる課題を保存。終わったら「完了」にします。
+            あとでやる・完了・メモ・作ったものを、課題ごとに。
           </p>
           {readOnly ? (
             <p className="soft-control mt-4 inline-flex border border-sapphire/30 bg-sapphire-soft px-4 py-2 text-xs font-semibold text-sapphire">
@@ -269,7 +297,7 @@ export function MemberLearningProgress({
           <Search className="size-5 text-sapphire" aria-hidden="true" />
           <div>
             <p className="font-semibold">
-              {readOnly ? '課題を探す' : '課題を探して保存'}
+              {readOnly ? '課題を探す' : '記録する課題を選ぶ'}
             </p>
             <p className="mt-1 text-xs leading-6 text-quiet">
               レベル番号、作りたいもの、仕事の悩みから検索できます。
@@ -277,7 +305,7 @@ export function MemberLearningProgress({
           </div>
         </div>
         <label className="mt-5 block" htmlFor="member-learning-search">
-          <span className="sr-only">保存する教科書課題を検索</span>
+          <span className="sr-only">記録する教科書課題を検索</span>
           <Input
             className="min-h-12 bg-white px-4"
             id="member-learning-search"
@@ -327,7 +355,10 @@ export function MemberLearningProgress({
         ) : null}
 
         {selectedTask ? (
-          <div className="soft-card mt-5 border border-sapphire bg-white p-5">
+          <div
+            id="member-learning-task"
+            className="soft-card mt-5 scroll-mt-24 border border-sapphire bg-white p-5"
+          >
             <p className="text-xs font-semibold text-sapphire">
               {selectedTask.id} / {selectedTask.courseTitle}
             </p>
@@ -413,6 +444,25 @@ export function MemberLearningProgress({
                 </>
               )}
             </div>
+            {!readOnly && (
+              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-rule pt-3">
+                <Link
+                  href={`/mypage/notebook?task=${encodeURIComponent(selectedTask.id)}`}
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-sapphire underline underline-offset-4"
+                >
+                  自分用メモを書く
+                </Link>
+                <Link
+                  href={textbookWorkRecordPath(selectedTask.id)}
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-sapphire underline underline-offset-4"
+                >
+                  作品・資料を残す
+                </Link>
+                <p className="w-full text-xs leading-6 text-quiet">
+                  メモや作品は任意です。残すだけで「完了」や公開にはなりません。
+                </p>
+              </div>
+            )}
           </div>
         ) : null}
 
@@ -463,18 +513,9 @@ export function MemberLearningProgress({
         </section>
       </div>
 
-      <div className="soft-panel mt-8 border border-future-mint/55 bg-future-mint-soft p-6 text-sm leading-7">
-        <p className="font-semibold">「完了」は、自分の学習メモです。</p>
-        <p className="mt-2 text-xs leading-6 text-quiet">
-          正式な修了や運営の確認とは別です。作ったものは、下の欄へ記録できます。
-        </p>
-        <a
-          className="mt-4 inline-flex min-h-11 items-center gap-2 font-semibold text-sapphire"
-          href="/mypage#skills"
-        >
-          作ったものを記録
-        </a>
-      </div>
+      <p className="mt-6 text-xs leading-6 text-quiet">
+        「完了」は、自分で付ける学習の印です。運営による作品の確認とは別です。
+      </p>
     </section>
   );
 }

@@ -88,11 +88,13 @@ export function SkillPassport({
   profile,
   evidence,
   tasks,
+  initialTaskId,
   readOnly = false,
 }: {
   profile: SkillProfile;
   evidence: SkillEvidenceRecord[];
   tasks: SkillTaskOption[];
+  initialTaskId?: string;
   readOnly?: boolean;
 }) {
   const [savedProfile, setSavedProfile] = useState(profile);
@@ -108,8 +110,11 @@ export function SkillPassport({
   const [profileMessage, setProfileMessage] = useState('');
   const [sourceType, setSourceType] =
     useState<EvidenceSourceType>('curriculum');
-  const [taskQuery, setTaskQuery] = useState('');
-  const [selectedTaskId, setSelectedTaskId] = useState('');
+  const initialTask = tasks.find((task) => task.id === initialTaskId);
+  const [taskQuery, setTaskQuery] = useState(
+    initialTask ? `${initialTask.id} ${initialTask.title}` : '',
+  );
+  const [selectedTaskId, setSelectedTaskId] = useState(initialTask?.id ?? '');
   const [priorWorkSkillKeys, setPriorWorkSkillKeys] = useState<SkillKey[]>([]);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [evidenceStatus, setEvidenceStatus] = useState<
@@ -523,6 +528,8 @@ export function SkillPassport({
           <form
             className="soft-panel border border-rule bg-paper-white p-6 sm:p-8"
             onSubmit={saveEvidence}
+            id="skill-record"
+            style={{ scrollMarginTop: '6rem' }}
           >
             <div className="flex items-center justify-between gap-4">
               <div>

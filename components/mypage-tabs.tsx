@@ -4,10 +4,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 const items = [
   ['posts', '投稿'],
   ['saved', '保存済み'],
-  ['learning', '学習'],
+  ['learning', '学習記録'],
   ['skills', '作ったもの'],
   ['account', '設定'],
 ] as const;
+export function mypageTabForAnchor(anchor: string) {
+  const tab = anchor === 'skill-record' ? 'skills' : anchor;
+  return items.some(([key]) => key === tab) ? tab : null;
+}
 export function MypageTabs({
   initial = 'posts',
   panels,
@@ -20,9 +24,10 @@ export function MypageTabs({
   useEffect(() => {
     const sync = () => {
       const hash = window.location.hash.slice(1);
-      if (items.some(([key]) => key === hash)) {
+      const selectedTab = mypageTabForAnchor(hash);
+      if (selectedTab) {
         pendingAnchor.current = hash;
-        setTab(hash);
+        setTab(selectedTab);
       }
     };
     sync();

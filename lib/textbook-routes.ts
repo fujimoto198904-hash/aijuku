@@ -13,3 +13,12 @@ export function textbookColumnPath(slug: string): string {
 export function textbookLessonPath(taskId: string): string {
   return `/textbook/lesson/${encodeURIComponent(taskId)}`;
 }
+
+/** 課題を引き継いで、保存・完了・メモ・作品の入口を開く。まだ書き込みは行わない。 */
+export function textbookRecordPath(taskId: string): string {
+  return `/mypage?task=${encodeURIComponent(taskId)}#learning`;
+}
+
+export function textbookWorkRecordPath(taskId: string): string {
+  return `/mypage?task=${encodeURIComponent(taskId)}#skill-record`;
+}

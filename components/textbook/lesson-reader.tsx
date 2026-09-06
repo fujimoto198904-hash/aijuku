@@ -40,6 +40,7 @@ import { getTextbookPromptExplanation } from '@/lib/textbook-prompt-explanation'
 import {
   textbookExplorePath,
   textbookLessonPath,
+  textbookRecordPath,
   textbookPlanGuidePath,
   textbookSetupPath,
 } from '@/lib/textbook-routes';
@@ -882,37 +883,18 @@ export function LessonReader({
                   aria-hidden="true"
                 />
                 <div>
-                  <p className="text-sm font-semibold">
-                    この課題を、学びの一覧へ残す
-                  </p>
+                  <p className="text-sm font-semibold">この課題の学習を記録</p>
                   <p className="mt-1 text-xs leading-6 text-quiet">
-                    無料会員なら「あとでやる」と「完了」をマイページへ保存できます。
+                    あとでやる・完了・メモ・作ったものを、ここから。
                   </p>
                 </div>
               </div>
               <Link
                 className="soft-button inline-flex min-h-11 shrink-0 items-center justify-center gap-2 bg-sapphire px-5 text-xs font-semibold text-white"
-                href={`/mypage?task=${encodeURIComponent(task.id)}`}
+                href={textbookRecordPath(task.id)}
               >
-                マイページで保存
+                マイページで記録する
                 <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
-            </div>
-            <div className="soft-panel mt-5 flex flex-col gap-4 border border-future-mint bg-future-mint-soft p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold">
-                  作ったものを学習記録に残す
-                </p>
-                <p className="mt-1 text-xs leading-6 text-quiet">
-                  マイページに、作品や仕事の成果を残せます。
-                </p>
-              </div>
-              <Link
-                className="soft-button inline-flex min-h-11 shrink-0 items-center justify-center gap-2 bg-brand-dark px-5 text-xs font-semibold text-white"
-                href="/mypage#skills"
-              >
-                <FileCheck2 className="size-4" aria-hidden="true" />
-                学習記録へ残す
               </Link>
             </div>
           </section>

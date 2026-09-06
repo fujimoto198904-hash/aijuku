@@ -15,6 +15,143 @@ import { UsernameRegistrationForm } from '../components/username-registration-fo
 import { AuthPasswordInput } from '../components/auth-password-input';
 import { MemberLoginForm } from '../components/member-login-form';
 import { RecoveryCodeCard } from '../components/recovery-code-card';
+import { MemberLearningProgress } from '../components/member-learning-progress';
+import { SkillPassport } from '../components/skill-passport';
+import { mypageTabForAnchor } from '../components/mypage-tabs';
+import {
+  textbookRecordPath,
+  textbookWorkRecordPath,
+} from '../lib/textbook-routes';
+
+const lessonFixture = {
+  id: 'Lv.05',
+  title: 'メールの返信',
+  outcome: '返信文',
+  courseTitle: '基礎',
+  trackLabel: '共通',
+};
+assert.equal(
+  textbookRecordPath(lessonFixture.id),
+  '/mypage?task=Lv.05#learning',
+);
+assert.equal(
+  textbookWorkRecordPath(lessonFixture.id),
+  '/mypage?task=Lv.05#skill-record',
+);
+assert.equal(
+  new URL(
+    textbookRecordPath('日本語 & task'),
+    'https://example.test',
+  ).searchParams.get('task'),
+  '日本語 & task',
+);
+assert.equal(mypageTabForAnchor('skill-record'), 'skills');
+for (const tab of ['posts', 'saved', 'learning', 'skills', 'account'])
+  assert.equal(mypageTabForAnchor(tab), tab);
+assert.equal(mypageTabForAnchor('unknown'), null);
+const learningMarkup = renderToStaticMarkup(
+  createElement(MemberLearningProgress, {
+    tasks: [lessonFixture],
+    initialProgress: [],
+    initialTaskId: lessonFixture.id,
+  }),
+);
+assert(
+  learningMarkup.includes('あとでやるに保存') &&
+    learningMarkup.includes('完了にする'),
+);
+assert(
+  learningMarkup.includes('自分用メモを書く') &&
+    learningMarkup.includes('作品・資料を残す'),
+);
+assert(
+  learningMarkup.includes('notebook?task=Lv.05') &&
+    learningMarkup.includes('task=Lv.05#skill-record'),
+);
+const doneLearningMarkup = renderToStaticMarkup(
+  createElement(MemberLearningProgress, {
+    tasks: [lessonFixture],
+    initialTaskId: lessonFixture.id,
+    initialProgress: [
+      {
+        taskId: lessonFixture.id,
+        bookmarked: false,
+        completed: true,
+        completedAt: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    ],
+  }),
+);
+assert(
+  doneLearningMarkup.includes('未完了へ戻す') &&
+    !doneLearningMarkup.includes('あとでやるに保存'),
+);
+assert(
+  !/href="[^"]*\?task=Lv\.05#learning"/.test(doneLearningMarkup),
+  'same-page record selection must update local task state, not follow a stale hash',
+);
+const learningSource = readFileSync(
+  new URL('../components/member-learning-progress.tsx', import.meta.url),
+  'utf8',
+);
+assert.match(learningSource, /onClick=\{\(\) => selectTaskForRecord\(task\)\}/);
+assert.match(
+  learningSource,
+  /function selectTaskForRecord\(task: MemberLearningTask\)\s*\{\s*setSelectedTaskId\(task.id\);\s*setQuery\(task.id\)/,
+);
+const demoLearningMarkup = renderToStaticMarkup(
+  createElement(MemberLearningProgress, {
+    tasks: [lessonFixture],
+    initialProgress: [],
+    initialTaskId: lessonFixture.id,
+    readOnly: true,
+  }),
+);
+assert(
+  !demoLearningMarkup.includes('作品・資料を残す') &&
+    !demoLearningMarkup.includes('自分用メモを書く'),
+);
+const workMarkup = renderToStaticMarkup(
+  createElement(SkillPassport, {
+    profile: {
+      memberId: 'fixture',
+      publicSlug: 'fixture',
+      headline: '',
+      targetRole: '',
+      bio: '',
+      shareEnabled: false,
+      createdAt: 1,
+      updatedAt: 1,
+    },
+    evidence: [],
+    tasks: [lessonFixture],
+    initialTaskId: lessonFixture.id,
+  }),
+);
+assert(
+  workMarkup.includes('id="skill-record"') &&
+    workMarkup.includes('value="Lv.05 メールの返信"'),
+);
+assert(workMarkup.includes('aria-current="true"'));
+assert(
+  workMarkup.includes('value="private" selected=""'),
+  'work defaults to private visibility',
+);
+for (const file of ['lesson-reader.tsx', 'task-explorer.tsx']) {
+  const source = readFileSync(
+    new URL('../components/textbook/' + file, import.meta.url),
+    'utf8',
+  );
+  assert(
+    source.includes('textbookRecordPath(task.id)') &&
+      source.includes('マイページで記録する'),
+  );
+  assert(
+    !source.includes('マイページで保存') && !source.includes('学習記録へ残す'),
+  );
+}
 
 const searchFixture = Array.from({ length: 29 }, (_, i) => `task-${i}`);
 const searchPages = [1, 2, 3].map((p) => discoveryPage(searchFixture, p));

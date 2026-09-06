@@ -43,7 +43,16 @@ export default async function MyPage({
 }) {
   if (paidServicesEnabled)
     return <PaidMemberPage searchParams={searchParams} />;
-  if (isVercelRuntime()) redirect(canonicalMemberUrl('/mypage'));
+  if (isVercelRuntime()) {
+    const params = await searchParams;
+    const rawTask = Array.isArray(params.task) ? params.task[0] : params.task;
+    const query = new URLSearchParams({
+      ...(rawTask ? { task: rawTask } : {}),
+      ...(params.page ? { page: params.page } : {}),
+      ...(params.savedPage ? { savedPage: params.savedPage } : {}),
+    });
+    redirect(canonicalMemberUrl('/mypage' + (query.size ? '?' + query : '')));
+  }
   return <MemberContent searchParams={searchParams} />;
 }
 async function MemberContent({
@@ -258,7 +267,7 @@ async function MemberContent({
                 <div className="as-tab-section">
                   <h2>保存した投稿 · {stocks.length}件</h2>
                   <p>
-                    この一覧は、あなただけに見えます。教材の「あとでやる」は学習タブへ。
+                    保存した投稿の一覧です。教科書の「あとでやる」と「完了」は学習記録タブへ。
                   </p>
                 </div>
                 <div className="as-saved-grid">
@@ -335,6 +344,7 @@ async function MemberContent({
                 profile={profile}
                 evidence={evidence}
                 tasks={tasks}
+                initialTaskId={raw ? findTextbookTask(raw)?.id : undefined}
                 readOnly={user.isDemo}
               />
             ) : (
