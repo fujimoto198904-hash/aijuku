@@ -3,7 +3,6 @@ import Image from 'next/image';
 import type { CommunityPost } from '@/db/community';
 import type { SocialProfile } from '@/db/social';
 import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
-import { officialAiDisclosure } from '@/lib/official-characters';
 import { communityLabels } from '@/lib/community';
 import { withSiteBasePath } from '@/lib/site-paths';
 import { profileUserId } from '@/lib/public-profile';
@@ -61,9 +60,6 @@ export function ProfileIdentity({
         </p>
         {children}
       </div>
-      {profile.kind === 'official_ai' && (
-        <p className="as-ai-disclosure">{officialAiDisclosure}</p>
-      )}
     </header>
   );
 }

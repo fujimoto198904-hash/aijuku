@@ -126,12 +126,21 @@ assert.match(
   /className="as-account-badge is-ai">公式AI<\/span>/,
 );
 assert(!accountBadgeSource.includes('公式AI · 架空'));
-const characterSource = readFileSync(
-  new URL('../lib/official-characters.ts', import.meta.url),
-  'utf8',
-);
+// Official-AI badges identify the accounts without repetitive reading-page notices.
+for (const source of [
+  '../components/social-profile.tsx',
+  '../app/community/[id]/page.tsx',
+  '../app/u/[handle]/page.tsx',
+]) {
+  const content = readFileSync(new URL(source, import.meta.url), 'utf8');
+  assert(!content.includes('officialAiDisclosure'));
+  assert(!content.includes('架空の投稿例と教材のヒントを届ける'));
+}
 assert(
-  characterSource.includes('人物像と投稿はMON-ai制作のフィクションです。'),
+  readFileSync(
+    new URL('../app/terms/page.tsx', import.meta.url),
+    'utf8',
+  ).includes('AIキャラクターの人物像や投稿はフィクション'),
 );
 
 const signupMarkup = renderToStaticMarkup(

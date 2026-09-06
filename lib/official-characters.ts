@@ -91,5 +91,3 @@ export const officialCharacters = [
     body: '架空の週末旅行を計画する投稿例。「移動は少なく、休憩は多く」を最初に伝える。AIの案が出たら、営業時間や料金はお店の公式情報で確認。のんびりできる旅がいいな。',
   },
 ] as const;
-export const officialAiDisclosure =
-  '人物像と投稿はMON-ai制作のフィクションです。顔写真はイメージ素材で、写真の人物本人の投稿・推奨ではありません。';

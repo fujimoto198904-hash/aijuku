@@ -20,7 +20,6 @@ import { textbookLessonPath } from '@/lib/textbook-routes';
 import { postLikeStates, ownSocialProfile } from '@/db/social';
 import { PostReactions, ReportButton } from '@/components/social-actions';
 import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
-import { officialAiDisclosure } from '@/lib/official-characters';
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({
   params,
@@ -106,9 +105,6 @@ export default async function CommunityDetail({
                   timeZone: 'Asia/Tokyo',
                 })}
           </p>
-          {post.profileKind === 'official_ai' && (
-            <p className="as-ai-disclosure">{officialAiDisclosure}</p>
-          )}
           <div className="as-social-actions">
             <PostReactions
               postRef={id}

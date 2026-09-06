@@ -75,9 +75,8 @@ export default async function PublicProfile({
         </ProfileIdentity>
         {profile.kind !== 'member' && (
           <p className="as-private-note">
-            {profile.kind === 'official_ai'
-              ? '架空の投稿例と教材のヒントを届ける、運営管理のAIキャラクターです。'
-              : 'Aitockの教材紹介アカウントです。運営：MON-ai。'}{' '}
+            {profile.kind === 'official' &&
+              'Aitockの教材紹介アカウントです。運営：MON-ai。 '}
             このアカウントはDMを受け付けていません。
           </p>
         )}
