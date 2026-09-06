@@ -26,7 +26,8 @@ const profileColumns =
 const visible = `s.is_public=1 AND (s.member_id IS NULL OR EXISTS(SELECT 1 FROM members m WHERE m.id=s.member_id AND m.status='active' AND m.terms_version=? AND m.privacy_version=?))`;
 const consent = [membershipTermsVersion, privacyPolicyVersion];
 export const socialHandleValid = (value: unknown): value is string =>
-  typeof value === 'string' && /^[a-z0-9][a-z0-9_-]{2,48}$/.test(value);
+  // Existing official handles include "yu". New public IDs still use publicUserId.
+  typeof value === 'string' && /^[a-z0-9][a-z0-9_-]{1,48}$/.test(value);
 
 export async function resolveSocialHandle(id: string) {
   if (!socialHandleValid(id)) return null;

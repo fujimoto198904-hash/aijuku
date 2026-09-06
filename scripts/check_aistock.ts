@@ -1902,6 +1902,27 @@ try {
   );
   await api.seedOfficialCommunity();
   await api.seedOfficialCommunity();
+  const officialProfiles = await DB.prepare(
+    "SELECT handle FROM social_profiles WHERE kind IN ('official','official_ai')",
+  ).all<{ handle: string }>();
+  for (const { handle } of officialProfiles.results) {
+    assert.equal(
+      (await api.publicSocialProfile(handle))?.handle,
+      handle,
+      `Existing official profile ${handle} must remain reachable`,
+    );
+  }
+  assert.equal((await api.publicSocialProfile('yu'))?.kind, 'official_ai');
+  assert.equal(api.socialHandleValid('y'), false);
+  assert.equal(api.socialHandleValid('../yu'), false);
+  assert.equal(api.registrationUsername('yu'), '');
+  assert(await api.setFollow('test-one', 'yu', true));
+  assert(await api.setFollow('test-one', 'yu', false));
+  assert.equal(
+    await api.publicIdAvailable('zz'),
+    false,
+    'New IDs still require 3 characters',
+  );
   assert.equal(
     (
       await DB.prepare(
