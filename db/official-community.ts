@@ -134,23 +134,26 @@ export async function cancelOfficialPost(id: string) {
     .bind(Date.now(), id)
     .run();
 }
-// Deliberately no recurring scheduler. Owner review approves each payload;
-// this idempotent runner can later be called by an authenticated scheduler.
+// This runner handles only manually reviewed posts. Routine batches have their
+// own credentials, publication window and retry checks in official-automation.
 export async function publishDueOfficialPosts() {
   const now = Date.now();
   const { results } = await env.DB.prepare(
-    "SELECT q.id FROM official_queue q JOIN social_profiles s ON s.handle=q.profile_handle WHERE q.published_at IS NULL AND q.cancelled_at IS NULL AND q.publish_after<=? AND s.is_public=1 AND s.kind IN ('official','official_ai') ORDER BY q.publish_after LIMIT 20",
+    "SELECT q.id FROM official_queue q JOIN social_profiles s ON s.handle=q.profile_handle WHERE q.id NOT LIKE 'routine-%' AND q.published_at IS NULL AND q.cancelled_at IS NULL AND q.publish_after<=? AND s.is_public=1 AND s.kind IN ('official','official_ai') ORDER BY q.publish_after LIMIT 20",
   )
     .bind(now)
     .all<{ id: string }>();
-  for (const { id } of results)
-    await env.DB.batch([
+  let published = 0;
+  for (const { id } of results) {
+    const batch = await env.DB.batch([
       env.DB.prepare(
-        "INSERT INTO community_posts(id,author_id,request_id,kind,title,body,task_id,author_name,author_role,created_at,profile_handle) SELECT q.id,q.approved_by,q.id,'tip',q.title,q.body,q.task_id,s.name,'member',?,s.handle FROM official_queue q JOIN social_profiles s ON s.handle=q.profile_handle WHERE q.id=? AND q.published_at IS NULL AND q.cancelled_at IS NULL ON CONFLICT(id) DO NOTHING",
+        "INSERT INTO community_posts(id,author_id,request_id,kind,title,body,task_id,author_name,author_role,created_at,profile_handle) SELECT q.id,q.approved_by,q.id,'tip',q.title,q.body,q.task_id,s.name,'member',?,s.handle FROM official_queue q JOIN social_profiles s ON s.handle=q.profile_handle WHERE q.id=? AND q.id NOT LIKE 'routine-%' AND q.published_at IS NULL AND q.cancelled_at IS NULL AND q.publish_after<=? AND s.is_public=1 AND s.kind IN ('official','official_ai') ON CONFLICT(id) DO NOTHING",
+      ).bind(now, id, now),
+      env.DB.prepare(
+        'UPDATE official_queue SET published_at=? WHERE id=? AND published_at IS NULL AND cancelled_at IS NULL AND EXISTS(SELECT 1 FROM community_posts p WHERE p.id=official_queue.id AND p.deleted_at IS NULL AND p.author_id=official_queue.approved_by AND p.body=official_queue.body AND p.task_id IS official_queue.task_id AND p.profile_handle=official_queue.profile_handle)',
       ).bind(now, id),
-      env.DB.prepare(
-        'UPDATE official_queue SET published_at=? WHERE id=? AND EXISTS(SELECT 1 FROM community_posts WHERE id=?)',
-      ).bind(now, id, id),
     ]);
-  return results.length;
+    published += batch[0].meta.changes;
+  }
+  return published;
 }

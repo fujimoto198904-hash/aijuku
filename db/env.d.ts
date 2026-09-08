@@ -2,6 +2,8 @@ declare namespace Cloudflare {
   interface Env {
     DB: D1Database;
     MEDIA: R2Bucket;
+    OFFICIAL_POST_AUTOMATION_TOKEN?: string;
+    OFFICIAL_POST_AUTOMATION_ENABLED?: string;
     AUTH_GOOGLE_CLIENT_ID?: string;
     AUTH_GOOGLE_CLIENT_SECRET?: string;
     AUTH_EMAIL_API_KEY?: string;

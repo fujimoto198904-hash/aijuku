@@ -29,9 +29,7 @@ export default async function SocialAdmin() {
         <Link href="/aikanri">← 運営管理</Link>
         <header className="as-page-lead">
           <h1>公式アカウント・通報管理</h1>
-          <p>
-            自動生成・定期実行は停止中です。確認した内容だけ、公開待ちに保存できます。
-          </p>
+          <p>手動の予約投稿と、公式AIの定期投稿の履歴を確認できます。</p>
         </header>
         <section className="as-panel">
           <h2>公式と10人の公式AI</h2>
@@ -47,9 +45,9 @@ export default async function SocialAdmin() {
           <OfficialQueueForm />
         </section>
         <section className="as-section">
-          <h2>公開待ち</h2>
+          <h2>投稿の履歴・公開待ち</h2>
           <p>
-            日時は「この時刻以降に公開してよい」という指定です。現在は下のボタンで実行します。自動スケジュールはまだ動かしません。
+            手動で準備した投稿は、指定日時を過ぎてから下のボタンで公開します。定期投稿とは別の操作です。
           </p>
           <AdminSocialAction action="publish">
             時刻を過ぎた確認済み投稿を公開
@@ -60,6 +58,7 @@ export default async function SocialAdmin() {
                 <h3>{q.title}</h3>
                 <p>
                   @{q.handle} ·{' '}
+                  {q.id.startsWith('routine-') ? '定期投稿' : '手動確認'} ·{' '}
                   {new Date(q.publishAfter).toLocaleString('ja-JP', {
                     timeZone: 'Asia/Tokyo',
                   })}

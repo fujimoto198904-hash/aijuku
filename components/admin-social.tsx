@@ -89,7 +89,9 @@ export function OfficialQueueForm() {
       if (!r.ok) throw new Error(result.error);
       id.current = null;
       form.reset();
-      setMessage('公開待ちに保存しました。定期実行はまだ停止中です。');
+      setMessage(
+        '公開待ちに保存しました。この手動予約は管理画面から公開してください。',
+      );
       router.refresh();
     } catch (e) {
       setMessage(e instanceof Error ? e.message : '保存できませんでした。');
