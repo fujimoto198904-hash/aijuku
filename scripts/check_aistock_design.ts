@@ -13,6 +13,7 @@ import { CommunityBody } from '../components/community-body';
 import { FeedPostBody } from '../components/feed-post-body';
 import { checkInlineComments } from './check_inline_comments';
 import { checkPostActions } from './check_post_actions';
+import { checkMobileNavigation } from './check_mobile_navigation';
 import { postActionLoginPath } from '../lib/post-navigation';
 import { preparePostImage } from '../lib/prepare-post-image';
 import { communityMediaLimits } from '../lib/community-media-limits';
@@ -934,7 +935,7 @@ const headerSource = readFileSync(
 assert(headerSource.includes('className="as-nav-label">{label}</span>'));
 assert.match(css, /@media \(max-width: 739px\)/);
 assert.match(css, /\.as-nav-label\s*\{[^}]*clip-path: inset\(50%\)/);
-assert.match(css, /\.as-nav-item\s*\{[^}]*min-height: 48px/);
+checkMobileNavigation();
 assert.match(
   css,
   /\.as-post-author > a:first-child\s*\{[^}]*min-width: 44px;\s*min-height: 44px/,

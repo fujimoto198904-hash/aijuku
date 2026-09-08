@@ -1274,7 +1274,7 @@ export function LessonReader({
 
       {/* スマホ用: 本文を読んでいる間だけ、現在位置と次の一手を表示 */}
       {mobileNavVisible ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-paper-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+        <div className="as-lesson-bottom-controls fixed inset-x-0 z-40 border-t border-rule bg-paper-white/95 backdrop-blur-md lg:hidden">
           {tocOpen ? (
             <nav
               className="max-h-[50vh] overflow-y-auto border-b border-rule"

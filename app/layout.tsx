@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 import { canonicalSiteUrl, withSiteBasePath } from '@/lib/site-paths';
 
@@ -8,6 +8,12 @@ import './aistock.css';
 import './social.css';
 
 const siteUrl = canonicalSiteUrl;
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: 'AIstock｜無料のAI勉強部屋',

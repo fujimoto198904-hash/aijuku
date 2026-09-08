@@ -1,7 +1,8 @@
 .aistock-app {
   background: var(--as-canvas);
   color: var(--as-ink);
-  padding-bottom: calc(82px + env(safe-area-inset-bottom));
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+  padding-bottom: calc(var(--as-bottom-nav-height) + 1rem);
 }
 .aistock-logo {
   display: inline-flex;
@@ -38,7 +39,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 12px 20px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px;
   background: #eef2eef0;
   border-bottom: 1px solid var(--as-line);
   backdrop-filter: blur(18px);
@@ -77,12 +78,15 @@
   backdrop-filter: blur(18px);
   border-top: 1px solid var(--as-line);
   z-index: 50;
-  padding: 5px 8px calc(5px + env(safe-area-inset-bottom));
+  height: var(--as-bottom-nav-height);
+  padding: var(--as-nav-padding) max(0.5rem, env(safe-area-inset-right, 0px))
+    calc(var(--as-nav-padding) + env(safe-area-inset-bottom, 0px))
+    max(0.5rem, env(safe-area-inset-left, 0px));
 }
 .as-nav-items {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 3px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
 }
 .as-nav-item {
   display: flex;
@@ -90,7 +94,9 @@
   gap: 2px;
   align-items: center;
   justify-content: center;
-  min-height: 64px;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--as-nav-touch-height);
   border-radius: 14px;
   color: var(--as-muted);
   font-size: 12px;
@@ -98,6 +104,10 @@
 .as-nav-item.is-active {
   color: var(--as-green);
   font-weight: 700;
+}
+.as-nav-item:active {
+  background: var(--as-tint);
+  color: var(--as-green);
 }
 .as-nav-icon {
   display: grid;
@@ -109,6 +119,10 @@
 .as-nav-item.is-active .as-nav-icon {
   background: var(--as-tint);
   box-shadow: inset 0 0 0 1px #1057470a;
+}
+.as-lesson-bottom-controls {
+  bottom: var(--as-bottom-nav-height);
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
 }
 .as-desktop-logo,
 .as-nav-bottom {
@@ -1264,6 +1278,9 @@
   }
 }
 @media (min-width: 1050px) {
+  :root {
+    --as-bottom-nav-height: 0px;
+  }
   .aistock-app {
     padding-left: var(--as-sidebar-width);
     padding-bottom: 0;
@@ -1276,6 +1293,7 @@
     display: none;
   }
   .as-navigation {
+    height: auto;
     width: var(--as-sidebar-width);
     right: auto;
     top: 0;
@@ -1459,12 +1477,9 @@
   border-radius: 12px;
 }
 @media (max-width: 739px) {
-  .aistock-app {
-    padding-bottom: calc(68px + env(safe-area-inset-bottom));
-  }
   .as-header {
     min-height: 56px;
-    padding: 4px 12px;
+    padding: calc(4px + env(safe-area-inset-top, 0px)) 12px 4px;
     gap: 8px;
     background: var(--as-surface);
     backdrop-filter: none;
@@ -1487,14 +1502,19 @@
     display: none;
   }
   .as-navigation {
-    padding: 4px 8px calc(4px + env(safe-area-inset-bottom));
     background: var(--as-surface);
     backdrop-filter: none;
   }
   .as-nav-item {
     position: relative;
-    min-height: 48px;
     border-radius: 10px;
+  }
+  .as-nav-icon {
+    min-height: 44px;
+  }
+  .as-nav-icon > svg {
+    width: 1.75rem;
+    height: 1.75rem;
   }
   .as-nav-label {
     position: absolute;
@@ -1725,12 +1745,17 @@
       .as-chip,
       .as-stock-button,
       .as-icon-button,
-      .as-nav-item,
       .as-feed-tabs a,
       .as-profile-tabs > button
     ):active:not(:disabled) {
     transform: scale(0.97);
     transition-duration: 100ms;
+  }
+  .as-nav-icon {
+    transition: transform 120ms var(--as-ease);
+  }
+  .as-nav-item:active .as-nav-icon {
+    transform: scale(0.92);
   }
 }
 @keyframes as-panel-enter {
