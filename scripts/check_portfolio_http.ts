@@ -17,7 +17,7 @@ for (const path of [
   '/terms',
   '/privacy',
 ]) {
-  const response = await fetch(base + path, {
+  const response = await fetch(base + (path === '/' ? '' : path), {
     signal: AbortSignal.timeout(30_000),
   });
   assert.equal(response.status, 200, path);
