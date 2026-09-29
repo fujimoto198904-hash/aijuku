@@ -23,6 +23,8 @@ import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
 import { CommunityBody } from '@/components/community-body';
 import { communityPostTitle } from '@/lib/community-composer';
 import { publicNickname } from '@/lib/community';
+import { editorialPhotoForPost } from '@/lib/editorial-photos';
+import { EditorialPhotoView } from '@/components/editorial-photo';
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({
   params,
@@ -48,6 +50,7 @@ export default async function CommunityDetail({
   const { id } = await params;
   const post = await getCommunityPost(id);
   if (!post) notFound();
+  const editorialPhoto = editorialPhotoForPost(post);
   const query = await searchParams;
   const page = Math.max(
     1,
@@ -114,6 +117,7 @@ export default async function CommunityDetail({
                   timeZone: 'Asia/Tokyo',
                 })}
           </p>
+          {editorialPhoto && <EditorialPhotoView photo={editorialPhoto} />}
           <div className="as-social-actions">
             <PostReactions
               postRef={id}
@@ -219,7 +223,7 @@ export default async function CommunityDetail({
             />
           ) : (
             <p className="soft-panel border border-rule bg-white p-6 leading-8">
-              返信は無料会員になるとできます。
+              コメントの受付は終了しています。
               <Link href="/join" className="ml-2 font-semibold text-sapphire">
                 無料で参加する →
               </Link>

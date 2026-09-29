@@ -2,6 +2,8 @@
 
 ## Project
 
+- 2026-09-29: The user ended operation. AIstock is now a read-only portfolio. Do not resume scheduled posts, registration, messaging or enquiries without a new explicit request. See `docs/PORTFOLIO_2026_09_29.md`; older community-operation instructions below are recovery context.
+
 - This repository is the single active application for AIstock, the free AI learning community operated by MON-ai. The former paid school is preserved only for recovery.
 - Use Japanese for customer-facing copy and handoff notes.
 - The source of truth is the GitHub `main` branch.

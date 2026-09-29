@@ -4,6 +4,7 @@ import { Bookmark, LoaderCircle } from 'lucide-react';
 import { withSiteBasePath } from '@/lib/site-paths';
 import Link from '@/components/site-link';
 import { postActionLoginPath } from '@/lib/post-navigation';
+import { portfolioOnly } from '@/lib/site-features';
 
 export function PostStockNotice({
   notice,
@@ -70,6 +71,7 @@ export function PostStock({
       setBusy(false);
     }
   }
+  if (portfolioOnly) return null;
   return (
     <span className="as-stock-control">
       <button

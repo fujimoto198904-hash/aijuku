@@ -80,7 +80,7 @@ export default function LearnPage() {
         <section className="as-next-card">
           <h2>わからない言葉が出てきたら。</h2>
           <p>
-            いったん止まっても大丈夫。短い解説や、みんなへの質問が使えます。
+            短い解説や、これまでの質問を読んでみましょう。
           </p>
           <div className="as-action-row">
             <Link href="/textbook/columns">言葉・使い方を調べる →</Link>

@@ -70,6 +70,11 @@ export type ChatgptColumn = {
   id: number;
   slug: string;
   category: ChatgptColumnCategoryId;
+  details?: {
+    detailedSummary?: string;
+    practicalExamples?: readonly string[];
+    commonMistakes?: readonly string[];
+  };
   title: string;
   lead: string;
   answer: string;

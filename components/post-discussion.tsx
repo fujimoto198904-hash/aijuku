@@ -25,6 +25,7 @@ import { CommunityBody } from '@/components/community-body';
 import { CommunityAuthor } from '@/components/community-author';
 import { withSiteBasePath } from '@/lib/site-paths';
 import type { CommunityThread } from '@/lib/community-thread';
+import { portfolioOnly } from '@/lib/site-features';
 
 const DiscussionContext = createContext<{
   open: boolean;
@@ -50,6 +51,8 @@ export function PostCommentButton({ caption = false }: { caption?: boolean }) {
       {caption ? (
         discussion.count ? (
           `コメント${discussion.count}件`
+        ) : portfolioOnly ? (
+          'コメントを見る'
         ) : (
           'コメントする'
         )
@@ -197,7 +200,7 @@ export function PostDiscussion({
                   <p>
                     <CommunityBody body={reply.body} />
                   </p>
-                  {reply.canDelete && (
+                  {!portfolioOnly && reply.canDelete && (
                     <CommunityDelete
                       id={reply.id}
                       target="reply"
@@ -229,7 +232,11 @@ export function PostDiscussion({
                 </button>
               </nav>
             )}
-            {data.canReply ? (
+            {portfolioOnly ? (
+              <p className="as-comments-notice">
+                コメントの受付は終了しています。
+              </p>
+            ) : data.canReply ? (
               <CommunityForm
                 postId={postId}
                 isStaff={data.isStaff}

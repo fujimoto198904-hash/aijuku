@@ -3,6 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { build } from 'esbuild';
 import { Miniflare } from 'miniflare';
 import { deflateSync } from 'node:zlib';
+import { recoveryModeTestPlugin } from './recovery-mode-test-plugin';
 
 // A disposable, in-memory D1 database: never uses production or .wrangler data.
 const mf = new Miniflare({
@@ -92,6 +93,7 @@ try {
     format: 'esm',
     target: 'node22',
     plugins: [
+      recoveryModeTestPlugin,
       {
         name: 'isolated-d1',
         setup(plugin) {

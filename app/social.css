@@ -286,6 +286,37 @@
   background: #fffffff0;
   align-self: end;
 }
+.as-profile-tile.as-editorial-tile .as-tile-copy {
+  align-self: end;
+  padding: 28px 12px 10px;
+  background: linear-gradient(transparent, #0d2522e8);
+  color: white;
+}
+.as-editorial-tile-note {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #132d27bd;
+  color: white;
+  font-size: 0.625rem;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.as-editorial-tile .as-tile-copy h2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 3px 0;
+}
+.as-editorial-tile .as-tile-copy > span,
+.as-editorial-tile .as-tile-copy small {
+  color: #ffffffeb;
+}
 .as-tile-copy > span,
 .as-tile-copy small {
   font-size: 0.75rem;
@@ -565,6 +596,21 @@
   .as-tile-copy h2 {
     font-size: 0.875rem;
     line-height: 1.6;
+  }
+  .as-profile-tile.as-editorial-tile {
+    min-height: 0;
+    aspect-ratio: 3 / 4;
+  }
+  .as-profile-tile.as-editorial-tile .as-tile-copy {
+    padding: 24px 7px 8px;
+  }
+  .as-editorial-tile .as-tile-copy h2 {
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+  .as-editorial-tile .as-tile-copy > span,
+  .as-editorial-tile .as-tile-copy small {
+    display: none;
   }
   .as-profile-tabs > a,
   .as-profile-tabs > button {

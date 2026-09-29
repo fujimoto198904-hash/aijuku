@@ -43,6 +43,8 @@ import {
 import { communityPostTitle } from '@/lib/community-composer';
 import { postCardAnchor } from '@/lib/post-navigation';
 import { PostReturnNotice } from '@/components/post-return-notice';
+import { editorialPhotoForPost } from '@/lib/editorial-photos';
+import { EditorialPhotoView } from '@/components/editorial-photo';
 import cafePhoto from '@/sozai/cafe-shokuba-3nin.jpg';
 import travelPhoto from '@/sozai/kazoku-sougen.jpg';
 export function OfficialVisual({ post }: { post: OfficialPost }) {
@@ -325,7 +327,7 @@ export function LearningRail() {
       <p className="as-rail-note">
         読む・学ぶのは、いつでも無料。
         <br />
-        質問や投稿は無料会員で。
+        現在は制作実績として公開しています。
       </p>
     </aside>
   );
@@ -337,6 +339,8 @@ export function MemberPostCard({
   initialSaved,
   likeState,
 }: { post: CommunityPost } & CardStockProps) {
+  const editorialPhoto = editorialPhotoForPost(post);
+  const hasPhoto = !!post.mediaId || !!editorialPhoto;
   const actions = (
     <PostCardActions
       postRef={post.id}
@@ -403,7 +407,8 @@ export function MemberPostCard({
             />
           </div>
         )}
-        {post.mediaId ? actions : null}
+        {editorialPhoto && <EditorialPhotoView photo={editorialPhoto} />}
+        {hasPhoto ? actions : null}
         <div className="as-post-copy">
           <h2
             className={
@@ -417,7 +422,7 @@ export function MemberPostCard({
           <FeedPostBody body={post.body} />
           <PostCommentButton caption />
         </div>
-        {!post.mediaId ? actions : null}
+        {!hasPhoto ? actions : null}
       </PostDiscussion>
     </article>
   );

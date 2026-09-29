@@ -61,6 +61,12 @@ try {
   );
   const now = Date.parse('2026-09-09T09:15:00+09:00');
   Date.now = () => now;
+  // Migration fixtures use SQLite's wall clock, unaffected by Date.now above.
+  // Keep those old examples earlier than this fixed test batch so the first
+  // feed page does not change depending on the day/time this check is run.
+  await DB.prepare('UPDATE community_posts SET created_at=?')
+    .bind(now - 86400000)
+    .run();
   const req = (
     data?: unknown,
     authorization: string | null = `Bearer ${token}`,

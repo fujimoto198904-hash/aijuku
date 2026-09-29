@@ -1,0 +1,41 @@
+.as-portfolio-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: #54685f;
+  white-space: nowrap;
+}
+.as-portfolio-notice {
+  margin: 0 16px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #dce5de;
+  color: #53645a;
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+.as-portfolio-about {
+  max-width: 780px;
+  padding-block: 56px;
+}
+.as-portfolio-about h1 {
+  margin: 20px 0;
+  font-size: clamp(28px, 5vw, 44px);
+  line-height: 1.5;
+}
+.as-portfolio-about > p {
+  margin-block: 18px;
+  line-height: 1.9;
+}
+.as-portfolio-about small {
+  display: block;
+  margin-top: 32px;
+  color: #66736b;
+  line-height: 1.8;
+}
+.as-navigation .as-nav-items:has(> :nth-child(3):last-child) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (min-width: 1050px) {
+  .as-portfolio-notice {
+    margin-inline: 24px;
+  }
+}

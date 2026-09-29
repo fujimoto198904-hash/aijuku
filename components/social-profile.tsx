@@ -6,6 +6,8 @@ import { SocialAvatar, AccountBadge } from '@/components/social-avatar';
 import { communityLabels } from '@/lib/community';
 import { withSiteBasePath } from '@/lib/site-paths';
 import { profileUserId } from '@/lib/public-profile';
+import { editorialPhotoForPost } from '@/lib/editorial-photos';
+import { EditorialPhotoImage } from '@/components/editorial-photo';
 export function ProfileIdentity({
   profile,
   counts,
@@ -72,39 +74,51 @@ export function ProfilePostGrid({
 }) {
   return posts.length ? (
     <div className="as-profile-grid">
-      {posts.map((p) => (
-        <Link
-          className={'as-profile-tile tile-' + p.kind}
-          key={p.id}
-          href={
-            (p.id.startsWith('official-') ? '/posts/' : '/community/') + p.id
-          }
-        >
-          {p.mediaId ? (
-            <Image
-              src={withSiteBasePath('/media/' + p.mediaId)}
-              alt=""
-              width={500}
-              height={500}
-              sizes="(min-width:1050px) 280px, 33vw"
-              unoptimized
-            />
-          ) : null}
-          <div className="as-tile-copy">
-            <span>
-              {communityLabels[p.kind]}{' '}
-              {p.profileKind === 'official_ai' ? '· 公式AI' : null}
-            </span>
-            <h2>{p.title}</h2>
-            <small>{p.replyCount} コメント</small>
-          </div>
-        </Link>
-      ))}
+      {posts.map((p) => {
+        const photo = editorialPhotoForPost(p);
+        return (
+          <Link
+            className={
+              'as-profile-tile tile-' +
+              p.kind +
+              (photo ? ' as-editorial-tile' : '')
+            }
+            key={p.id}
+            href={
+              (p.id.startsWith('official-') ? '/posts/' : '/community/') + p.id
+            }
+          >
+            {p.mediaId ? (
+              <Image
+                src={withSiteBasePath('/media/' + p.mediaId)}
+                alt=""
+                width={500}
+                height={500}
+                sizes="(min-width:1050px) 280px, 33vw"
+                unoptimized
+              />
+            ) : photo ? (
+              <EditorialPhotoImage photo={photo} compact decorative />
+            ) : null}
+            {photo && (
+              <span className="as-editorial-tile-note">イメージ写真</span>
+            )}
+            <div className="as-tile-copy">
+              <span>
+                {communityLabels[p.kind]}{' '}
+                {p.profileKind === 'official_ai' ? '· 公式AI' : null}
+              </span>
+              <h2>{p.title}</h2>
+              <small>{p.replyCount} コメント</small>
+            </div>
+          </Link>
+        );
+      })}
     </div>
   ) : (
     <div className="as-profile-empty">
       <h2>{empty}</h2>
-      <p>小さな発見も、途中の疑問も、残していこう。</p>
+      <p>このプロフィールには、公開中の投稿がありません。</p>
       <Link className="as-secondary" href="/community/new">
         最初の投稿を書く
       </Link>

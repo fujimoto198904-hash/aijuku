@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 /* oxlint-disable typescript/no-explicit-any -- This adapter traverses esbuild-generated JSX and replaces browser globals; production components remain strictly typed. */
 import { build } from 'esbuild';
+import { recoveryModeTestPlugin } from './recovery-mode-test-plugin';
 
 // Executes the actual component handlers with small hook/navigation adapters.
 // This is not a DOM renderer or browser test; API persistence is tested in D1.
@@ -21,6 +22,7 @@ export async function checkInlineComments() {
     platform: 'node',
     format: 'esm',
     plugins: [
+      recoveryModeTestPlugin,
       {
         name: 'inline-handler-adapters',
         setup(plugin) {

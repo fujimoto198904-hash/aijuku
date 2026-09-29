@@ -21,6 +21,7 @@ import {
   communityTextLength,
 } from '@/lib/community-composer';
 import { uploadPostImage } from '@/lib/prepare-post-image';
+import { portfolioOnly } from '@/lib/site-features';
 export function CommunityForm({
   postId,
   initialKind = 'learning',
@@ -134,6 +135,7 @@ export function CommunityForm({
       setBusy(false);
     }
   }
+  if (portfolioOnly) return null;
   return (
     <form
       onSubmit={submit}
@@ -361,6 +363,7 @@ export function CommunityDelete({
       setBusy(false);
     }
   }
+  if (portfolioOnly) return null;
   return (
     <div className="mt-4 text-sm">
       {confirm ? (

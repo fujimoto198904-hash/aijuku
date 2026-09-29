@@ -12,6 +12,7 @@ import {
 import Link from '@/components/site-link';
 import { withoutSiteBasePath } from '@/lib/site-paths';
 import { isAistockNavActive } from '@/lib/aistock-navigation';
+import { portfolioOnly } from '@/lib/site-features';
 const items = [
   { href: '/', label: 'ホーム', Icon: House },
   { href: '/discover', label: '見つける', Icon: Search },
@@ -44,13 +45,20 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
           <Search size={18} aria-hidden="true" />
           <span>やってみたいことを探す</span>
         </Link>
-        <Link
-          href="/messages"
-          className="as-header-messages as-icon-button"
-          aria-label="メッセージ"
-        >
-          <MessageCircle size={23} />
-        </Link>
+        {!portfolioOnly && (
+          <Link
+            href="/messages"
+            className="as-header-messages as-icon-button"
+            aria-label="メッセージ"
+          >
+            <MessageCircle size={23} />
+          </Link>
+        )}
+        {portfolioOnly && (
+          <Link href="/about" className="as-portfolio-label">
+            制作実績
+          </Link>
+        )}
         <Link href={signedIn ? '/mypage' : '/join'} className="as-join">
           {signedIn ? 'マイページ' : '無料で参加'} <ArrowUpRight size={16} />
         </Link>
@@ -64,22 +72,27 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
           <AistockLogo />
         </Link>
         <div className="as-nav-items">
-          {items.map(({ href, label, Icon }) => {
-            const selected = isAistockNavActive(href, pathname);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={selected ? 'page' : undefined}
-                className={selected ? 'as-nav-item is-active' : 'as-nav-item'}
-              >
-                <span className="as-nav-icon" aria-hidden="true">
-                  <Icon size={23} strokeWidth={selected ? 2.2 : 1.7} />
-                </span>
-                <span className="as-nav-label">{label}</span>
-              </Link>
-            );
-          })}
+          {items
+            .filter(
+              ({ href }) =>
+                !portfolioOnly || ['/', '/discover', '/learn'].includes(href),
+            )
+            .map(({ href, label, Icon }) => {
+              const selected = isAistockNavActive(href, pathname);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={selected ? 'page' : undefined}
+                  className={selected ? 'as-nav-item is-active' : 'as-nav-item'}
+                >
+                  <span className="as-nav-icon" aria-hidden="true">
+                    <Icon size={23} strokeWidth={selected ? 2.2 : 1.7} />
+                  </span>
+                  <span className="as-nav-label">{label}</span>
+                </Link>
+              );
+            })}
         </div>
         <div className="as-nav-bottom">
           <p>
@@ -96,8 +109,18 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
             </Link>
           )}
           <small>運営：MON-ai</small>
+          {portfolioOnly && (
+            <Link href="/about" className="as-portfolio-label">
+              ポートフォリオ · 閲覧用
+            </Link>
+          )}
         </div>
       </nav>
+      {portfolioOnly && (
+        <aside className="as-portfolio-notice" aria-label="公開について">
+          制作実績として公開中。更新・お問い合わせの受付は終了しています。
+        </aside>
+      )}
     </>
   );
 }

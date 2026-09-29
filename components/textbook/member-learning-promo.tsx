@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 import Link from '@/components/site-link';
+import { portfolioOnly } from '@/lib/site-features';
 
 const memberBenefits = [
   {
@@ -30,6 +31,7 @@ export function MemberLearningPromo({
 }: {
   className?: string;
 }) {
+  if (portfolioOnly) return null;
   return (
     <section
       className={`soft-panel soft-panel-clip overflow-hidden border border-sapphire/30 bg-sapphire-soft ${className}`}

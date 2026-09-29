@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'みんなの投稿｜AIstock',
   description:
-    '質問、便利な使い方、勉強の記録。みんなで学ぶ無料AIコミュニティ。',
+    'AI学習コミュニティの制作実績。公開済みの投稿を閲覧できます。',
 };
 export default async function CommunityPage({
   searchParams,

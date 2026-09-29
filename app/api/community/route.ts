@@ -24,6 +24,7 @@ import {
   communityTextLength,
 } from '@/lib/community-composer';
 import type { CommunityThread } from '@/lib/community-thread';
+import { portfolioOnly, portfolioUnavailable } from '@/lib/site-features';
 export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const query = new URL(request.url).searchParams;
@@ -51,6 +52,7 @@ export async function GET(request: Request) {
       member.status === 'active' &&
       hasCurrentMembershipConsent(member);
     const canReply =
+      !portfolioOnly &&
       !!realUser &&
       active &&
       (await canInteractWithPost(realUser.userId, postId));
@@ -80,18 +82,21 @@ export async function GET(request: Request) {
       defaultNickname: canReply
         ? (publicNickname(profile?.name ?? realUser?.displayName) ?? '')
         : '',
-      needsLogin: !realUser,
+      needsLogin: !portfolioOnly && !realUser,
       needsConsent:
+        !portfolioOnly &&
         !!realUser &&
         (!member ||
           (member.status === 'active' && !hasCurrentMembershipConsent(member))),
-      notice: canReply
-        ? ''
-        : !realUser
-          ? 'ログインするとコメントできます。'
-          : !active
-            ? '会員情報と利用規約をご確認ください。'
-            : 'この投稿にはコメントできません。',
+      notice: portfolioOnly
+        ? 'コメントの受付は終了しています。'
+        : canReply
+          ? ''
+          : !realUser
+            ? 'ログインするとコメントできます。'
+            : !active
+              ? '会員情報と利用規約をご確認ください。'
+              : 'この投稿にはコメントできません。',
     };
     return noStoreJson(result);
   } catch {
@@ -102,6 +107,7 @@ export async function GET(request: Request) {
   }
 }
 export async function POST(request: Request) {
+  if (portfolioOnly) return portfolioUnavailable();
   if (!isSameOriginRequest(request))
     return noStoreJson({ error: '送信元を確認できません。' }, { status: 403 });
   const user = await getChatGPTUser();

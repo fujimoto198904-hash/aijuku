@@ -5,7 +5,7 @@ export function SiteFooter() {
       <span>© 2026 MON-ai</span>
       <Link href="/terms">利用規約</Link>
       <Link href="/privacy">プライバシー</Link>
-      <a href="mailto:info@mon-ai.jp">お問い合わせ</a>
+      <Link href="/about">この作品について</Link>
     </footer>
   );
 }

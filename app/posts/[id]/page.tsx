@@ -200,7 +200,7 @@ export default async function OfficialPostPage({
               </Link>
             )
           ) : (
-            <p>この教材への質問は「わからないところを質問」から送れます。</p>
+            <p>質問・コメントの受付は終了しています。</p>
           )}
         </section>
       </main>

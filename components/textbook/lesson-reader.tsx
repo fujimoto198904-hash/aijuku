@@ -875,9 +875,9 @@ export function LessonReader({
                   aria-hidden="true"
                 />
                 <div>
-                  <p className="text-sm font-semibold">この課題の学習を記録</p>
+                  <p className="text-sm font-semibold">できたことを手元に残す</p>
                   <p className="mt-1 text-xs leading-6 text-quiet">
-                    あとでやる・完了・メモ・作ったものを、ここから。
+                    作ったものや気づいたことを、自分のメモに残しておきましょう。
                   </p>
                 </div>
               </div>
@@ -923,7 +923,7 @@ export function LessonReader({
               <div>
                 <p className="numeric-text text-xs text-rust">09</p>
                 <h3 className="mt-3 font-mincho text-3xl">
-                  困ったらみんなに聞く
+                  つまずいたところを整理する
                 </h3>
                 <p className="mt-4 text-sm leading-7 text-quiet">
                   どこまでできて、どこで止まったか。短い言葉で大丈夫です。
@@ -936,11 +936,11 @@ export function LessonReader({
                     aria-hidden="true"
                   />
                   <h4 className="font-mincho text-2xl">
-                    この課題について質問する
+                    うまくいかなかった点をメモする
                   </h4>
                 </div>
                 <p className="mt-5 text-base leading-7 text-white/85">
-                  課題名は自動で付きます。次の画面で困ったことを書いて、みんなに聞いてみましょう。
+                  「やりたかったこと」「試したこと」「実際の結果」を並べると、次に試すことが見つけやすくなります。
                 </p>
                 <Link
                   href={textbookQuestionPath(task.id)}
@@ -950,7 +950,7 @@ export function LessonReader({
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
                 <p className="mt-3 text-sm leading-6 text-white/75">
-                  無料会員向け。質問は「みんなの投稿」に公開されます。
+                  メモは自分の端末へ。サイトへの質問の受付は終了しています。
                 </p>
               </div>
             </div>
@@ -1183,7 +1183,7 @@ export function LessonReader({
                         className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-quiet hover:text-sapphire"
                         href="#ask"
                       >
-                        止まったら、相談メモへ戻る
+                        止まったら、つまずいた点を整理する
                         <ArrowRight className="size-3.5" aria-hidden="true" />
                       </a>
                     </div>
@@ -1258,13 +1258,13 @@ export function LessonReader({
             <div className="mt-8 border-t border-rule pt-5">
               <p className="text-xs font-semibold">止まっても大丈夫</p>
               <p className="mt-2 text-xs leading-6 text-quiet">
-                どこで止まったかを、コミュニティで聞いてみましょう。
+                どこで止まったかを整理して、ひとつずつ試してみましょう。
               </p>
               <a
                 className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-rust"
                 href="#ask"
               >
-                相談メモを作る
+                つまずいた点を整理する
                 <ArrowRight className="size-3.5" aria-hidden="true" />
               </a>
             </div>

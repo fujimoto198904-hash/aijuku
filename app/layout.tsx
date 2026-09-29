@@ -6,6 +6,7 @@ import './globals.css';
 import './composer.css';
 import './aistock.css';
 import './social.css';
+import './portfolio.css';
 
 const siteUrl = canonicalSiteUrl;
 export const viewport: Viewport = {
@@ -16,25 +17,25 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'AIstock｜無料のAI勉強部屋',
+  title: 'AIstock｜MON-ai 制作実績',
   description:
-    'Web教科書は無料。AIが初めてでも、作りたいものから始められます。',
+    'AI学習コミュニティの制作実績。教材と投稿フィードを閲覧できます。更新・お問い合わせの受付は終了しています。',
   icons: {
     icon: withSiteBasePath('/brand/aistock-mark.svg'),
   },
   openGraph: {
-    title: 'AIstock｜無料のAI勉強部屋',
+    title: 'AIstock｜MON-ai 制作実績',
     description:
-      '教科書で学ぶ。質問する。気づきを持ち寄る。MON-aiの無料コミュニティ。',
+      '教科書と投稿フィードを組み合わせた、AI学習コミュニティのポートフォリオ。',
     type: 'website',
     locale: 'ja_JP',
     images: [],
   },
   twitter: {
     card: 'summary',
-    title: 'AIstock｜無料のAI勉強部屋',
+    title: 'AIstock｜MON-ai 制作実績',
     description:
-      '教科書で学ぶ。質問する。気づきを持ち寄る。MON-aiの無料コミュニティ。',
+      '教科書と投稿フィードを組み合わせた、AI学習コミュニティのポートフォリオ。',
     images: [],
   },
 };

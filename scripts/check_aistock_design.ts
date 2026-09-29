@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { recoveryModeTestPlugin } from './recovery-mode-test-plugin';
+import { portfolioOnly } from '../lib/site-features';
 import { readFileSync } from 'node:fs';
 import { build } from 'esbuild';
 import {
@@ -62,6 +64,7 @@ const composerBundle = await build({
   platform: 'node',
   format: 'esm',
   plugins: [
+    recoveryModeTestPlugin,
     {
       name: 'composer-render-adapters',
       setup(plugin) {
@@ -379,14 +382,19 @@ assert(
   learningMarkup.includes('あとでやるに保存') &&
     learningMarkup.includes('完了にする'),
 );
-assert(
-  learningMarkup.includes('自分用メモを書く') &&
-    learningMarkup.includes('作品・資料を残す'),
-);
-assert(
-  learningMarkup.includes('notebook?task=Lv.05') &&
-    learningMarkup.includes('task=Lv.05#skill-record'),
-);
+if (portfolioOnly) {
+  assert(!learningMarkup.includes('notebook?task=Lv.05'));
+  assert(!learningMarkup.includes('task=Lv.05#skill-record'));
+} else {
+  assert(
+    learningMarkup.includes('自分用メモを書く') &&
+      learningMarkup.includes('作品・資料を残す'),
+  );
+  assert(
+    learningMarkup.includes('notebook?task=Lv.05') &&
+      learningMarkup.includes('task=Lv.05#skill-record'),
+  );
+}
 const doneLearningMarkup = renderToStaticMarkup(
   createElement(MemberLearningProgress, {
     tasks: [lessonFixture],
@@ -555,10 +563,8 @@ assert(
   savedNotice.includes('class="as-stock-notice"') &&
     savedNotice.includes('aria-live="polite"'),
 );
-assert(
-  savedNotice.includes('/mypage#saved') &&
-    savedNotice.includes('保存済みを見る'),
-);
+assert.equal(savedNotice.includes('/mypage#saved'), !portfolioOnly);
+assert.equal(savedNotice.includes('保存済みを見る'), !portfolioOnly);
 assert(
   !renderToStaticMarkup(
     createElement(PostStockNotice, { notice: '', saved: true }),
@@ -692,9 +698,13 @@ const loginMarkup = renderToStaticMarkup(
     verificationPath: '/signin-with-chatgpt',
   }),
 );
-assert(loginMarkup.includes('/join?return_to=%2Fmessages%3Fto%3Dfriend'));
-assert(
+assert.equal(
+  loginMarkup.includes('/join?return_to=%2Fmessages%3Fto%3Dfriend'),
+  !portfolioOnly,
+);
+assert.equal(
   loginMarkup.includes('/account/recover?return_to=%2Fmessages%3Fto%3Dfriend'),
+  !portfolioOnly,
 );
 
 for (const saved of [false, true]) {
@@ -706,6 +716,10 @@ for (const saved of [false, true]) {
       compact: true,
     }),
   );
+  if (portfolioOnly) {
+    assert.equal(markup, '', 'portfolio has no save action');
+    continue;
+  }
   assert(
     markup.includes(
       `aria-label="${saved ? 'この投稿の保存を解除' : 'この投稿を保存'}"`,
@@ -735,7 +749,10 @@ for (const n of [0, 1, 2, 5, 20]) {
 const guestMarkup = renderToStaticMarkup(
   createElement(PostStock, { postRef: 'official-email', compact: true }),
 );
-assert(guestMarkup.includes('aria-label="ログインしてこの投稿を保存"'));
+assert.equal(
+  guestMarkup.includes('aria-label="ログインしてこの投稿を保存"'),
+  !portfolioOnly,
+);
 assert(
   !guestMarkup.includes('aria-pressed'),
   'Guest action is a login link, not a saved-state toggle',

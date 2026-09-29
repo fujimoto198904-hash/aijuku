@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { build } from 'esbuild';
+import { recoveryModeTestPlugin } from './recovery-mode-test-plugin';
 /* oxlint-disable typescript/no-explicit-any -- Isolated JSX/hook adapter only, not production code. */
 
 // Runs actual event handlers. No browser, production writes or persisted test data.
@@ -23,6 +24,7 @@ export async function checkPostActions() {
     format: 'esm',
     define: { 'process.env.NEXT_PUBLIC_SITE_BASE_PATH': '"/aistock"' },
     plugins: [
+      recoveryModeTestPlugin,
       {
         name: 'post-action-adapters',
         setup(plugin) {

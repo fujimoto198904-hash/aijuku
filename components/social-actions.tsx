@@ -14,6 +14,7 @@ import Link from '@/components/site-link';
 import { withSiteBasePath, canonicalPublicPath } from '@/lib/site-paths';
 import type { SocialProfile } from '@/db/social';
 import { postActionLoginPath } from '@/lib/post-navigation';
+import { portfolioOnly } from '@/lib/site-features';
 export async function socialRequest(data: Record<string, unknown>) {
   const response = await fetch(withSiteBasePath('/api/social'), {
     method: 'POST',
@@ -155,26 +156,28 @@ export function PostReactions({
   }
   return (
     <>
-      <span className="as-reaction">
-        <button
-          className="as-icon-button"
-          type="button"
-          aria-label={
-            canInteract
-              ? state.liked
-                ? 'いいねを取り消す'
-                : 'いいね'
-              : 'ログインしていいね'
-          }
-          aria-pressed={canInteract ? state.liked : undefined}
-          aria-busy={busy}
-          disabled={busy}
-          onClick={like}
-        >
-          <Heart size={24} fill={state.liked ? 'currentColor' : 'none'} />
-        </button>
-        <span aria-live="polite">{state.count > 0 ? state.count : null}</span>
-      </span>
+      {!portfolioOnly && (
+        <span className="as-reaction">
+          <button
+            className="as-icon-button"
+            type="button"
+            aria-label={
+              canInteract
+                ? state.liked
+                  ? 'いいねを取り消す'
+                  : 'いいね'
+                : 'ログインしていいね'
+            }
+            aria-pressed={canInteract ? state.liked : undefined}
+            aria-busy={busy}
+            disabled={busy}
+            onClick={like}
+          >
+            <Heart size={24} fill={state.liked ? 'currentColor' : 'none'} />
+          </button>
+          <span aria-live="polite">{state.count > 0 ? state.count : null}</span>
+        </span>
+      )}
       {commentControl ?? (
         <Link
           className="as-icon-button"
@@ -238,7 +241,7 @@ export function ProfileActions({
   }
   return (
     <div className="as-action-row">
-      {relation.self ? (
+      {portfolioOnly ? null : relation.self ? (
         <Link className="as-secondary" href="/mypage#account">
           プロフィールを編集
         </Link>
@@ -455,6 +458,7 @@ export function ReportButton({
       setBusy(false);
     }
   }
+  if (portfolioOnly) return null;
   return (
     <details className="as-report">
       <summary>通報する</summary>
